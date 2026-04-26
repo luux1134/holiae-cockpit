@@ -118,7 +118,7 @@
 const API_KEY  = "AIzaSyADK3alDzNTsEkbKGVDbrdHYBj0esGF0KU";
 const SHEET_ID = "17j732Xnp48sOWR_ignS3pgc5eKL4OPCJwUJWKH5Euv4";
 const SHEETS   = {shopify:"Shopify_Daily",ga4:"GA4_Channel",ads:"GoogleAds_Campaigns",st:"GoogleAds_SearchTerms",klav:"Klaviyo",klavD:"Klaviyo_Daily",gscP:"GSC_Pages",gscQ:"GSC_Queries",obj:"Objectifs"};
-const CKEY = "holiae-v4", TTL = 36e5;
+const CKEY = "holiae-v5", TTL = 36e5;
 const app = document.getElementById("app");
 const NF = new Intl.NumberFormat("fr-FR");
 const EU = new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR",maximumFractionDigits:0});
@@ -130,18 +130,12 @@ async function init(){
   catch(e){const c=rcache();if(c)render(c.d,true);else app.innerHTML=`<div class="wrap"><div class="empty">Erreur chargement.<br>${esc(e.message)}</div></div>`;}
 }
 async function load(){
+  clearOldCache();
   const c=rcache();if(c&&Date.now()-c.t<TTL)return c.d;
   if(!API_KEY||API_KEY==="TA_CLE_ICI")throw new Error("Clé API manquante.");
   const e=await Promise.all(Object.entries(SHEETS).map(async([k,nm])=>[k,await fsheet(nm)]));
   const d=Object.fromEntries(e);
-  try{
-    // Vider tous les anciens caches Holiaē avant d'écrire
-    Object.keys(localStorage).filter(k=>k.startsWith("holiae")).forEach(k=>localStorage.removeItem(k));
-    localStorage.setItem(CKEY,JSON.stringify({t:Date.now(),d}));
-  }catch(e){
-    // Quota dépassé : on tourne sans cache, pas de plantage
-    console.warn("Cache localStorage plein, mode sans cache.");
-  }
+  writeCache(d);
   return d;
 }
 async function fsheet(nm){
@@ -151,7 +145,9 @@ async function fsheet(nm){
   return r2o((await r.json()).values||[]);
 }
 function r2o(v){if(!v.length)return[];const h=v[0].map(x=>String(x||"").trim());return v.slice(1).filter(r=>r.some(Boolean)).map(r=>{const o={};h.forEach((k,i)=>o[k]=r[i]??"");return o;});}
-function rcache(){try{return JSON.parse(localStorage.getItem(CKEY)||"");}catch{return null;}}
+function rcache(){try{return JSON.parse(sessionStorage.getItem(CKEY)||"");}catch{return null;}}
+function clearOldCache(){try{Object.keys(localStorage).filter(k=>k.startsWith("holiae")).forEach(k=>localStorage.removeItem(k));}catch(e){}}
+function writeCache(d){try{sessionStorage.setItem(CKEY,JSON.stringify({t:Date.now(),d}));}catch(e){try{sessionStorage.removeItem(CKEY);}catch(_){}}}
 
 // ── RENDER ────────────────────────────────────────────────────────────────────
 function render(raw,off=false){
@@ -322,7 +318,7 @@ function vAds(m){
   <div class="sg">🎯 Décisions par campagne</div>
   ${cl.length?cl.map(c=>{const r=arec(c);return`<div class="adc"><div class="adc-h"><span class="adc-b" style="background:${r.bg};color:${r.color}">${r.label}</span><span class="adc-n">${esc(c.name)}</span><span class="adc-t">${esc(c.type)}</span></div><div class="adc-m"><div><div class="adc-ml">Dépense</div><div class="adc-mv">${mo(c.cost)}</div></div><div><div class="adc-ml">Ventes</div><div class="adc-mv">${fm(c.pur)}</div></div><div><div class="adc-ml">ROAS</div><div class="adc-mv" style="color:${rc(c.roas)}">${rt(c.roas)}</div></div><div><div class="adc-ml">CPA</div><div class="adc-mv">${mo(c.cpa)}</div></div></div><div class="adc-a">→ ${esc(r.action)}</div></div>`;}).join(""):`<div class="empty">Aucune donnée campagne sur 7 jours.</div>`}
   <div class="sg">🔍 Top requêtes Search</div>
-  ${topR(m.raw.st||[],"Clicks",8).map(r=>`<div class="row"><span class="rn">${esc(gv(r,"Search term")||gv(r,"Keyword")||gv(r,"Query")||"—")}</span><div class="rm"><span class="rs">Clics <span style="color:var(--accent)">${fm(num(gv(r,"Clicks")))}</span></span><span class="rs">Conv. ${fm(num(gv(r,"Conversions")))}</span><span class="rs">Coût ${mo(num(gv(r,"Cost")))}</span></div></div>`).join("")||`<div class="empty">Données Search Terms indisponibles.</div>`}
+  ${topSearchTerms(m.raw.st||[],8).map(r=>`<div class="row"><span class="rn">${esc(r.term)}</span><div class="rm"><span class="rs">Clics <span style="color:var(--accent)">${fm(r.clicks)}</span></span><span class="rs">Conv. ${fm(r.pur)}</span><span class="rs">Coût ${mo(r.cost)}</span><span class="rs">Valeur ${mo(r.value)}</span></div></div>`).join("")||`<div class="empty">Données Search Terms indisponibles.</div>`}
   </div>`;
 }
 
@@ -485,17 +481,16 @@ function chR(p){const tot=Object.values(p.chs).reduce((a,b)=>a+b,0);return`<div 
 function objBar(m,key,p){
   const o=m.ob;
   if(!o.ca&&!o.ord&&!o.bAds)return"";
-  const dM=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate();
+  const dM=new Date(+m.ld.slice(0,4),+m.ld.slice(5,7),0).getDate();
   // Pro-rate the objective to the period
   let ratio,label;
   if(key==="d1"){ratio=1/dM;label="J-1";}
   else if(key==="7d"){ratio=7/dM;label="7J";}
   else if(key==="28d"){ratio=28/dM;label="28J";}
-  else if(key==="90d"){ratio=90/dM;label="3M";}
-  else{// mtd
-    const dE=Math.max(1,new Date().getDate()-1);
+  else if(key==="90d")return"";
+  else{
+    const dE=Math.max(1,pd(m.ld).getDate());
     const proj=p.rev?p.rev/dE*dM:null;
-    ratio=dE/dM;label="MTD";
     return`<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
       ${o.ca?miniPg("CA MTD",mo(p.rev),mo(o.ca),o.ca?p.rev/o.ca*100:null,proj?`Proj. ${mo(proj)}`:""):""}
       ${o.ord?miniPg("Commandes MTD",fm(p.ord),fm(o.ord),o.ord?p.ord/o.ord*100:null,""):""}
@@ -619,6 +614,21 @@ function gdec(p,o,dq){const s7=p["7d"],p7=p.p7d,d1=p.d1;if(dq.level==="bad")retu
 function fl(q){const s=q.toLowerCase().trim(),it=document.querySelectorAll("#li .lex-i");let c=0;it.forEach(e=>{const show=!s||e.dataset.s.includes(s);e.style.display=show?"":"none";if(show)c++;});document.getElementById("le").style.display=c===0?"":"none";}
 function bt(rows,s,e){return rows.filter(r=>isIso(gv(r,"Date"))&&gv(r,"Date")>=s&&gv(r,"Date")<=e);}
 function topR(rows,f,l){return[...rows].sort((a,b)=>num(gv(b,f))-num(gv(a,f))).slice(0,l);}
+function topSearchTerms(rows,l){
+  const out={};
+  rows.forEach(r=>{
+    const term=String(gv(r,"Search term")||gv(r,"Keyword")||gv(r,"Query")||"").trim();
+    if(!term)return;
+    const key=term.toLowerCase();
+    if(!out[key])out[key]={term,cost:0,clicks:0,impr:0,pur:0,value:0};
+    out[key].cost+=num(gv(r,"Cost")||gv(r,"Cout"));
+    out[key].clicks+=num(gv(r,"Clicks")||gv(r,"Clics"));
+    out[key].impr+=num(gv(r,"Impressions"));
+    out[key].pur+=num(gv(r,"Purchases")||gv(r,"Conversions"));
+    out[key].value+=num(gv(r,"Purchase value")||gv(r,"Revenue_Ads"));
+  });
+  return Object.values(out).sort((a,b)=>b.clicks-a.clicks||b.cost-a.cost).slice(0,l);
+}
 function gv(row,n){return row?.[n]??"";}
 function sm(rows,f){return rows.reduce((a,r)=>a+num(gv(r,f)),0);}
 function num(x){if(x==null||x==="")return 0;const v=Number(String(x).replace(/\s/g,"").replace(",","."));return Number.isFinite(v)?v:0;}
