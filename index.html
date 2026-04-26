@@ -67,6 +67,13 @@
     .fs{font-size:9px;color:var(--text-sec);min-height:12px}
     .fb{width:100%;min-height:4px;background:var(--accent);border-radius:3px 3px 0 0;opacity:.62}
     .empty{background:var(--bg-card);border:1px dashed var(--border);border-radius:8px;padding:18px;color:var(--text-sec);font-size:12px;line-height:1.6}
+    .decision{display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:14px}
+    .decision-title{font-size:10px;color:var(--text-sec);letter-spacing:.18em;text-transform:uppercase;margin-bottom:5px}
+    .decision-main{font-size:15px;color:var(--text-main)}
+    .badge{font-size:9px;letter-spacing:.12em;text-transform:uppercase;border-radius:4px;padding:4px 8px;white-space:nowrap}
+    .badge.good{background:rgba(76,175,125,.16);color:var(--green)}
+    .badge.warn{background:rgba(232,166,76,.18);color:var(--orange)}
+    .badge.bad{background:rgba(224,92,92,.18);color:var(--red)}
     .loading{min-height:100vh;display:grid;place-items:center;background:var(--bg-page);color:var(--accent);font-family:"Cormorant Garamond",serif;font-size:28px;font-style:italic}
     .fine{font-size:10px;color:var(--text-sec);line-height:1.5;margin-top:10px}
     @media(max-width:640px){
@@ -81,6 +88,7 @@
       .fl{font-size:8px}
       .row{align-items:flex-start;flex-direction:column}
       .rm{width:100%;justify-content:space-between}
+      .decision{align-items:flex-start;flex-direction:column}
     }
   </style>
 </head>
@@ -174,6 +182,7 @@
             ${tabButton("ytd","Année")}
             ${tabButton("alrt",`⚠ Alertes (${model.alerts.length})`,false,"alert-t")}
           </div>
+          ${decisionBlock(model)}
           ${viewHier(model)}
           ${viewPeriod(model,"j7","7 jours glissants","7d","prev7d")}
           ${viewMtd(model)}
@@ -186,6 +195,16 @@
 
     function tabButton(id,label,on=false,extra=""){
       return `<button class="ht ${extra} ${on ? "on" : ""}" onclick="sw('${id}',this)">${label}</button>`;
+    }
+
+    function decisionBlock(m){
+      const q = m.dataQuality || {};
+      const d = m.decision || {};
+      const cls = q.level === "ok" ? "good" : q.level === "warn" ? "warn" : "bad";
+      return `<div class="decision">
+        <div><div class="decision-title">Décision du jour</div><div class="decision-main">${escapeHtml(d.text || "Rien d'urgent")}</div><div class="ks">${escapeHtml(d.detail || "")}</div></div>
+        <span class="badge ${cls}">${escapeHtml(q.label || "Data à vérifier")}</span>
+      </div>`;
     }
 
     function buildModel(raw){
@@ -207,7 +226,9 @@
       };
       const objectives = getCurrentObjectives(raw.objectifs || [], d1);
       const alerts = buildAlerts(periods, objectives);
-      return { raw, dates, lastDate, d2, periods, objectives, alerts };
+      const dataQuality = getDataQuality(periods.d1);
+      const decision = getDecision(periods, objectives, dataQuality);
+      return { raw, dates, lastDate, d2, periods, objectives, alerts, dataQuality, decision };
     }
 
     function collectDates(raw){
@@ -246,6 +267,7 @@
         atcToCheckout: atc ? checkout / atc * 100 : null,
         checkoutToOrders: checkout ? orders / checkout * 100 : null,
         adsByType: adsTypes(ads),
+        adsCampaigns: adsCampaigns(ads),
         channels: channels(ga4),
         seoQueries: topRows(raw.gscQueries || [], "Clicks", 5),
         seoPages: topRows(raw.gscPages || [], "Clicks", 5)
@@ -263,6 +285,25 @@
         out[type].impressions += num(val(r,"Impressions"));
       });
       Object.values(out).forEach(v => v.roas = safeDiv(v.revenue, v.cost));
+      return out;
+    }
+
+    function adsCampaigns(rows){
+      const out = {};
+      rows.forEach(r => {
+        const name = val(r,"Campaign") || val(r,"Campagne") || "Campagne sans nom";
+        const type = normalizeCampaignType(val(r,"Campaign type") || val(r,"Type"));
+        if(!out[name]) out[name] = { name, type, cost:0, revenue:0, purchases:0, clicks:0, impressions:0 };
+        out[name].cost += num(val(r,"Cost") || val(r,"Cout"));
+        out[name].revenue += num(val(r,"Purchase value") || val(r,"Revenue_Ads"));
+        out[name].purchases += num(val(r,"Purchases") || val(r,"Conversions"));
+        out[name].clicks += num(val(r,"Clicks") || val(r,"Clics"));
+        out[name].impressions += num(val(r,"Impressions"));
+      });
+      Object.values(out).forEach(v => {
+        v.roas = safeDiv(v.revenue, v.cost);
+        v.cpa = safeDiv(v.cost, v.purchases);
+      });
       return out;
     }
 
@@ -350,13 +391,13 @@
         ${kpiCard("Commandes", fmt(p.orders), ref ? `Réf. ${fmt(ref.orders)}` : "", delta(p.orders, ref?.orders, true))}
         ${kpiCard("CA", money(p.revenue), ref ? `Réf. ${money(ref.revenue)}` : "", delta(p.revenue, ref?.revenue, true))}
         ${kpiCard("AOV", money(p.aov), ref ? `Réf. ${money(ref.aov)}` : "", delta(p.aov, ref?.aov, true))}
-        ${kpiCard("Conv. Rate", pct(p.convRate), ref ? `Réf. ${pct(ref.convRate)}` : "", delta(p.convRate, ref?.convRate, true, "pt"))}
+        ${kpiCard("Conversion site", pct(p.convRate), ref ? `Réf. ${pct(ref.convRate)}` : "", delta(p.convRate, ref?.convRate, true, "pt"))}
         ${kpiCard("PDP → ATC", pct(p.pdpToAtc), ref ? `Réf. ${pct(ref.pdpToAtc)}` : "Objectif 1,5%+", delta(p.pdpToAtc, ref?.pdpToAtc, true, "pt"))}
         ${kpiCard("ATC → Checkout", pct(p.atcToCheckout), ref ? `Réf. ${pct(ref.atcToCheckout)}` : "Objectif 55%+", delta(p.atcToCheckout, ref?.atcToCheckout, true, "pt"))}
         ${kpiCard("Checkout → Orders", pct(p.checkoutToOrders), ref ? `Réf. ${pct(ref.checkoutToOrders)}` : "Objectif 35%+", delta(p.checkoutToOrders, ref?.checkoutToOrders, true, "pt"))}
         ${kpiCard("CPA", money(p.cpa), ref ? `Réf. ${money(ref.cpa)}` : "", delta(p.cpa, ref?.cpa, false))}
         ${kpiCard("ROAS", ratio(p.roas), ref ? `Réf. ${ratio(ref.roas)}` : "", delta(p.roas, ref?.roas, true))}
-        ${kpiCard("Coût Ads", money(p.costAds), ref ? `Réf. ${money(ref.costAds)}` : "", delta(p.costAds, ref?.costAds, false))}
+        ${kpiCard("Dépense Ads", money(p.costAds), ref ? `Réf. ${money(ref.costAds)}` : "", delta(p.costAds, ref?.costAds, false))}
         ${kpiCard("Klaviyo", money(p.klaviyoRevenue), ref ? `Réf. ${money(ref.klaviyoRevenue)}` : "", delta(p.klaviyoRevenue, ref?.klaviyoRevenue, true))}
       </div>`;
     }
@@ -374,10 +415,10 @@
     function funnelBlock(p){
       const steps = [
         ["Sessions", p.sessions, 52, ""],
-        ["PDP Views", p.pdp, 38, p.sessions ? `${pct(p.pdp / p.sessions * 100)} / sessions` : ""],
+        ["Vues PDP", p.pdp, 38, p.sessions ? `${pct(p.pdp / p.sessions * 100)} / sessions` : ""],
         ["ATC", p.atc, 24, p.pdp ? `${pct(p.atc / p.pdp * 100)} / PDP` : ""],
         ["Checkout", p.checkout, 14, p.atc ? `${pct(p.checkout / p.atc * 100)} / ATC` : ""],
-        ["Orders", p.orders, 8, p.checkout ? `${pct(p.orders / p.checkout * 100)} / checkout` : ""]
+        ["Commandes", p.orders, 8, p.checkout ? `${pct(p.orders / p.checkout * 100)} / checkout` : ""]
       ];
       const hasData = steps.some(s => s[1]);
       if(!hasData) return `<div class="sec">— Funnel</div><div class="empty">Funnel incomplet : Shopify ne remonte pas encore Sessions / PDP / ATC / Checkout. À brancher via GA4 ecommerce events.</div>`;
@@ -385,12 +426,14 @@
     }
 
     function adsDetail(p,ref){
-      const types = ["PMAX","SEARCH","BRAND"];
-      return `<div class="sec">— Google Ads</div>${types.map(type => {
-        const cur = p.adsByType[type] || {};
-        const old = ref?.adsByType?.[type] || {};
-        if(!cur.cost && !old.cost) return "";
-        return `<div class="row"><span class="rn">${type}</span><div class="rm"><span class="rs">Coût <span style="color:var(--accent)">${money(cur.cost)}</span></span><span class="rs">ROAS <span class="${(cur.roas||0) >= (old.roas||0) ? "g" : "r"}">${ratio(cur.roas)}</span></span></div></div>`;
+      const totalCost = p.costAds || 0;
+      const rows = Object.values(p.adsCampaigns || {})
+        .sort((a,b) => b.cost - a.cost)
+        .slice(0,8);
+      return `<div class="sec">— Google Ads · campagnes</div>${rows.map(cur => {
+        const old = ref?.adsCampaigns?.[cur.name] || {};
+        const budgetShare = totalCost ? cur.cost / totalCost * 100 : null;
+        return `<div class="row"><span class="rn">${escapeHtml(cur.name)}</span><div class="rm"><span class="rs">${escapeHtml(cur.type)}</span><span class="rs">Coût <span style="color:var(--accent)">${money(cur.cost)}</span></span><span class="rs">Achats <span style="color:var(--accent)">${fmt(cur.purchases)}</span></span><span class="rs">Valeur <span style="color:var(--accent)">${money(cur.revenue)}</span></span><span class="rs">CPA ${money(cur.cpa)}</span><span class="rs">ROAS <span class="${(cur.roas||0) >= (old.roas||0) ? "g" : "r"}">${ratio(cur.roas)}</span></span><span class="rs">Budget ${pct(budgetShare)}</span></div></div>`;
       }).join("") || `<div class="empty">Aucune donnée Ads sur cette période.</div>`}`;
     }
 
@@ -446,7 +489,9 @@
     }
 
     function seoBlock(p){
-      return `<div class="sec">— Top SEO · GSC</div>${p.seoQueries.map(r => `<div class="row"><span class="rn">${escapeHtml(val(r,"Query") || val(r,"Page"))}</span><div class="rm"><span class="rs">Clics <span style="color:var(--accent)">${fmt(num(val(r,"Clicks")))}</span></span><span class="rs">Pos. ${ratio(num(val(r,"Position")))}</span></div></div>`).join("") || `<div class="empty">Données SEO insuffisantes.</div>`}`;
+      const queries = p.seoQueries.map(r => `<div class="row"><span class="rn">${escapeHtml(val(r,"Query"))}</span><div class="rm"><span class="rs">Clics <span style="color:var(--accent)">${fmt(num(val(r,"Clicks")))}</span></span><span class="rs">Pos. ${ratio(num(val(r,"Position")))}</span></div></div>`).join("");
+      const pages = p.seoPages.map(r => `<div class="row"><span class="rn">${escapeHtml(shortUrl(val(r,"Page")))}</span><div class="rm"><span class="rs">Clics <span style="color:var(--accent)">${fmt(num(val(r,"Clicks")))}</span></span><span class="rs">Pos. ${ratio(num(val(r,"Position")))}</span></div></div>`).join("");
+      return `<div class="sec">— SEO · top requêtes</div>${queries || `<div class="empty">Données requêtes insuffisantes.</div>`}<div class="sec">— SEO · top pages</div>${pages || `<div class="empty">Données pages insuffisantes.</div>`}`;
     }
 
     function channelBlock(p){
@@ -458,6 +503,31 @@
       return `<div class="hv" id="v-alrt"><div class="sec">— Alertes actives</div>${m.alerts.length ? m.alerts.map(alert => `<div class="al"><div class="ad ${alert.level}"></div><div style="flex:1"><div class="at">${alert.title}</div><div class="as">${alert.body}</div></div><span class="ab ${alert.level === "c" ? "bc" : alert.level === "w" ? "bw" : "bi"}">${alert.label}</span></div>`).join("") : `<div class="empty">Tout est dans les clous ✦</div>`}</div>`;
     }
 
+    function getDataQuality(d1){
+      const missing = [];
+      if(!d1.sessions) missing.push("sessions");
+      if(!d1.pdp) missing.push("PDP");
+      if(!d1.atc) missing.push("ATC");
+      if(!d1.costAds) missing.push("Ads");
+      if(!d1.klaviyoRevenue) missing.push("Klaviyo");
+      if(!missing.length) return { level:"ok", label:"Data OK" };
+      if(missing.length <= 2) return { level:"warn", label:"Data partielle : " + missing.join(", ") };
+      return { level:"bad", label:"Data à vérifier" };
+    }
+
+    function getDecision(periods,obj,dataQuality){
+      const d1 = periods.d1;
+      const s7 = periods["7d"];
+      const p7 = periods.prev7d;
+      if(dataQuality.level === "bad") return { text:"Priorité data", detail:"Trop de sources sont vides sur J-1. Vérifier les syncs avant décision business." };
+      if(s7.pdpToAtc != null && s7.pdpToAtc < 1) return { text:"Priorité PDP", detail:`PDP → ATC à ${pct(s7.pdpToAtc)} sur 7J. Le produit ne pousse pas assez à l'ajout panier.` };
+      if(s7.atcToCheckout != null && s7.atcToCheckout < 50) return { text:"Priorité panier", detail:`ATC → Checkout à ${pct(s7.atcToCheckout)}. Il y a une friction entre panier et checkout.` };
+      if(s7.checkoutToOrders != null && s7.checkoutToOrders < 30) return { text:"Priorité checkout", detail:`Checkout → Commandes à ${pct(s7.checkoutToOrders)}. Le paiement ou la réassurance bloque.` };
+      if(s7.roas && d1.roas && d1.roas < s7.roas * .65) return { text:"Priorité Ads", detail:`ROAS hier ${ratio(d1.roas)} vs moyenne 7J ${ratio(s7.roas)}.` };
+      if(s7.convRate && p7.convRate && s7.convRate < p7.convRate * .85) return { text:"Priorité conversion", detail:`Conversion site en baisse : ${pct(s7.convRate)} vs ${pct(p7.convRate)}.` };
+      return { text:"Rien d'urgent", detail:"Surveiller PDP → ATC et arbitrage budget Ads." };
+    }
+
     function buildAlerts(periods,obj){
       const a = [];
       const d1 = periods.d1, s7 = periods["7d"], p7 = periods.prev7d, mtd = periods.mtd;
@@ -467,14 +537,27 @@
       if(avgRevenue7 && d1.revenue < avgRevenue7 * .7) a.push({level:"c",label:"Critique",title:"CA en chute",body:`Hier ${moneyZero(d1.revenue)} vs moyenne 7J ${money(avgRevenue7)}/jour.`});
       if(s7.convRate && p7.convRate && s7.convRate < p7.convRate * .85) a.push({level:"w",label:"Warning",title:"Conversion en baisse",body:`Conv. rate 7J ${pct(s7.convRate)} vs ${pct(p7.convRate)} semaine précédente.`});
       if(s7.roas && d1.roas && d1.roas < s7.roas * .65) a.push({level:"c",label:"Ads",title:"ROAS en chute",body:`ROAS hier ${ratio(d1.roas)} vs moyenne 7J ${ratio(s7.roas)}.`});
+      if(s7.pdpToAtc != null && s7.pdpToAtc < 1) a.push({level:"c",label:"CRO",title:"PDP → ATC trop faible",body:`PDP → ATC 7J à ${pct(s7.pdpToAtc)}. Priorité : hero, preuve sociale, offre, CTA.`});
+      else if(s7.pdpToAtc != null && s7.pdpToAtc < 1.5) a.push({level:"w",label:"CRO",title:"PDP → ATC sous objectif",body:`PDP → ATC 7J à ${pct(s7.pdpToAtc)} vs objectif 1,5%+.`});
+      else if(s7.pdpToAtc != null && s7.pdpToAtc >= 1.5) a.push({level:"i",label:"CRO",title:"PDP commence à accrocher",body:`PDP → ATC 7J à ${pct(s7.pdpToAtc)}. Continuer à renforcer la preuve.`});
+      if(s7.atcToCheckout != null && s7.atcToCheckout < 50) a.push({level:"w",label:"Panier",title:"ATC → Checkout faible",body:`ATC → Checkout 7J à ${pct(s7.atcToCheckout)}. Vérifier panier, réassurance, livraison et moyens de paiement.`});
+      if(s7.checkoutToOrders != null && s7.checkoutToOrders < 30) a.push({level:"w",label:"Checkout",title:"Checkout → Commandes faible",body:`Checkout → Commandes 7J à ${pct(s7.checkoutToOrders)}. Vérifier paiement et friction checkout.`});
       if(obj.ca){
-        const today = parseDate(Object.keys(periods).length ? document.querySelector(".hd-state")?.textContent : "");
-        const last = periods.d1;
         const daysElapsed = Math.max(1, new Date().getDate() - 1);
         const daysMonth = new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).getDate();
         const projection = mtd.revenue ? mtd.revenue / daysElapsed * daysMonth : null;
         if(projection && projection < obj.ca * .85) a.push({level:"c",label:"MTD",title:"Projection MTD insuffisante",body:`Projection ${money(projection)} vs objectif ${money(obj.ca)}.`});
       }
+      if(obj.budgetAds){
+        const daysElapsed = Math.max(1, new Date().getDate() - 1);
+        const daysMonth = new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).getDate();
+        const normalSpend = obj.budgetAds * (daysElapsed / daysMonth);
+        if(mtd.costAds > normalSpend * 1.2) a.push({level:"w",label:"Budget",title:"Budget Ads consommé trop vite",body:`Dépense MTD ${money(mtd.costAds)} vs rythme attendu ${money(normalSpend)}.`});
+        if(mtd.costAds && mtd.costAds < normalSpend * .7) a.push({level:"i",label:"Budget",title:"Budget Ads sous-consommé",body:`Dépense MTD ${money(mtd.costAds)} vs rythme attendu ${money(normalSpend)}.`});
+      }
+      const search = s7.adsByType.SEARCH || {};
+      const pmax = s7.adsByType.PMAX || {};
+      if(search.roas && pmax.roas && pmax.roas < search.roas * .6) a.push({level:"w",label:"Ads",title:"Search surperforme PMAX",body:`Search ROAS ${ratio(search.roas)} vs PMAX ${ratio(pmax.roas)}. Envisager rééquilibrage budget.`});
       return a.slice(0,10);
     }
 
@@ -524,6 +607,14 @@
     function isIso(s){return /^\d{4}-\d{2}-\d{2}$/.test(String(s || ""))}
     function isLeap(y){return y%4===0 && (y%100!==0 || y%400===0)}
     function formatDateLabel(d){return isIso(d) ? new Date(`${d}T12:00:00`).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"}) : "Données non datées"}
+    function shortUrl(url){
+      try{
+        const u = new URL(String(url));
+        return u.pathname.replace(/^\/|\/$/g,"") || u.hostname;
+      }catch{
+        return String(url || "");
+      }
+    }
     function escapeHtml(s){return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
     function sw(id,btn){
       document.querySelectorAll(".hv").forEach(v=>v.classList.remove("on"));
