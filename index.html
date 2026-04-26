@@ -13,615 +13,802 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Plus+Jakarta+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg-page:#1f1a17;
-      --bg-card:#26211e;
-      --bg-card2:#332e2c;
-      --accent:#f4d8a8;
-      --text-main:#fcf8f1;
-      --text-sec:#908b84;
-      --border:#332e2c;
-      --green:#4caf7d;
-      --red:#e05c5c;
-      --orange:#e8a64c;
+      --bg-page:#1f1a17;--bg-card:#26211e;--bg-card2:#332e2c;
+      --accent:#f4d8a8;--text-main:#fcf8f1;--text-sec:#908b84;
+      --border:#332e2c;--green:#4caf7d;--red:#e05c5c;--orange:#e8a64c;
     }
     *{box-sizing:border-box}
     html,body{margin:0;min-height:100%;background:var(--bg-page);color:var(--text-main);font-family:"Plus Jakarta Sans",system-ui,sans-serif}
     button{font:inherit}
-    .hd{min-height:100vh;background:var(--bg-page);padding:18px 14px 28px;color:var(--text-main)}
+    .hd{min-height:100vh;background:var(--bg-page);padding:18px 14px 40px}
     .hd-shell{max-width:1120px;margin:0 auto}
     .hd-header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)}
     .hd-logo{font-family:"Cormorant Garamond",serif;font-size:23px;font-weight:300;font-style:italic;color:var(--accent);letter-spacing:.1em;white-space:nowrap}
     .hd-date{text-align:right;font-size:10px;color:var(--text-sec);letter-spacing:.16em;text-transform:uppercase;line-height:1.6}
     .hd-state{display:inline-block;margin-top:4px;color:var(--accent)}
-    .hd-tabs{position:sticky;top:0;z-index:5;display:flex;gap:3px;margin-bottom:18px;background:rgba(38,33,30,.96);padding:4px;border:1px solid var(--border);border-radius:8px;overflow-x:auto;scrollbar-width:none;backdrop-filter:blur(12px)}
+    .hd-tabs{position:sticky;top:0;z-index:5;display:flex;gap:3px;margin-bottom:20px;background:rgba(38,33,30,.96);padding:4px;border:1px solid var(--border);border-radius:8px;overflow-x:auto;scrollbar-width:none;backdrop-filter:blur(12px)}
     .hd-tabs::-webkit-scrollbar{display:none}
     .ht{padding:8px 13px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-sec);cursor:pointer;border-radius:5px;border:0;background:transparent;white-space:nowrap}
     .ht:hover{color:var(--text-main);background:var(--bg-card2)}
     .ht.on{color:#1f1a17;background:var(--accent)}
-    .ht.alert-t{color:var(--red)}
-    .ht.alert-t.on{background:#c0392b;color:var(--text-main)}
+    .ht.alert-t{color:var(--red)}.ht.alert-t.on{background:#c0392b;color:var(--text-main)}
     .hv{display:none}.hv.on{display:block}
-    .sec{font-size:9px;color:var(--text-sec);letter-spacing:.2em;text-transform:uppercase;margin:18px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border)}
-    .kg{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;margin-bottom:12px}
-    .kc{min-height:112px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;overflow:hidden}
-    .kl{font-size:9px;color:var(--text-sec);letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    /* Section headers */
+    .sec{font-size:9px;color:var(--text-sec);letter-spacing:.2em;text-transform:uppercase;margin:20px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border)}
+    .sec-group{font-size:10px;color:var(--text-sec);letter-spacing:.15em;text-transform:uppercase;margin:16px 0 8px;display:flex;align-items:center;gap:8px}
+    .sec-group::after{content:"";flex:1;height:1px;background:var(--border)}
+    /* KPI Cards */
+    .kg{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;margin-bottom:4px}
+    .kg3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:4px}
+    .kc{min-height:108px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;overflow:hidden}
+    .kl{font-size:9px;color:var(--text-sec);letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px}
     .kv{font-family:"Cormorant Garamond",serif;font-size:28px;font-weight:300;font-style:italic;color:var(--accent);line-height:1;margin-bottom:5px}
     .kv2{font-size:11px;color:var(--text-sec);margin-bottom:4px;min-height:14px}
     .kd{font-size:10px;letter-spacing:.04em;line-height:1.35}
     .ks{font-size:10px;color:var(--text-sec);margin-top:6px;line-height:1.4}
     .g{color:var(--green)}.r{color:var(--red)}.n{color:var(--text-sec)}.o{color:var(--orange)}
+    /* Progress bars */
     .pb{background:var(--bg-card2);border-radius:3px;height:5px;margin-top:8px;overflow:hidden}
     .pf{height:100%;border-radius:3px}.pf.gold{background:var(--accent)}.pf.warn{background:var(--orange)}.pf.bad{background:var(--red)}
-    .row{background:var(--bg-card);border:1px solid var(--border);border-radius:7px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:7px}
-    .rn{font-size:11px;color:var(--text-main);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .rm{display:flex;gap:14px;flex-shrink:0}.rs{font-size:10px;color:var(--text-sec);white-space:nowrap}
+    /* Rows */
+    .row{background:var(--bg-card);border:1px solid var(--border);border-radius:7px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:7px}
+    .rn{font-size:11px;color:var(--text-main);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+    .rm{display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+    .rs{font-size:10px;color:var(--text-sec);white-space:nowrap}
+    /* Alerts */
     .al{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:13px 15px;margin-bottom:9px;display:flex;align-items:flex-start;gap:11px}
     .ad{width:7px;height:7px;border-radius:50%;margin-top:4px;flex-shrink:0}.ad.c{background:var(--red)}.ad.w{background:var(--orange)}.ad.i{background:var(--accent)}
-    .at{font-size:12px;color:var(--text-main);margin-bottom:3px}.as{font-size:10px;color:var(--text-sec);line-height:1.5}
+    .at{font-size:12px;color:var(--text-main);margin-bottom:3px;font-weight:500}
+    .as{font-size:10px;color:var(--text-sec);line-height:1.5}
     .ab{font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:4px;margin-left:auto;flex-shrink:0;align-self:flex-start}
     .bc{background:rgba(224,92,92,.18);color:var(--red)}.bw{background:rgba(232,166,76,.18);color:var(--orange)}.bi{background:rgba(244,216,168,.15);color:var(--accent)}
-    .funnel{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;align-items:end;margin-bottom:12px}
-    .fstep{min-width:0;display:flex;flex-direction:column;align-items:center;gap:5px}
-    .fl{font-size:9px;color:var(--text-sec);text-transform:uppercase;letter-spacing:.07em;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .bg{background:rgba(76,175,125,.16);color:var(--green)}
+    /* Funnel */
+    .funnel{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;align-items:end;margin-bottom:10px;padding:10px 0}
+    .fstep{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+    .fl{font-size:9px;color:var(--text-sec);text-transform:uppercase;letter-spacing:.07em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;text-align:center}
     .fv{font-family:"Cormorant Garamond",serif;font-size:15px;font-style:italic;color:var(--accent)}
-    .fs{font-size:9px;color:var(--text-sec);min-height:12px}
-    .fb{width:100%;min-height:4px;background:var(--accent);border-radius:3px 3px 0 0;opacity:.62}
-    .empty{background:var(--bg-card);border:1px dashed var(--border);border-radius:8px;padding:18px;color:var(--text-sec);font-size:12px;line-height:1.6}
-    .decision{display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:14px}
-    .decision-title{font-size:10px;color:var(--text-sec);letter-spacing:.18em;text-transform:uppercase;margin-bottom:5px}
-    .decision-main{font-size:15px;color:var(--text-main)}
-    .badge{font-size:9px;letter-spacing:.12em;text-transform:uppercase;border-radius:4px;padding:4px 8px;white-space:nowrap}
+    .fs{font-size:9px;color:var(--green);min-height:12px;text-align:center}
+    .fb{width:100%;background:var(--accent);border-radius:3px 3px 0 0;opacity:.6}
+    /* Decision block */
+    .decision{display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:16px}
+    .decision-title{font-size:9px;color:var(--text-sec);letter-spacing:.18em;text-transform:uppercase;margin-bottom:5px}
+    .decision-main{font-size:15px;color:var(--text-main);font-weight:500}
+    .badge{font-size:9px;letter-spacing:.12em;text-transform:uppercase;border-radius:4px;padding:4px 10px;white-space:nowrap;font-weight:500}
     .badge.good{background:rgba(76,175,125,.16);color:var(--green)}
     .badge.warn{background:rgba(232,166,76,.18);color:var(--orange)}
     .badge.bad{background:rgba(224,92,92,.18);color:var(--red)}
+    /* Ads decision card */
+    .ad-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:8px}
+    .ad-card-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+    .ad-decision-badge{font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:4px;font-weight:600;white-space:nowrap}
+    .ad-card-name{font-size:12px;color:var(--text-main);font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .ad-card-type{font-size:9px;color:var(--text-sec);letter-spacing:.1em;text-transform:uppercase}
+    .ad-metrics{display:flex;gap:16px;flex-wrap:wrap}
+    .ad-metric{display:flex;flex-direction:column;gap:2px}
+    .ad-metric-label{font-size:8px;color:var(--text-sec);letter-spacing:.15em;text-transform:uppercase}
+    .ad-metric-value{font-size:13px;font-family:"Cormorant Garamond",serif;font-style:italic;color:var(--accent)}
+    .ad-action{font-size:10px;color:var(--text-sec);line-height:1.5;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+    /* SEO recommendation card */
+    .seo-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:13px 15px;margin-bottom:8px}
+    .seo-card-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:6px}
+    .seo-card-url{font-size:11px;color:var(--text-main);flex:1;word-break:break-all}
+    .seo-metrics{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+    .seo-metric{font-size:10px;color:var(--text-sec)}
+    .seo-action{font-size:10px;color:var(--text-sec);line-height:1.5;padding-top:6px;border-top:1px solid var(--border)}
+    /* Lexique */
+    .lex-cat{margin-bottom:20px}
+    .lex-item{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:8px}
+    .lex-term{font-family:"Cormorant Garamond",serif;font-size:18px;font-style:italic;color:var(--accent);margin-bottom:5px}
+    .lex-short{font-size:10px;color:var(--text-sec);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+    .lex-def{font-size:12px;color:var(--text-main);line-height:1.7}
+    .lex-ex{font-size:11px;color:var(--text-sec);margin-top:6px;font-style:italic}
+    /* Misc */
+    .empty{background:var(--bg-card);border:1px dashed var(--border);border-radius:8px;padding:16px;color:var(--text-sec);font-size:12px;line-height:1.6}
     .loading{min-height:100vh;display:grid;place-items:center;background:var(--bg-page);color:var(--accent);font-family:"Cormorant Garamond",serif;font-size:28px;font-style:italic}
-    .fine{font-size:10px;color:var(--text-sec);line-height:1.5;margin-top:10px}
+    .vs-block{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:8px}
+    .vs-title{font-size:9px;color:var(--text-sec);letter-spacing:.2em;text-transform:uppercase;margin-bottom:12px}
+    .vs-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .vs-side{background:var(--bg-card2);border-radius:6px;padding:12px}
+    .vs-name{font-size:10px;color:var(--text-sec);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+    .vs-kpi{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+    .vs-kl{font-size:9px;color:var(--text-sec)}
+    .vs-kv{font-family:"Cormorant Garamond",serif;font-size:16px;font-style:italic;color:var(--accent)}
     @media(max-width:640px){
-      .hd{padding:14px 10px 24px}
-      .hd-header{align-items:flex-start}
-      .hd-logo{font-size:21px}
-      .hd-date{font-size:9px}
+      .hd{padding:14px 10px 28px}
+      .hd-logo{font-size:20px}
       .kg{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-      .kc{padding:12px;min-height:104px}
-      .kv{font-size:25px}
-      .funnel{gap:3px}
-      .fl{font-size:8px}
-      .row{align-items:flex-start;flex-direction:column}
-      .rm{width:100%;justify-content:space-between}
-      .decision{align-items:flex-start;flex-direction:column}
+      .kg3{grid-template-columns:1fr}
+      .kc{padding:12px;min-height:100px}
+      .kv{font-size:24px}
+      .funnel{gap:3px}.fl{font-size:8px}
+      .row{flex-direction:column;align-items:flex-start}
+      .rm{width:100%;justify-content:flex-start}
+      .decision{flex-direction:column;align-items:flex-start}
+      .vs-grid{grid-template-columns:1fr}
+      .ad-metrics{gap:10px}
     }
   </style>
 </head>
 <body>
-  <div id="app" class="loading">Chargement du cockpit Holiaē...</div>
-  <script>
-    const API_KEY = "AIzaSyADK3alDzNTsEkbKGVDbrdHYBj0esGF0KU";
-    const SHEET_ID = "17j732Xnp48sOWR_ignS3pgc5eKL4OPCJwUJWKH5Euv4";
-    const SHEETS = {
-      shopify: "Shopify_Daily",
-      ga4: "GA4_Channel",
-      ads: "GoogleAds_Campaigns",
-      searchTerms: "GoogleAds_SearchTerms",
-      klaviyo: "Klaviyo",
-      klaviyoDaily: "Klaviyo_Daily",
-      gscPages: "GSC_Pages",
-      gscQueries: "GSC_Queries",
-      objectifs: "Objectifs"
-    };
-    const CACHE_KEY = "holiae-cockpit-cache-v1";
-    const CACHE_TTL_MS = 60 * 60 * 1000;
+<div id="app" class="loading">Chargement du cockpit Holiaē…</div>
+<script>
+const API_KEY  = "AIzaSyADK3alDzNTsEkbKGVDbrdHYBj0esGF0KU";
+const SHEET_ID = "17j732Xnp48sOWR_ignS3pgc5eKL4OPCJwUJWKH5Euv4";
+const SHEETS = {
+  shopify:"Shopify_Daily", ga4:"GA4_Channel",
+  ads:"GoogleAds_Campaigns", searchTerms:"GoogleAds_SearchTerms",
+  klaviyo:"Klaviyo", klaviyoDaily:"Klaviyo_Daily",
+  gscPages:"GSC_Pages", gscQueries:"GSC_Queries", objectifs:"Objectifs"
+};
+const CACHE_KEY = "holiae-cockpit-v2";
+const CACHE_TTL = 60*60*1000;
+const app = document.getElementById("app");
+const NF = new Intl.NumberFormat("fr-FR");
+const EUR = new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR",maximumFractionDigits:0});
 
-    const app = document.getElementById("app");
-    const nf = new Intl.NumberFormat("fr-FR");
-    const eur = new Intl.NumberFormat("fr-FR", { style:"currency", currency:"EUR", maximumFractionDigits:0 });
+document.addEventListener("DOMContentLoaded", init);
 
-    document.addEventListener("DOMContentLoaded", init);
+async function init(){
+  if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+  try{
+    render(await loadData());
+  }catch(err){
+    const cached = readCache();
+    if(cached) render(cached.data,true);
+    else app.innerHTML=`<div class="hd"><div class="empty">Impossible de charger les données.<br>${escHtml(err.message)}</div></div>`;
+  }
+}
 
-    async function init(){
-      if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
-      try{
-        const data = await loadData();
-        render(data);
-      }catch(error){
-        const cached = readCache();
-        if(cached) render(cached.data, true);
-        else app.innerHTML = `<div class="hd"><div class="empty">Impossible de charger les données. Vérifie la clé API Google Sheets dans <code>index.html</code>.<br>${escapeHtml(error.message)}</div></div>`;
-      }
-    }
+async function loadData(){
+  const cached=readCache();
+  if(cached && Date.now()-cached.ts < CACHE_TTL) return cached.data;
+  if(!API_KEY||API_KEY==="TA_CLE_ICI") throw new Error("Clé API Google Sheets manquante.");
+  const entries=await Promise.all(Object.entries(SHEETS).map(async([k,n])=>[k,await fetchSheet(n)]));
+  const data=Object.fromEntries(entries);
+  localStorage.setItem(CACHE_KEY,JSON.stringify({ts:Date.now(),data}));
+  return data;
+}
 
-    async function loadData(){
-      const cached = readCache();
-      if(cached && Date.now() - cached.timestamp < CACHE_TTL_MS) return cached.data;
-      if(!API_KEY || API_KEY === "TA_CLE_ICI") throw new Error("Clé API Google Sheets manquante.");
-      const entries = await Promise.all(Object.entries(SHEETS).map(async ([key, name]) => [key, await fetchSheet(name)]));
-      const data = Object.fromEntries(entries);
-      localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp:Date.now(), data }));
-      return data;
-    }
+async function fetchSheet(name){
+  const url=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(name)}!A:Z?key=${API_KEY}`;
+  const res=await fetch(url);
+  if(!res.ok){if(res.status===400||res.status===404)return [];throw new Error(`${name}: ${res.status}`);}
+  const json=await res.json();
+  return rowsToObjects(json.values||[]);
+}
 
-    async function fetchSheet(name){
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(name)}!A:Z?key=${API_KEY}`;
-      const res = await fetch(url);
-      if(!res.ok) {
-        if(res.status === 400 || res.status === 404) return [];
-        throw new Error(`${name}: ${res.status}`);
-      }
-      const json = await res.json();
-      return rowsToObjects(json.values || []);
-    }
+function rowsToObjects(vals){
+  if(!vals.length)return[];
+  const hd=vals[0].map(h=>String(h||"").trim());
+  return vals.slice(1).filter(r=>r.some(Boolean)).map(r=>{const o={};hd.forEach((h,i)=>o[h]=r[i]??"");return o;});
+}
+function readCache(){try{return JSON.parse(localStorage.getItem(CACHE_KEY)||"");}catch{return null;}}
 
-    function rowsToObjects(values){
-      if(!values.length) return [];
-      const headers = values[0].map(h => String(h || "").trim());
-      return values.slice(1).filter(row => row.some(Boolean)).map(row => {
-        const obj = {};
-        headers.forEach((h,i) => obj[h] = row[i] ?? "");
-        return obj;
-      });
-    }
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function render(raw,offline=false){
+  const m=buildModel(raw);
+  app.className="hd";
+  app.innerHTML=`
+<div class="hd-shell">
+  <div class="hd-header">
+    <div class="hd-logo">Holiaē ✦ Cockpit</div>
+    <div class="hd-date">${offline?"Hors ligne · cache":"Màj · 08h00"}<br><span class="hd-state">${fmtDateLabel(m.lastDate)}</span></div>
+  </div>
+  <div class="hd-tabs">
+    ${tb("hier","Hier",true)}${tb("j7","7 jours")}${tb("mtd","Mois en cours")}
+    ${tb("j28","28 jours")}${tb("m3","3 mois")}${tb("ytd","Année")}
+    ${tb("ads","Ads 7J")}${tb("seo","SEO 28J")}${tb("lex","Lexique")}
+    ${tb("alrt","⚠ Alertes ("+m.alerts.length+")",false,"alert-t")}
+  </div>
+  ${decisionBlock(m)}
+  ${viewHier(m)}
+  ${viewPeriod(m,"j7","7 jours glissants","7d","prev7d")}
+  ${viewMtd(m)}
+  ${viewPeriod(m,"j28","28 jours glissants","28d","prev28d")}
+  ${viewPeriod(m,"m3","3 mois glissants","90d","prev90d",true)}
+  ${viewYtd(m)}
+  ${viewAds(m)}
+  ${viewSeo(m)}
+  ${viewLexique()}
+  ${viewAlerts(m)}
+</div>`;
+}
 
-    function readCache(){
-      try{return JSON.parse(localStorage.getItem(CACHE_KEY) || "");}catch{return null;}
-    }
+function tb(id,label,on=false,extra=""){
+  return `<button class="ht ${extra} ${on?"on":""}" onclick="sw('${id}',this)">${label}</button>`;
+}
+function sw(id,btn){
+  document.querySelectorAll(".hv").forEach(v=>v.classList.remove("on"));
+  document.querySelectorAll(".ht").forEach(t=>t.classList.remove("on"));
+  document.getElementById("v-"+id).classList.add("on");
+  btn.classList.add("on");
+}
 
-    function render(raw, offline=false){
-      const model = buildModel(raw);
-      app.className = "hd";
-      app.innerHTML = `
-        <div class="hd-shell">
-          <div class="hd-header">
-            <div class="hd-logo">Holiaē ✦ Cockpit</div>
-            <div class="hd-date">${offline ? "Hors ligne · données cache" : "Màj quotidienne · 08h00"}<br><span class="hd-state">${formatDateLabel(model.lastDate)}</span></div>
-          </div>
-          <div class="hd-tabs">
-            ${tabButton("hier","Hier",true)}
-            ${tabButton("j7","7 jours")}
-            ${tabButton("mtd","Mois en cours")}
-            ${tabButton("j28","28 jours")}
-            ${tabButton("m3","3 mois")}
-            ${tabButton("ytd","Année")}
-            ${tabButton("alrt",`⚠ Alertes (${model.alerts.length})`,false,"alert-t")}
-          </div>
-          ${decisionBlock(model)}
-          ${viewHier(model)}
-          ${viewPeriod(model,"j7","7 jours glissants","7d","prev7d")}
-          ${viewMtd(model)}
-          ${viewPeriod(model,"j28","28 jours glissants","28d","prev28d")}
-          ${viewPeriod(model,"m3","3 mois glissants","90d","prev90d",true)}
-          ${viewYtd(model)}
-          ${viewAlerts(model)}
-        </div>`;
-    }
+function decisionBlock(m){
+  const q=m.dataQuality,d=m.decision;
+  const cls=q.level==="ok"?"good":q.level==="warn"?"warn":"bad";
+  return `<div class="decision">
+    <div><div class="decision-title">Priorité du jour</div>
+    <div class="decision-main">${escHtml(d.text||"Rien d'urgent")}</div>
+    <div class="ks" style="margin-top:5px">${escHtml(d.detail||"")}</div></div>
+    <span class="badge ${cls}">${escHtml(q.label)}</span>
+  </div>`;
+}
 
-    function tabButton(id,label,on=false,extra=""){
-      return `<button class="ht ${extra} ${on ? "on" : ""}" onclick="sw('${id}',this)">${label}</button>`;
-    }
+// ─── MODEL ────────────────────────────────────────────────────────────────────
+function buildModel(raw){
+  const dates=collectDates(raw);
+  const lastDate=dates.at(-1)||iso(addDays(new Date(),-1));
+  const d2=iso(addDays(parseDate(lastDate),-1));
+  const p={
+    d1:  rangeMet(raw,lastDate,lastDate),
+    d2:  rangeMet(raw,d2,d2),
+    "7d":  rangeMet(raw,iso(addDays(parseDate(lastDate),-6)),lastDate),
+    prev7d:  rangeMet(raw,iso(addDays(parseDate(lastDate),-13)),iso(addDays(parseDate(lastDate),-7))),
+    "28d": rangeMet(raw,iso(addDays(parseDate(lastDate),-27)),lastDate),
+    prev28d: rangeMet(raw,iso(addDays(parseDate(lastDate),-55)),iso(addDays(parseDate(lastDate),-28))),
+    "90d": rangeMet(raw,iso(addDays(parseDate(lastDate),-89)),lastDate),
+    prev90d: rangeMet(raw,iso(addDays(parseDate(lastDate),-179)),iso(addDays(parseDate(lastDate),-90))),
+    mtd: rangeMet(raw,monthStart(lastDate),lastDate),
+    ytd: rangeMet(raw,lastDate.slice(0,4)+"-01-01",lastDate)
+  };
+  const obj=getObj(raw.objectifs||[],lastDate);
+  const alerts=buildAlerts(p,obj);
+  const dq=getDataQuality(p.d1);
+  return{raw,dates,lastDate,d2,periods:p,objectives:obj,alerts,dataQuality:dq,decision:getDecision(p,obj,dq)};
+}
 
-    function decisionBlock(m){
-      const q = m.dataQuality || {};
-      const d = m.decision || {};
-      const cls = q.level === "ok" ? "good" : q.level === "warn" ? "warn" : "bad";
-      return `<div class="decision">
-        <div><div class="decision-title">Décision du jour</div><div class="decision-main">${escapeHtml(d.text || "Rien d'urgent")}</div><div class="ks">${escapeHtml(d.detail || "")}</div></div>
-        <span class="badge ${cls}">${escapeHtml(q.label || "Data à vérifier")}</span>
-      </div>`;
-    }
+function collectDates(raw){
+  const all=[];
+  ["shopify","ga4","ads"].forEach(k=>(raw[k]||[]).forEach(r=>{const d=val(r,"Date");if(isIso(d))all.push(d);}));
+  return[...new Set(all)].sort();
+}
 
-    function buildModel(raw){
-      const dates = collectDates(raw);
-      const lastDate = dates.at(-1) || iso(addDays(new Date(), -1));
-      const d1 = lastDate;
-      const d2 = iso(addDays(parseDate(d1), -1));
-      const periods = {
-        d1: rangeMetrics(raw, d1, d1),
-        d2: rangeMetrics(raw, d2, d2),
-        "7d": rangeMetrics(raw, iso(addDays(parseDate(d1), -6)), d1),
-        prev7d: rangeMetrics(raw, iso(addDays(parseDate(d1), -13)), iso(addDays(parseDate(d1), -7))),
-        "28d": rangeMetrics(raw, iso(addDays(parseDate(d1), -27)), d1),
-        prev28d: rangeMetrics(raw, iso(addDays(parseDate(d1), -55)), iso(addDays(parseDate(d1), -28))),
-        "90d": rangeMetrics(raw, iso(addDays(parseDate(d1), -89)), d1),
-        prev90d: rangeMetrics(raw, iso(addDays(parseDate(d1), -179)), iso(addDays(parseDate(d1), -90))),
-        mtd: rangeMetrics(raw, monthStart(d1), d1),
-        ytd: rangeMetrics(raw, `${d1.slice(0,4)}-01-01`, d1)
-      };
-      const objectives = getCurrentObjectives(raw.objectifs || [], d1);
-      const alerts = buildAlerts(periods, objectives);
-      const dataQuality = getDataQuality(periods.d1);
-      const decision = getDecision(periods, objectives, dataQuality);
-      return { raw, dates, lastDate, d2, periods, objectives, alerts, dataQuality, decision };
-    }
+function rangeMet(raw,start,end){
+  const s=between(raw.shopify||[],start,end);
+  const g=between(raw.ga4||[],start,end);
+  const a=between(raw.ads||[],start,end);
+  const kd=between(raw.klaviyoDaily||[],start,end);
+  const sessions=sum(g,"Sessions")||sum(s,"Sessions");
+  const orders=sum(s,"Orders")||sum(a,"Purchases");
+  const revenue=sum(s,"Revenue")||sum(a,"Purchase value");
+  const costAds=sum(a,"Cost");
+  const revAds=sum(a,"Purchase value");
+  const klav=sum(kd,"Revenue_Total");
+  const pdp=sum(s,"Product page sessions");
+  const atc=sum(s,"Add to cart");
+  const checkout=sum(s,"Checkout started");
+  return{
+    sessions,orders,revenue,
+    aov:safeDiv(revenue,orders),
+    convRate:sessions?orders/sessions*100:null,
+    costAds,revAds,
+    roas:safeDiv(revAds,costAds),
+    cpa:safeDiv(costAds,orders),
+    klaviyo:klav,
+    pdp,atc,checkout,
+    pdpToAtc:pdp?atc/pdp*100:null,
+    atcToCheckout:atc?checkout/atc*100:null,
+    checkoutToOrders:checkout?orders/checkout*100:null,
+    adsByType:adsTypes(a),
+    adsCampaigns:adsCamps(a),
+    channels:channels(g),
+    seoPages:topRows(raw.gscPages||[],"Clicks",10),
+    seoQueries:topRows(raw.gscQueries||[],"Clicks",10)
+  };
+}
 
-    function collectDates(raw){
-      const all = [];
-      ["shopify","ga4","ads"].forEach(key => (raw[key] || []).forEach(r => {
-        const d = val(r,"Date");
-        if(isIso(d)) all.push(d);
-      }));
-      return [...new Set(all)].sort();
-    }
+function adsTypes(rows){
+  const out={};
+  rows.forEach(r=>{
+    const t=normType(val(r,"Campaign type")||val(r,"Type"));
+    if(!out[t])out[t]={cost:0,revenue:0,purchases:0,clicks:0};
+    out[t].cost+=num(val(r,"Cost")||val(r,"Cout"));
+    out[t].revenue+=num(val(r,"Purchase value")||val(r,"Revenue_Ads"));
+    out[t].purchases+=num(val(r,"Purchases")||val(r,"Conversions"));
+    out[t].clicks+=num(val(r,"Clicks")||val(r,"Clics"));
+  });
+  Object.values(out).forEach(v=>v.roas=safeDiv(v.revenue,v.cost));
+  return out;
+}
 
-    function rangeMetrics(raw,start,end){
-      const shopify = between(raw.shopify || [], start, end);
-      const ga4 = between(raw.ga4 || [], start, end);
-      const ads = between(raw.ads || [], start, end);
-      const klaviyoDaily = between(raw.klaviyoDaily || [], start, end);
-      const sessions = sum(ga4,"Sessions") || sum(shopify,"Sessions");
-      const orders = sum(shopify,"Orders") || sum(ads,"Purchases");
-      const revenue = sum(shopify,"Revenue") || sum(ads,"Purchase value");
-      const costAds = sum(ads,"Cost");
-      const revenueAds = sum(ads,"Purchase value");
-      const klaviyoRevenue = sum(klaviyoDaily,"Revenue_Total");
-      const pdp = sum(shopify,"Product page sessions");
-      const atc = sum(shopify,"Add to cart");
-      const checkout = sum(shopify,"Checkout started");
-      return {
-        sessions, orders, revenue,
-        aov: safeDiv(revenue, orders),
-        convRate: sessions ? orders / sessions * 100 : null,
-        costAds, revenueAds,
-        roas: safeDiv(revenueAds, costAds),
-        cpa: safeDiv(costAds, orders),
-        klaviyoRevenue,
-        pdp, atc, checkout, payment: null,
-        pdpToAtc: pdp ? atc / pdp * 100 : null,
-        atcToCheckout: atc ? checkout / atc * 100 : null,
-        checkoutToOrders: checkout ? orders / checkout * 100 : null,
-        adsByType: adsTypes(ads),
-        adsCampaigns: adsCampaigns(ads),
-        channels: channels(ga4),
-        seoQueries: topRows(raw.gscQueries || [], "Clicks", 5),
-        seoPages: topRows(raw.gscPages || [], "Clicks", 5)
-      };
-    }
+function adsCamps(rows){
+  const out={};
+  rows.forEach(r=>{
+    const n=val(r,"Campaign")||val(r,"Campagne")||"Campagne";
+    const t=normType(val(r,"Campaign type")||val(r,"Type"));
+    if(!out[n])out[n]={name:n,type:t,cost:0,revenue:0,purchases:0,clicks:0};
+    out[n].cost+=num(val(r,"Cost")||val(r,"Cout"));
+    out[n].revenue+=num(val(r,"Purchase value")||val(r,"Revenue_Ads"));
+    out[n].purchases+=num(val(r,"Purchases")||val(r,"Conversions"));
+    out[n].clicks+=num(val(r,"Clicks")||val(r,"Clics"));
+  });
+  Object.values(out).forEach(v=>{v.roas=safeDiv(v.revenue,v.cost);v.cpa=safeDiv(v.cost,v.purchases);});
+  return out;
+}
 
-    function adsTypes(rows){
-      const out = {};
-      rows.forEach(r => {
-        const type = normalizeCampaignType(val(r,"Campaign type") || val(r,"Type"));
-        if(!out[type]) out[type] = { cost:0, revenue:0, clicks:0, impressions:0 };
-        out[type].cost += num(val(r,"Cost") || val(r,"Cout"));
-        out[type].revenue += num(val(r,"Purchase value") || val(r,"Revenue_Ads"));
-        out[type].clicks += num(val(r,"Clicks") || val(r,"Clics"));
-        out[type].impressions += num(val(r,"Impressions"));
-      });
-      Object.values(out).forEach(v => v.roas = safeDiv(v.revenue, v.cost));
-      return out;
-    }
+function channels(rows){
+  const out={};
+  rows.forEach(r=>{const c=val(r,"Channel")||val(r,"Canal")||"Autre";out[c]=(out[c]||0)+num(val(r,"Sessions"));});
+  return out;
+}
 
-    function adsCampaigns(rows){
-      const out = {};
-      rows.forEach(r => {
-        const name = val(r,"Campaign") || val(r,"Campagne") || "Campagne sans nom";
-        const type = normalizeCampaignType(val(r,"Campaign type") || val(r,"Type"));
-        if(!out[name]) out[name] = { name, type, cost:0, revenue:0, purchases:0, clicks:0, impressions:0 };
-        out[name].cost += num(val(r,"Cost") || val(r,"Cout"));
-        out[name].revenue += num(val(r,"Purchase value") || val(r,"Revenue_Ads"));
-        out[name].purchases += num(val(r,"Purchases") || val(r,"Conversions"));
-        out[name].clicks += num(val(r,"Clicks") || val(r,"Clics"));
-        out[name].impressions += num(val(r,"Impressions"));
-      });
-      Object.values(out).forEach(v => {
-        v.roas = safeDiv(v.revenue, v.cost);
-        v.cpa = safeDiv(v.cost, v.purchases);
-      });
-      return out;
-    }
+function getObj(rows,date){
+  const month=date.slice(0,7);
+  const row=rows.find(r=>val(r,"Mois")===month)||{};
+  return{ca:num(val(row,"CA_Objectif")),orders:num(val(row,"Commandes_Objectif")),budgetAds:num(val(row,"Budget_Ads_Mensuel")),caAnnual:num(val(row,"CA_Annuel_Objectif")),budgetAnnual:num(val(row,"Budget_Ads_Annuel"))};
+}
 
-    function channels(rows){
-      const out = {};
-      rows.forEach(r => {
-        const channel = val(r,"Channel") || val(r,"Canal") || "Autre";
-        out[channel] = (out[channel] || 0) + num(val(r,"Sessions"));
-      });
-      return out;
-    }
+// ─── VIEWS ────────────────────────────────────────────────────────────────────
+function viewHier(m){
+  return`<div class="hv on" id="v-hier">
+    <div class="sec">— Hier · ${fmtDateLabel(m.lastDate)} vs ${fmtDateLabel(m.d2)}</div>
+    ${kpiSections(m.periods.d1,m.periods.d2)}
+  </div>`;
+}
 
-    function viewHier(m){
-      const p = m.periods.d1, ref = m.periods.d2;
-      return `<div class="hv on" id="v-hier">
-        <div class="sec">— Hier · ${formatDateLabel(m.lastDate)} vs ${formatDateLabel(m.d2)}</div>
-        ${kpiGrid(p, ref)}
-        ${funnelBlock(p, ref)}
-        ${adsDetail(p, ref)}
-      </div>`;
-    }
+function viewPeriod(m,id,title,key,refKey,withSeo=false){
+  const p=m.periods[key],ref=m.periods[refKey];
+  return`<div class="hv" id="v-${id}">
+    <div class="sec">— ${title}</div>
+    ${kpiSections(p,ref)}
+    ${withSeo?seoRows(p)+channelRows(p):""}
+  </div>`;
+}
 
-    function viewPeriod(m,id,title,key,refKey,withSeo=false){
-      const p = m.periods[key], ref = m.periods[refKey];
-      return `<div class="hv" id="v-${id}">
-        <div class="sec">— ${title}</div>
-        ${kpiGrid(p, ref)}
-        ${funnelBlock(p, ref)}
-        ${adsDetail(p, ref)}
-        ${withSeo ? seoBlock(p) + channelBlock(p) : ""}
-      </div>`;
-    }
+function viewMtd(m){
+  const p=m.periods.mtd,o=m.objectives;
+  const dE=Math.max(1,parseDate(m.lastDate).getDate());
+  const dM=new Date(+m.lastDate.slice(0,4),+m.lastDate.slice(5,7),0).getDate();
+  const proj=p.revenue?p.revenue/dE*dM:null;
+  const needed=o.ca&&proj?Math.max(0,o.ca-p.revenue)/Math.max(1,dM-dE):null;
+  return`<div class="hv" id="v-mtd">
+    <div class="sec">— Mois en cours · ${m.lastDate.slice(0,7)} · J${dE}/${dM}</div>
+    <div class="sec-group">💰 Business</div>
+    <div class="kg">
+      ${progCard("CA MTD",money(p.revenue),o.ca?`Obj. ${money(o.ca)}`:"Objectif non renseigné",o.ca?p.revenue/o.ca*100:null,proj?`Projection ${money(proj)}`:"")}
+      ${progCard("Commandes",fmt(p.orders),o.orders?`Obj. ${fmt(o.orders)}`:"Objectif non renseigné",o.orders?p.orders/o.orders*100:null,"")}
+      ${kpiCard("Panier moyen (AOV)",money(p.aov),"","")}
+      ${kpiCard("Conv. Rate",pct(p.convRate),"","")}
+    </div>
+    <div class="sec-group">📈 Publicité</div>
+    <div class="kg">
+      ${progCard("Budget Ads",money(p.costAds),o.budgetAds?`Budget ${money(o.budgetAds)}`:"Budget non renseigné",o.budgetAds?p.costAds/o.budgetAds*100:null,"")}
+      ${kpiCard("ROAS MTD",ratio(p.roas),"","")}
+      ${kpiCard("CPA",money(p.cpa),"","")}
+      ${kpiCard("Rythme requis",needed?money(needed)+"/j":"—",`${Math.max(0,dM-dE)} jours restants`,"")}
+    </div>
+    <div class="sec-group">📧 Email</div>
+    <div class="kg">${kpiCard("Klaviyo MTD",money(p.klaviyo),"Flows + campagnes","")}</div>
+    <div class="sec-group">🛒 Funnel</div>
+    ${funnelBlock(p)}
+  </div>`;
+}
 
-    function viewMtd(m){
-      const p = m.periods.mtd;
-      const obj = m.objectives;
-      const progress = obj.ca ? p.revenue / obj.ca * 100 : null;
-      const daysElapsed = Math.max(1, parseDate(m.lastDate).getDate());
-      const daysMonth = new Date(Number(m.lastDate.slice(0,4)), Number(m.lastDate.slice(5,7)), 0).getDate();
-      const projection = p.revenue ? p.revenue / daysElapsed * daysMonth : null;
-      const needed = obj.ca && projection ? Math.max(0, obj.ca - p.revenue) / Math.max(1, daysMonth - daysElapsed) : null;
-      return `<div class="hv" id="v-mtd">
-        <div class="sec">— Mois en cours · ${m.lastDate.slice(0,7)}</div>
-        <div class="kg">
-          ${progressCard("CA MTD", money(p.revenue), obj.ca ? `Obj. ${money(obj.ca)}` : "Objectif non renseigné", progress, projection ? `Projection ${money(projection)}` : "Projection indisponible")}
-          ${progressCard("Commandes", fmt(p.orders), obj.orders ? `Obj. ${fmt(obj.orders)}` : "Objectif non renseigné", obj.orders ? p.orders / obj.orders * 100 : null, "")}
-          ${progressCard("Budget Ads", money(p.costAds), obj.budgetAds ? `Budget ${money(obj.budgetAds)}` : "Budget non renseigné", obj.budgetAds ? p.costAds / obj.budgetAds * 100 : null, "")}
-          ${kpiCard("ROAS MTD", ratio(p.roas), "", "")}
-          ${kpiCard("Klaviyo MTD", money(p.klaviyoRevenue), "", "")}
-          ${kpiCard("PDP → ATC", pct(p.pdpToAtc), "Objectif 1,5%+", "")}
-          ${kpiCard("ATC → Checkout", pct(p.atcToCheckout), "Objectif 55%+", "")}
-          ${kpiCard("Checkout → Orders", pct(p.checkoutToOrders), "Objectif 35%+", "")}
-          ${kpiCard("Rythme requis", needed ? money(needed)+"/j" : "—", `${Math.max(0, daysMonth-daysElapsed)} jours restants`, "")}
+function viewYtd(m){
+  const p=m.periods.ytd,o=m.objectives;
+  const start=new Date(+m.lastDate.slice(0,4),0,1);
+  const elapsed=Math.max(1,Math.ceil((parseDate(m.lastDate)-start)/86400000)+1);
+  const dY=isLeap(+m.lastDate.slice(0,4))?366:365;
+  const proj=p.revenue?p.revenue/elapsed*dY:null;
+  return`<div class="hv" id="v-ytd">
+    <div class="sec">— Année en cours · ${m.lastDate.slice(0,4)} · ${elapsed}j/${dY}</div>
+    <div class="sec-group">💰 Business</div>
+    <div class="kg">
+      ${progCard("CA YTD",money(p.revenue),o.caAnnual?`Obj. ${money(o.caAnnual)}`:"Objectif non renseigné",o.caAnnual?p.revenue/o.caAnnual*100:null,proj?`Projection ${money(proj)}`:"")}
+      ${kpiCard("Commandes YTD",fmt(p.orders),"","")}
+      ${kpiCard("Panier moyen (AOV)",money(p.aov),"","")}
+    </div>
+    <div class="sec-group">📈 Publicité</div>
+    <div class="kg">
+      ${progCard("Budget Ads YTD",money(p.costAds),o.budgetAnnual?`Budget ${money(o.budgetAnnual)}`:"Non renseigné",o.budgetAnnual?p.costAds/o.budgetAnnual*100:null,"")}
+      ${kpiCard("ROAS YTD",ratio(p.roas),"","")}
+      ${kpiCard("CAC YTD",money(p.cpa),"Coût acquisition client","")}
+    </div>
+    <div class="sec-group">📧 Email</div>
+    <div class="kg">${kpiCard("Klaviyo YTD",money(p.klaviyo),p.revenue?pct(p.klaviyo/p.revenue*100)+" du CA total":"","")}</div>
+    <div class="sec-group">🛒 Funnel</div>
+    ${funnelBlock(p)}
+  </div>`;
+}
+
+// ─── ADS VIEW ─────────────────────────────────────────────────────────────────
+function viewAds(m){
+  const p=m.periods["7d"];
+  const camps=Object.values(p.adsCampaigns||{}).sort((a,b)=>b.cost-a.cost);
+  const totalCost=p.costAds||0;
+  const pmax=p.adsByType["PMAX"]||{};
+  const search=p.adsByType["SEARCH"]||{};
+  const pmaxRec=getAdDecision(pmax);
+  const searchRec=getAdDecision(search);
+  const globalRec=getGlobalAdsRec(p);
+
+  return`<div class="hv" id="v-ads">
+    <div class="sec">— Publicité · Décisions · 7 jours glissants</div>
+
+    <div class="decision" style="margin-bottom:12px">
+      <div>
+        <div class="decision-title">Recommandation globale</div>
+        <div class="decision-main">${escHtml(globalRec.text)}</div>
+        <div class="ks" style="margin-top:5px">${escHtml(globalRec.detail)}</div>
+      </div>
+      <span class="badge ${globalRec.cls}">${escHtml(globalRec.label)}</span>
+    </div>
+
+    <div class="sec-group">📊 Vue globale · 7 jours</div>
+    <div class="kg">
+      ${kpiCard("Dépense totale",money(p.costAds),"","")}
+      ${kpiCard("ROAS global",ratio(p.roas),"","")}
+      ${kpiCard("Commandes Ads",fmt(p.orders),"","")}
+      ${kpiCard("CPA moyen",money(p.cpa),"","")}
+    </div>
+
+    <div class="sec-group">⚖️ PMAX vs Search</div>
+    <div class="vs-block">
+      <div class="vs-grid">
+        <div class="vs-side">
+          <div class="vs-name">Performance Max (PMAX)</div>
+          <div class="vs-kpi"><span class="vs-kl">Dépense</span><span class="vs-kv">${money(pmax.cost)}</span></div>
+          <div class="vs-kpi"><span class="vs-kl">ROAS</span><span class="vs-kv" style="color:${(pmax.roas||0)>=3?"var(--green)":(pmax.roas||0)>=2?"var(--orange)":"var(--red)"}">${ratio(pmax.roas)}</span></div>
+          <div class="vs-kpi"><span class="vs-kl">Achats</span><span class="vs-kv">${fmt(pmax.purchases)}</span></div>
+          <div style="margin-top:8px"><span class="ab ${pmaxRec.abCls}">${pmaxRec.label}</span></div>
         </div>
-        ${funnelBlock(p)}
-      </div>`;
-    }
+        <div class="vs-side">
+          <div class="vs-name">Search</div>
+          <div class="vs-kpi"><span class="vs-kl">Dépense</span><span class="vs-kv">${money(search.cost)}</span></div>
+          <div class="vs-kpi"><span class="vs-kl">ROAS</span><span class="vs-kv" style="color:${(search.roas||0)>=3?"var(--green)":(search.roas||0)>=2?"var(--orange)":"var(--red)"}">${ratio(search.roas)}</span></div>
+          <div class="vs-kpi"><span class="vs-kl">Achats</span><span class="vs-kv">${fmt(search.purchases)}</span></div>
+          <div style="margin-top:8px"><span class="ab ${searchRec.abCls}">${searchRec.label}</span></div>
+        </div>
+      </div>
+    </div>
 
-    function viewYtd(m){
-      const p = m.periods.ytd;
-      const obj = m.objectives;
-      const start = new Date(Number(m.lastDate.slice(0,4)),0,1);
-      const elapsed = Math.max(1, Math.ceil((parseDate(m.lastDate)-start)/86400000)+1);
-      const daysYear = isLeap(Number(m.lastDate.slice(0,4))) ? 366 : 365;
-      const projection = p.revenue ? p.revenue / elapsed * daysYear : null;
-      return `<div class="hv" id="v-ytd">
-        <div class="sec">— Année en cours · ${m.lastDate.slice(0,4)}</div>
-        <div class="kg">
-          ${progressCard("CA YTD", money(p.revenue), obj.caAnnual ? `Obj. ${money(obj.caAnnual)}` : "Objectif non renseigné", obj.caAnnual ? p.revenue / obj.caAnnual * 100 : null, projection ? `Projection ${money(projection)}` : "")}
-          ${kpiCard("Commandes YTD", fmt(p.orders), "", "")}
-          ${progressCard("Budget Ads YTD", money(p.costAds), obj.budgetAnnual ? `Budget ${money(obj.budgetAnnual)}` : "Budget non renseigné", obj.budgetAnnual ? p.costAds / obj.budgetAnnual * 100 : null, "")}
-          ${kpiCard("ROAS YTD", ratio(p.roas), "", "")}
-          ${kpiCard("CAC YTD", money(p.cpa), "", "")}
-          ${kpiCard("Klaviyo YTD", money(p.klaviyoRevenue), p.revenue ? `${pct(p.klaviyoRevenue / p.revenue * 100)} du CA` : "", "")}
-          ${kpiCard("PDP → ATC", pct(p.pdpToAtc), "Objectif 1,5%+", "")}
-          ${kpiCard("ATC → Checkout", pct(p.atcToCheckout), "Objectif 55%+", "")}
-          ${kpiCard("Checkout → Orders", pct(p.checkoutToOrders), "Objectif 35%+", "")}
+    <div class="sec-group">🎯 Décisions par campagne</div>
+    ${camps.length?camps.map(c=>{
+      const rec=getAdDecision(c);
+      const share=totalCost?c.cost/totalCost*100:null;
+      return`<div class="ad-card">
+        <div class="ad-card-header">
+          <span class="ad-decision-badge" style="background:${rec.bg};color:${rec.color}">${rec.label}</span>
+          <span class="ad-card-name">${escHtml(c.name)}</span>
+          <span class="ad-card-type">${escHtml(c.type)}</span>
+        </div>
+        <div class="ad-metrics">
+          <div class="ad-metric"><div class="ad-metric-label">Dépense</div><div class="ad-metric-value">${money(c.cost)}</div></div>
+          <div class="ad-metric"><div class="ad-metric-label">Part budget</div><div class="ad-metric-value">${pct(share)}</div></div>
+          <div class="ad-metric"><div class="ad-metric-label">ROAS</div><div class="ad-metric-value" style="color:${(c.roas||0)>=3?"var(--green)":(c.roas||0)>=2?"var(--orange)":"var(--red)"}">${ratio(c.roas)}</div></div>
+          <div class="ad-metric"><div class="ad-metric-label">Achats</div><div class="ad-metric-value">${fmt(c.purchases)}</div></div>
+          <div class="ad-metric"><div class="ad-metric-label">CPA</div><div class="ad-metric-value">${money(c.cpa)}</div></div>
+        </div>
+        <div class="ad-action">→ ${escHtml(rec.action)}</div>
+      </div>`;
+    }).join(""):`<div class="empty">Aucune donnée campagne sur 7 jours.</div>`}
+
+    <div class="sec-group">🔍 Top requêtes · Search</div>
+    ${topRows(m.raw.searchTerms||[],"Clicks",8).map(r=>`<div class="row"><span class="rn">${escHtml(val(r,"Search term")||val(r,"Query")||"—")}</span><div class="rm"><span class="rs">Clics <span style="color:var(--accent)">${fmt(num(val(r,"Clicks")))}</span></span><span class="rs">Conv. ${fmt(num(val(r,"Conversions")))}</span><span class="rs">Coût ${money(num(val(r,"Cost")))}</span></div></div>`).join("")||`<div class="empty">Pas de données Search Terms disponibles.</div>`}
+  </div>`;
+}
+
+function getAdDecision(c){
+  const roas=c.roas||0, spend=c.cost||0, purchases=c.purchases||0;
+  if(spend<30)return{label:"PEU DE DONNÉES",bg:"rgba(144,139,132,.15)",color:"#908b84",abCls:"bi",action:"Moins de 30€ dépensés sur la période. Attendre plus de données avant de décider."};
+  if(roas>=4&&purchases>=3)return{label:"SCALER ↑",bg:"rgba(76,175,125,.16)",color:"var(--green)",abCls:"bg",action:`ROAS solide à ${ratio(roas)} avec ${fmt(purchases)} achats. Augmenter le budget de 20-30% maximum par semaine.`};
+  if(roas>=3&&purchases>=2)return{label:"MAINTENIR =",bg:"rgba(76,175,125,.10)",color:"var(--green)",abCls:"bg",action:`ROAS correct à ${ratio(roas)}. Garder le budget stable et surveiller 7 jours de plus.`};
+  if(roas>=2)return{label:"ANALYSER ?",bg:"rgba(232,166,76,.18)",color:"var(--orange)",abCls:"bw",action:`ROAS moyen à ${ratio(roas)}. Vérifier les créatifs, les audiences et les pages de destination.`};
+  if(spend>=50&&roas<2)return{label:"COUPER ✕",bg:"rgba(224,92,92,.18)",color:"var(--red)",abCls:"bc",action:`ROAS insuffisant à ${ratio(roas)} pour ${money(spend)} dépensés. Arrêter ou retravailler complètement.`};
+  return{label:"ANALYSER ?",bg:"rgba(232,166,76,.18)",color:"var(--orange)",abCls:"bw",action:"Données insuffisantes ou performances mixtes. Analyser créatifs et ciblage."};
+}
+
+function getGlobalAdsRec(p){
+  const roas=p.roas||0;
+  if(!p.costAds)return{text:"Aucune donnée Ads",detail:"Vérifier la connexion Google Ads.",label:"Données",cls:"warn"};
+  if(roas>=4)return{text:"Scaler le budget",detail:`ROAS global à ${ratio(roas)} sur 7J. Les campagnes sont rentables. Augmenter progressivement.`,label:"Scaler",cls:"good"};
+  if(roas>=3)return{text:"Maintenir le cap",detail:`ROAS à ${ratio(roas)} sur 7J. Performances correctes. Surveiller et optimiser les créatifs.`,label:"Maintenir",cls:"good"};
+  if(roas>=2)return{text:"Analyser et optimiser",detail:`ROAS à ${ratio(roas)} sur 7J. Marge insuffisante pour scaler. Identifier les campagnes qui tirent vers le bas.`,label:"Analyser",cls:"warn"};
+  return{text:"Réduire ou retravailler",detail:`ROAS à ${ratio(roas)} sur 7J. Les campagnes coûtent plus qu'elles ne rapportent. Action urgente requise.`,label:"Critique",cls:"bad"};
+}
+
+// ─── SEO VIEW ─────────────────────────────────────────────────────────────────
+function viewSeo(m){
+  const pages=m.periods["28d"].seoPages;
+  const queries=m.periods["28d"].seoQueries;
+  const totalClicks=pages.reduce((a,r)=>a+num(val(r,"Clicks")),0);
+  const totalImpr=pages.reduce((a,r)=>a+num(val(r,"Impressions")),0);
+  const avgPos=pages.length?pages.reduce((a,r)=>a+num(val(r,"Position")),0)/pages.length:null;
+  const avgCtr=totalImpr?totalClicks/totalImpr*100:null;
+
+  return`<div class="hv" id="v-seo">
+    <div class="sec">— SEO · Analyse & Recommandations · 28 jours</div>
+
+    <div class="sec-group">📊 Vue globale · 28 jours</div>
+    <div class="kg">
+      ${kpiCard("Clics organiques",fmt(totalClicks),"","")}
+      ${kpiCard("Impressions",fmt(totalImpr),"","")}
+      ${kpiCard("CTR moyen",pct(avgCtr),"Obj. >3%","")}
+      ${kpiCard("Position moyenne",avgPos?`${Math.round(avgPos*10)/10}`:"—","Top 5 = excellent","")}
+    </div>
+
+    <div class="sec-group">🎯 Pages · Actions recommandées</div>
+    ${pages.length?pages.map(r=>{
+      const rec=getSeoRec(r);
+      if(!rec)return"";
+      const pos=num(val(r,"Position"));
+      const ctr=num(val(r,"CTR"));
+      const clics=num(val(r,"Clicks"));
+      const impr=num(val(r,"Impressions"));
+      return`<div class="seo-card">
+        <div class="seo-card-header">
+          <span class="seo-card-url">${escHtml(shortUrl(val(r,"Page")))}</span>
+          <span class="ab ${rec.abCls}">${rec.label}</span>
+        </div>
+        <div class="seo-metrics">
+          <span class="seo-metric">Position <strong style="color:${pos<=3?"var(--green)":pos<=10?"var(--orange)":"var(--red)"}">${pos?Math.round(pos*10)/10:"—"}</strong></span>
+          <span class="seo-metric">Clics <strong style="color:var(--accent)">${fmt(clics)}</strong></span>
+          <span class="seo-metric">Impressions ${fmt(impr)}</span>
+          <span class="seo-metric">CTR <strong style="color:${ctr>=3?"var(--green)":ctr>=1?"var(--orange)":"var(--red)"}">${pct(ctr)}</strong></span>
+        </div>
+        <div class="seo-action">→ ${escHtml(rec.action)}</div>
+      </div>`;
+    }).join(""):`<div class="empty">Pas de données GSC Pages disponibles. Vérifier la connexion Google Search Console.</div>`}
+
+    <div class="sec-group">🔍 Top requêtes · 28 jours</div>
+    ${queries.length?queries.map(r=>{
+      const pos=num(val(r,"Position"));
+      const ctr=num(val(r,"CTR"));
+      return`<div class="row">
+        <span class="rn">${escHtml(val(r,"Query")||"—")}</span>
+        <div class="rm">
+          <span class="rs">Pos. <span style="color:${pos<=3?"var(--green)":pos<=10?"var(--orange)":"var(--red)"}">${pos?Math.round(pos*10)/10:"—"}</span></span>
+          <span class="rs">Clics <span style="color:var(--accent)">${fmt(num(val(r,"Clicks")))}</span></span>
+          <span class="rs">CTR <span style="color:${ctr>=3?"var(--green)":"var(--text-sec)"}">${pct(ctr)}</span></span>
         </div>
       </div>`;
-    }
+    }).join(""):`<div class="empty">Pas de données requêtes disponibles.</div>`}
+  </div>`;
+}
 
-    function kpiGrid(p,ref){
-      return `<div class="kg">
-        ${kpiCard("Sessions", fmt(p.sessions), ref ? `Réf. ${fmt(ref.sessions)}` : "", delta(p.sessions, ref?.sessions, true))}
-        ${kpiCard("Commandes", fmt(p.orders), ref ? `Réf. ${fmt(ref.orders)}` : "", delta(p.orders, ref?.orders, true))}
-        ${kpiCard("CA", money(p.revenue), ref ? `Réf. ${money(ref.revenue)}` : "", delta(p.revenue, ref?.revenue, true))}
-        ${kpiCard("AOV", money(p.aov), ref ? `Réf. ${money(ref.aov)}` : "", delta(p.aov, ref?.aov, true))}
-        ${kpiCard("Conversion site", pct(p.convRate), ref ? `Réf. ${pct(ref.convRate)}` : "", delta(p.convRate, ref?.convRate, true, "pt"))}
-        ${kpiCard("PDP → ATC", pct(p.pdpToAtc), ref ? `Réf. ${pct(ref.pdpToAtc)}` : "Objectif 1,5%+", delta(p.pdpToAtc, ref?.pdpToAtc, true, "pt"))}
-        ${kpiCard("ATC → Checkout", pct(p.atcToCheckout), ref ? `Réf. ${pct(ref.atcToCheckout)}` : "Objectif 55%+", delta(p.atcToCheckout, ref?.atcToCheckout, true, "pt"))}
-        ${kpiCard("Checkout → Orders", pct(p.checkoutToOrders), ref ? `Réf. ${pct(ref.checkoutToOrders)}` : "Objectif 35%+", delta(p.checkoutToOrders, ref?.checkoutToOrders, true, "pt"))}
-        ${kpiCard("CPA", money(p.cpa), ref ? `Réf. ${money(ref.cpa)}` : "", delta(p.cpa, ref?.cpa, false))}
-        ${kpiCard("ROAS", ratio(p.roas), ref ? `Réf. ${ratio(ref.roas)}` : "", delta(p.roas, ref?.roas, true))}
-        ${kpiCard("Dépense Ads", money(p.costAds), ref ? `Réf. ${money(ref.costAds)}` : "", delta(p.costAds, ref?.costAds, false))}
-        ${kpiCard("Klaviyo", money(p.klaviyoRevenue), ref ? `Réf. ${money(ref.klaviyoRevenue)}` : "", delta(p.klaviyoRevenue, ref?.klaviyoRevenue, true))}
-      </div>`;
-    }
+function getSeoRec(r){
+  const pos=num(val(r,"Position"));
+  const ctr=num(val(r,"CTR"));
+  const impr=num(val(r,"Impressions"));
+  if(!pos&&!impr)return null;
+  if(pos<=3&&ctr>=3)return{label:"OK ✓",abCls:"bg",action:"Bonne position et bon CTR. Maintenir le contenu à jour et surveiller."};
+  if(pos<=5&&ctr<2)return{label:"AMÉLIORER CTR",abCls:"bw",action:`Position ${Math.round(pos*10)/10} mais CTR seulement ${Math.round(ctr*10)/10}%. Retravaille le title et la méta description pour donner envie de cliquer.`};
+  if(pos>=4&&pos<=10&&impr>100)return{label:"QUICK WIN ⚡",abCls:"bg",action:`Position ${Math.round(pos*10)/10} — proche du top 3 avec ${fmt(impr)} impressions. Enrichis le contenu, optimise le H1 et ajoute des liens internes.`};
+  if(pos>10&&impr>50)return{label:"CONTENU",abCls:"bw",action:`Position ${Math.round(pos*10)/10} hors top 10. Enrichir le contenu, améliorer le maillage interne et les balises.`};
+  if(pos>20)return{label:"RETRAVAILLER",abCls:"bc",action:`Position ${Math.round(pos*10)/10}. Page peu visible. Revoir entièrement le contenu et la stratégie de liens.`};
+  return{label:"SURVEILLER",abCls:"bi",action:`Position ${Math.round(pos*10)/10}. Surveiller l'évolution sur les prochaines semaines.`};
+}
 
-    function kpiCard(label,value,ref,deltaHtml){
-      return `<div class="kc"><div class="kl">${label}</div><div class="kv">${value}</div><div class="kv2">${ref || ""}</div><div class="kd">${deltaHtml || ""}</div></div>`;
-    }
+// ─── LEXIQUE VIEW ─────────────────────────────────────────────────────────────
+function viewLexique(){
+  const terms=[
+    {cat:"💰 Les chiffres business",items:[
+      {term:"CA",short:"Chiffre d'Affaires",def:"L'argent total encaissé sur la période. Si vous vendez 10 masques à 200€, le CA est 2 000€.",ex:"CA hier : 1 498€ → on a encaissé 1 498€ dans la journée."},
+      {term:"Commandes",short:"Nombre de ventes",def:"Le nombre total d'achats effectués sur le site pendant la période.",ex:"7 commandes hier = 7 clients ont acheté."},
+      {term:"AOV",short:"Panier moyen (Average Order Value)",def:"La valeur moyenne d'une commande. CA divisé par le nombre de commandes.",ex:"AOV 214€ = en moyenne, chaque client dépense 214€ par commande."},
+      {term:"Conv. Rate",short:"Taux de conversion",def:"Le pourcentage de visiteurs du site qui finissent par acheter.",ex:"Conv. Rate 1,8% = sur 100 personnes qui visitent le site, 1,8 achètent."},
+      {term:"AOV · Panier moyen",short:"Voir AOV",def:"C'est la même chose qu'AOV, affiché en français.",ex:""}
+    ]},
+    {cat:"📈 La publicité payante",items:[
+      {term:"Coût Ads",short:"Dépense publicitaire",def:"L'argent dépensé en publicités Google sur la période.",ex:"Coût Ads 320€ = 320€ dépensés en pub aujourd'hui."},
+      {term:"ROAS",short:"Retour sur investissement pub",def:"Pour 1€ dépensé en pub, combien ça rapporte. ROAS 4 = 4€ de ventes pour 1€ de pub.",ex:"ROAS 4,68 = excellent. ROAS en dessous de 2 = problème."},
+      {term:"CPA",short:"Coût par acquisition",def:"Combien coûte en publicité l'obtention d'une commande.",ex:"CPA 52€ = pour chaque commande, on a dépensé 52€ en pub."},
+      {term:"PMAX",short:"Performance Max",def:"Un type de campagne Google Ads automatique qui diffuse des pubs sur tous les supports Google (YouTube, Maps, Shopping, Search).",ex:""},
+      {term:"Search",short:"Campagne Google Search",def:"Publicités qui apparaissent quand quelqu'un tape un mot-clé dans Google.",ex:"Quelqu'un tape 'meilleur masque LED visage' → votre pub apparaît."},
+      {term:"Scaler",short:"Augmenter le budget",def:"Quand une pub marche bien (ROAS élevé), on augmente son budget pour vendre encore plus.",ex:"ROAS 5 → on scale : on passe de 100€/j à 130€/j de budget."},
+      {term:"Cut / Couper",short:"Arrêter une campagne",def:"Quand une pub ne rapporte pas assez, on l'arrête pour éviter de perdre de l'argent.",ex:"ROAS 1,2 → on coupe la campagne."}
+    ]},
+    {cat:"📧 L'email marketing",items:[
+      {term:"Klaviyo",short:"Logiciel d'envoi d'emails",def:"Le logiciel utilisé pour envoyer des emails automatiques aux clients (ex: email après abandon panier, email de bienvenue).",ex:"Klaviyo Revenue 312€ = 312€ de ventes générées par les emails."},
+      {term:"Flow",short:"Séquence d'emails automatique",def:"Une série d'emails qui s'envoient automatiquement selon les actions du client.",ex:"Flow 'abandon panier' : si quelqu'un ajoute au panier sans acheter, il reçoit un email de rappel."},
+      {term:"Open Rate",short:"Taux d'ouverture",def:"Le pourcentage de personnes qui ont ouvert l'email reçu.",ex:"Open Rate 28% = sur 100 personnes qui ont reçu l'email, 28 l'ont ouvert."},
+      {term:"Click Rate",short:"Taux de clic",def:"Le pourcentage de personnes qui ont cliqué sur un lien dans l'email.",ex:"Click Rate 3% = sur 100 personnes qui ont ouvert l'email, 3 ont cliqué."}
+    ]},
+    {cat:"🛒 Le parcours d'achat (Funnel)",items:[
+      {term:"Sessions",short:"Visites sur le site",def:"Chaque fois qu'une personne visite le site, ça compte comme une session. Un même visiteur qui revient = 2 sessions.",ex:"756 sessions = 756 visites sur le site hier."},
+      {term:"PDP",short:"Page produit (Product Detail Page)",def:"La page qui décrit le produit Holiaē avec ses photos, son prix, ses bénéfices.",ex:"234 vues PDP = 234 personnes ont regardé la page du masque."},
+      {term:"ATC",short:"Ajout au panier (Add To Cart)",def:"Quand un visiteur clique sur 'Ajouter au panier'. Il n'a pas encore acheté.",ex:"43 ATC = 43 personnes ont mis le produit dans leur panier."},
+      {term:"Checkout",short:"Page de paiement",def:"L'étape où le client entre ses coordonnées et sa carte bleue pour finaliser l'achat.",ex:"18 checkouts = 18 personnes ont commencé à renseigner leur paiement."},
+      {term:"Paiement initié",short:"Paiement en cours",def:"Le client a commencé à entrer ses informations de paiement mais n'a pas encore validé.",ex:""},
+      {term:"Funnel",short:"Entonnoir de vente",def:"Le chemin qu'un visiteur parcourt depuis la visite jusqu'à l'achat. Chaque étape perd des gens : c'est normal, mais on cherche à en perdre le moins possible.",ex:"100 visiteurs → 30 voient le produit → 5 ajoutent au panier → 2 achètent."}
+    ]},
+    {cat:"📅 Les périodes de temps",items:[
+      {term:"Hier / J-1",short:"La journée d'hier",def:"Les données de la journée précédente (votre Sheet se met à jour à 8h chaque matin).",ex:""},
+      {term:"J-2",short:"Avant-hier",def:"La journée d'avant-hier, utilisée pour comparer avec hier.",ex:""},
+      {term:"7J",short:"7 derniers jours",def:"Les 7 dernières journées, comparées aux 7 jours qui précèdent.",ex:""},
+      {term:"MTD",short:"Mois en cours (Month To Date)",def:"Du 1er du mois jusqu'à aujourd'hui. Permet de voir où on en est par rapport à l'objectif du mois.",ex:"MTD au 26 avril = données du 1er au 26 avril."},
+      {term:"28J",short:"28 jours glissants",def:"Les 28 derniers jours, comparés aux 28 jours qui précèdent. Différent du MTD car ça ne repart pas du 1er du mois.",ex:""},
+      {term:"3M",short:"3 mois glissants",def:"Les 90 derniers jours. Utile pour voir les tendances de fond.",ex:""},
+      {term:"YTD",short:"Année en cours (Year To Date)",def:"Du 1er janvier jusqu'à aujourd'hui. Permet de voir l'avancement sur l'objectif annuel.",ex:"YTD au 26 avril 2025 = données du 1er janvier au 26 avril 2025."}
+    ]},
+    {cat:"🔍 Le référencement naturel (SEO)",items:[
+      {term:"SEO",short:"Référencement naturel",def:"Le fait d'apparaître dans Google sans payer. Quand quelqu'un tape 'masque LED visage' et que Holiaē apparaît, c'est du SEO.",ex:""},
+      {term:"Position SEO",short:"Rang dans Google",def:"À quelle place apparaît la page dans les résultats Google. Position 1 = premier résultat. Position 20 = invisible.",ex:"Position 3,2 sur 'meilleur masque LED' = on apparaît en 3ème position en moyenne."},
+      {term:"Impressions",short:"Nombre d'affichages",def:"Combien de fois la page est apparue dans les résultats Google (même si personne n'a cliqué).",ex:""},
+      {term:"CTR",short:"Taux de clic SEO (Click Through Rate)",def:"Le pourcentage de personnes qui ont cliqué sur notre résultat Google par rapport à ceux qui l'ont vu.",ex:"CTR 4% = sur 100 personnes qui ont vu notre lien dans Google, 4 ont cliqué."},
+      {term:"GSC",short:"Google Search Console",def:"L'outil gratuit de Google qui montre comment le site apparaît dans les recherches (positions, clics, requêtes).",ex:""},
+      {term:"Quick Win",short:"Gain rapide en SEO",def:"Une page déjà bien positionnée (4ème-10ème place) qui peut facilement passer dans le top 3 avec quelques améliorations.",ex:"Page en position 6 avec beaucoup d'impressions → Quick Win → optimiser le titre."},
+      {term:"KPI",short:"Indicateur clé de performance",def:"Un chiffre important qu'on surveille pour savoir si le business se porte bien.",ex:"CA, ROAS, Conv. Rate sont des KPIs."},
+      {term:"CAC",short:"Coût d'acquisition client",def:"Combien on dépense en marketing au total pour obtenir un nouveau client.",ex:"CAC 56€ = chaque nouveau client nous coûte 56€ en pub pour l'acquérir."}
+    ]}
+  ];
+  return`<div class="hv" id="v-lex">
+    <div class="sec">— Lexique · Tous les termes expliqués simplement</div>
+    ${terms.map(cat=>`
+      <div class="lex-cat">
+        <div class="sec-group">${escHtml(cat.cat)}</div>
+        ${cat.items.map(item=>`<div class="lex-item">
+          <div class="lex-term">${escHtml(item.term)}</div>
+          <div class="lex-short">${escHtml(item.short)}</div>
+          <div class="lex-def">${escHtml(item.def)}</div>
+          ${item.ex?`<div class="lex-ex">Exemple : ${escHtml(item.ex)}</div>`:""}
+        </div>`).join("")}
+      </div>`).join("")}
+  </div>`;
+}
 
-    function progressCard(label,value,ref,progress,sub){
-      const w = progress == null ? 0 : Math.max(0, Math.min(100, progress));
-      const cls = progress == null ? "gold" : progress < 70 ? "bad" : progress < 90 ? "warn" : "gold";
-      return `<div class="kc"><div class="kl">${label}</div><div class="kv">${value}</div><div class="kd n">${ref}</div>${progress == null ? "" : `<div class="pb"><div class="pf ${cls}" style="width:${w}%"></div></div><div class="ks">${pct(progress)} · ${sub}</div>`}</div>`;
-    }
+// ─── UI COMPONENTS ────────────────────────────────────────────────────────────
+function kpiSections(p,ref){
+  return`
+    <div class="sec-group">💰 Business</div>
+    <div class="kg">
+      ${kpiCard("CA",money(p.revenue),ref?`Réf. ${money(ref.revenue)}`:"",delta(p.revenue,ref?.revenue,true))}
+      ${kpiCard("Commandes",fmt(p.orders),ref?`Réf. ${fmt(ref.orders)}`:"",delta(p.orders,ref?.orders,true))}
+      ${kpiCard("Panier moyen (AOV)",money(p.aov),ref?`Réf. ${money(ref.aov)}`:"",delta(p.aov,ref?.aov,true))}
+    </div>
+    <div class="sec-group">📈 Acquisition</div>
+    <div class="kg">
+      ${kpiCard("Sessions",fmt(p.sessions),ref?`Réf. ${fmt(ref.sessions)}`:"",delta(p.sessions,ref?.sessions,true))}
+      ${kpiCard("Conv. Rate",pct(p.convRate),ref?`Réf. ${pct(ref.convRate)}`:"",delta(p.convRate,ref?.convRate,true,"pt"))}
+      ${kpiCard("CPA",money(p.cpa),ref?`Réf. ${money(ref.cpa)}`:"",delta(p.cpa,ref?.cpa,false))}
+      ${kpiCard("ROAS",ratio(p.roas),ref?`Réf. ${ratio(ref.roas)}`:"",delta(p.roas,ref?.roas,true))}
+      ${kpiCard("Dépense Ads",money(p.costAds),ref?`Réf. ${money(ref.costAds)}`:"",delta(p.costAds,ref?.costAds,false))}
+    </div>
+    <div class="sec-group">📧 Email · Klaviyo</div>
+    <div class="kg">
+      ${kpiCard("Klaviyo Revenue",money(p.klaviyo),ref?`Réf. ${money(ref.klaviyo)}`:"",delta(p.klaviyo,ref?.klaviyo,true))}
+    </div>
+    <div class="sec-group">🛒 Funnel · Taux de passage</div>
+    ${funnelBlock(p,ref)}
+  `;
+}
 
-    function funnelBlock(p){
-      const steps = [
-        ["Sessions", p.sessions, 52, ""],
-        ["Vues PDP", p.pdp, 38, p.sessions ? `${pct(p.pdp / p.sessions * 100)} / sessions` : ""],
-        ["ATC", p.atc, 24, p.pdp ? `${pct(p.atc / p.pdp * 100)} / PDP` : ""],
-        ["Checkout", p.checkout, 14, p.atc ? `${pct(p.checkout / p.atc * 100)} / ATC` : ""],
-        ["Commandes", p.orders, 8, p.checkout ? `${pct(p.orders / p.checkout * 100)} / checkout` : ""]
-      ];
-      const hasData = steps.some(s => s[1]);
-      if(!hasData) return `<div class="sec">— Funnel</div><div class="empty">Funnel incomplet : Shopify ne remonte pas encore Sessions / PDP / ATC / Checkout. À brancher via GA4 ecommerce events.</div>`;
-      return `<div class="sec">— Funnel PDP</div><div class="funnel">${steps.map(s => `<div class="fstep"><div class="fl">${s[0]}</div><div class="fv">${fmt(s[1])}</div><div class="fs">${s[3] || ""}</div><div class="fb" style="height:${s[2]}px"></div></div>`).join("")}</div><div class="empty">Note : PDP Views = événements GA4 view_item. Une même session peut générer plusieurs vues produit.</div>`;
-    }
+function kpiCard(label,value,ref,dh){
+  return`<div class="kc"><div class="kl">${label}</div><div class="kv">${value}</div><div class="kv2">${ref||""}</div><div class="kd">${dh||""}</div></div>`;
+}
 
-    function adsDetail(p,ref){
-      const totalCost = p.costAds || 0;
-      const rows = Object.values(p.adsCampaigns || {})
-        .sort((a,b) => b.cost - a.cost)
-        .slice(0,8);
-      return `<div class="sec">— Google Ads · campagnes</div>${rows.map(cur => {
-        const old = ref?.adsCampaigns?.[cur.name] || {};
-        const budgetShare = totalCost ? cur.cost / totalCost * 100 : null;
-        return `<div class="row"><span class="rn">${escapeHtml(cur.name)}</span><div class="rm"><span class="rs">${escapeHtml(cur.type)}</span><span class="rs">Coût <span style="color:var(--accent)">${money(cur.cost)}</span></span><span class="rs">Achats <span style="color:var(--accent)">${fmt(cur.purchases)}</span></span><span class="rs">Valeur <span style="color:var(--accent)">${money(cur.revenue)}</span></span><span class="rs">CPA ${money(cur.cpa)}</span><span class="rs">ROAS <span class="${(cur.roas||0) >= (old.roas||0) ? "g" : "r"}">${ratio(cur.roas)}</span></span><span class="rs">Budget ${pct(budgetShare)}</span></div></div>`;
-      }).join("") || `<div class="empty">Aucune donnée Ads sur cette période.</div>`}`;
-    }
+function progCard(label,value,ref,progress,sub){
+  const w=progress==null?0:Math.max(0,Math.min(100,progress));
+  const cls=progress==null?"gold":progress<70?"bad":progress<90?"warn":"gold";
+  return`<div class="kc"><div class="kl">${label}</div><div class="kv">${value}</div><div class="kd n">${ref}</div>${progress==null?"":`<div class="pb"><div class="pf ${cls}" style="width:${w}%"></div></div><div class="ks">${pct(progress)} · ${sub}</div>`}</div>`;
+}
 
-    function klaviyoSummary(rows){
-      const out = {
-        revenue: 0,
-        flowRevenue: 0,
-        campaignRevenue: 0,
-        recipients: 0,
-        weightedOpen: 0,
-        weightedClick: 0,
-        weightedUnsub: 0,
-        top: []
-      };
-      rows.forEach(r => {
-        const type = String(val(r,"Type") || "").toLowerCase();
-        const name = val(r,"Name") || "Klaviyo";
-        const revenue = num(val(r,"Revenue"));
-        const recipients = num(val(r,"Recipients"));
-        out.revenue += revenue;
-        out.recipients += recipients;
-        out.weightedOpen += recipients * num(val(r,"Open rate"));
-        out.weightedClick += recipients * num(val(r,"Click rate"));
-        out.weightedUnsub += recipients * num(val(r,"Unsubscribe rate"));
-        if(type === "flow") out.flowRevenue += revenue;
-        if(type === "campaign") out.campaignRevenue += revenue;
-        if(revenue > 0) out.top.push({ name, type: type || "crm", revenue });
-      });
-      out.openRate = out.recipients ? out.weightedOpen / out.recipients * 100 : null;
-      out.clickRate = out.recipients ? out.weightedClick / out.recipients * 100 : null;
-      out.unsubRate = out.recipients ? out.weightedUnsub / out.recipients * 100 : null;
-      out.top = out.top.sort((a,b) => b.revenue - a.revenue).slice(0,4);
-      return out;
-    }
+function funnelBlock(p){
+  const steps=[
+    ["Sessions",p.sessions,52,""],
+    ["Vues PDP",p.pdp,38,p.sessions&&p.pdp?pct(p.pdp/p.sessions*100)+" ses.":""],
+    ["ATC",p.atc,24,p.pdp&&p.atc?pct(p.atc/p.pdp*100)+" PDP":""],
+    ["Checkout",p.checkout,14,p.atc&&p.checkout?pct(p.checkout/p.atc*100)+" ATC":""],
+    ["Commandes",p.orders,8,p.checkout&&p.orders?pct(p.orders/p.checkout*100)+" chk":""]
+  ];
+  if(!steps.some(s=>s[1]))return`<div class="empty">Funnel indisponible : données Shopify (Sessions / PDP / ATC / Checkout) non remontées.</div>`;
+  return`<div class="funnel">${steps.map(s=>`<div class="fstep"><div class="fl">${s[0]}</div><div class="fv">${fmt(s[1])}</div><div class="fs">${s[3]}</div><div class="fb" style="height:${s[2]}px"></div></div>`).join("")}</div>`;
+}
 
-    function klaviyoBlock(k){
-      if(!k || !k.recipients){
-        return `<div class="sec">— Klaviyo 30 jours</div><div class="empty">Klaviyo non synchronisé ou données indisponibles.</div>`;
-      }
-      const top = k.top.length
-        ? k.top.map(item => `<div class="row"><span class="rn">${escapeHtml(item.name)}</span><div class="rm"><span class="rs">${escapeHtml(item.type)}</span><span class="rs"><span style="color:var(--accent)">${money(item.revenue)}</span></span></div></div>`).join("")
-        : `<div class="empty">Aucun revenu CRM attribué dans le rapport Klaviyo 30 jours.</div>`;
-      return `<div class="sec">— Klaviyo 30 jours</div>
-        <div class="kg">
-          ${kpiCard("Revenue CRM", money(k.revenue), "Flows + campagnes", "")}
-          ${kpiCard("Flows", money(k.flowRevenue), "", "")}
-          ${kpiCard("Campagnes", money(k.campaignRevenue), "", "")}
-          ${kpiCard("Open rate", pct(k.openRate), `${fmt(k.recipients)} destinataires`, "")}
-          ${kpiCard("Click rate", pct(k.clickRate), "", "")}
-          ${kpiCard("Unsub rate", pct(k.unsubRate), "", "")}
-        </div>
-        ${top}`;
-    }
+function seoRows(p){
+  return`<div class="sec-group">🔍 Top pages SEO</div>${p.seoPages.map(r=>`<div class="row"><span class="rn">${escHtml(shortUrl(val(r,"Page")))}</span><div class="rm"><span class="rs">Pos. <span style="color:var(--accent)">${ratio(num(val(r,"Position")))}</span></span><span class="rs">Clics ${fmt(num(val(r,"Clicks")))}</span><span class="rs">CTR ${pct(num(val(r,"CTR")))}</span></div></div>`).join("")||`<div class="empty">Pas de données SEO.</div>`}`;
+}
 
-    function seoBlock(p){
-      const queries = p.seoQueries.map(r => `<div class="row"><span class="rn">${escapeHtml(val(r,"Query"))}</span><div class="rm"><span class="rs">Clics <span style="color:var(--accent)">${fmt(num(val(r,"Clicks")))}</span></span><span class="rs">Pos. ${ratio(num(val(r,"Position")))}</span></div></div>`).join("");
-      const pages = p.seoPages.map(r => `<div class="row"><span class="rn">${escapeHtml(shortUrl(val(r,"Page")))}</span><div class="rm"><span class="rs">Clics <span style="color:var(--accent)">${fmt(num(val(r,"Clicks")))}</span></span><span class="rs">Pos. ${ratio(num(val(r,"Position")))}</span></div></div>`).join("");
-      return `<div class="sec">— SEO · top requêtes</div>${queries || `<div class="empty">Données requêtes insuffisantes.</div>`}<div class="sec">— SEO · top pages</div>${pages || `<div class="empty">Données pages insuffisantes.</div>`}`;
-    }
+function channelRows(p){
+  const total=Object.values(p.channels).reduce((a,b)=>a+b,0);
+  return`<div class="sec-group">🌐 Trafic par canal</div>${Object.entries(p.channels).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n,s])=>`<div class="row"><span class="rn">${escHtml(n)}</span><div class="rm"><span class="rs">${fmt(s)} sessions</span><span class="rs">${pct(total?s/total*100:null)}</span></div></div>`).join("")||`<div class="empty">Aucune donnée canal.</div>`}`;
+}
 
-    function channelBlock(p){
-      const total = Object.values(p.channels).reduce((a,b)=>a+b,0);
-      return `<div class="sec">— Trafic par canal</div>${Object.entries(p.channels).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([name,s]) => `<div class="row"><span class="rn">${escapeHtml(name)}</span><div class="rm"><span class="rs">${fmt(s)} sessions</span><span class="rs">${pct(total ? s/total*100 : null)}</span></div></div>`).join("") || `<div class="empty">Aucune donnée canal.</div>`}`;
-    }
+function viewAlerts(m){
+  return`<div class="hv" id="v-alrt">
+    <div class="sec">— Alertes actives</div>
+    ${m.alerts.length?m.alerts.map(a=>`<div class="al"><div class="ad ${a.level}"></div><div style="flex:1"><div class="at">${a.title}</div><div class="as">${a.body}</div></div><span class="ab ${a.level==="c"?"bc":a.level==="w"?"bw":"bi"}">${a.label}</span></div>`).join(""):`<div class="empty" style="text-align:center;font-size:14px">Tout est dans les clous ✦</div>`}
+  </div>`;
+}
 
-    function viewAlerts(m){
-      return `<div class="hv" id="v-alrt"><div class="sec">— Alertes actives</div>${m.alerts.length ? m.alerts.map(alert => `<div class="al"><div class="ad ${alert.level}"></div><div style="flex:1"><div class="at">${alert.title}</div><div class="as">${alert.body}</div></div><span class="ab ${alert.level === "c" ? "bc" : alert.level === "w" ? "bw" : "bi"}">${alert.label}</span></div>`).join("") : `<div class="empty">Tout est dans les clous ✦</div>`}</div>`;
-    }
+// ─── ALERTS ───────────────────────────────────────────────────────────────────
+function buildAlerts(p,o){
+  const a=[];
+  const d1=p.d1,s7=p["7d"],p7=p.prev7d,mtd=p.mtd;
+  const avg7Orders=s7.orders?s7.orders/7:null;
+  const avg7Rev=s7.revenue?s7.revenue/7:null;
+  if(!d1.sessions&&!d1.orders)a.push({level:"c",label:"Data",title:"Données Shopify manquantes",body:"Sessions et commandes à zéro sur J-1. Vérifier la connexion API Shopify."});
+  if(avg7Orders&&d1.orders<avg7Orders*.7)a.push({level:"c",label:"Critique",title:"Commandes en chute",body:`Hier ${fmt(d1.orders)} commandes vs moyenne 7J ${fmt(avg7Orders)}/j (−${pct((1-d1.orders/avg7Orders)*100)}).`});
+  if(avg7Rev&&d1.revenue<avg7Rev*.7)a.push({level:"c",label:"Critique",title:"CA en chute",body:`Hier ${money(d1.revenue)} vs moyenne 7J ${money(avg7Rev)}/j.`});
+  if(d1.roas&&s7.roas&&d1.roas<s7.roas*.65)a.push({level:"c",label:"Ads",title:"ROAS en chute",body:`ROAS hier ${ratio(d1.roas)} vs moyenne 7J ${ratio(s7.roas)}.`});
+  if(s7.pdpToAtc!=null&&s7.pdpToAtc<1)a.push({level:"c",label:"CRO",title:"PDP → ATC trop faible",body:`Taux d'ajout panier 7J : ${pct(s7.pdpToAtc)}. Objectif : 1,5%+. Retravailler la page produit.`});
+  if(o.ca){
+    const dE=Math.max(1,new Date().getDate()-1);
+    const dM=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate();
+    const proj=mtd.revenue?mtd.revenue/dE*dM:null;
+    if(proj&&proj<o.ca*.85)a.push({level:"c",label:"MTD",title:"Projection MTD insuffisante",body:`Projection fin de mois ${money(proj)} vs objectif ${money(o.ca)} → écart ${money(o.ca-proj)}.`});
+  }
+  if(s7.convRate&&p7.convRate&&s7.convRate<p7.convRate*.85)a.push({level:"w",label:"Warning",title:"Taux de conversion en baisse",body:`Conv. rate 7J ${pct(s7.convRate)} vs ${pct(p7.convRate)} semaine précédente.`});
+  if(avg7Orders&&d1.orders<avg7Orders*.85&&d1.orders>=avg7Orders*.7)a.push({level:"w",label:"Warning",title:"Commandes en légère baisse",body:`Hier ${fmt(d1.orders)} vs moyenne 7J ${fmt(avg7Orders)}/j.`});
+  if(s7.atcToCheckout!=null&&s7.atcToCheckout<50)a.push({level:"w",label:"Panier",title:"ATC → Checkout faible",body:`${pct(s7.atcToCheckout)} des ajouts panier arrivent au checkout. Vérifier friction panier et livraison.`});
+  if(s7.checkoutToOrders!=null&&s7.checkoutToOrders<30)a.push({level:"w",label:"Checkout",title:"Checkout → Commandes faible",body:`${pct(s7.checkoutToOrders)} des checkouts aboutissent à une commande. Vérifier moyens de paiement.`});
+  if(o.budgetAds){
+    const dE=Math.max(1,new Date().getDate()-1);
+    const dM=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate();
+    const normal=o.budgetAds*(dE/dM);
+    if(mtd.costAds>normal*1.2)a.push({level:"w",label:"Budget",title:"Budget Ads consommé trop vite",body:`Dépense MTD ${money(mtd.costAds)} vs rythme attendu ${money(normal)}.`});
+    if(mtd.costAds&&mtd.costAds<normal*.7)a.push({level:"i",label:"Budget",title:"Budget Ads sous-consommé",body:`Dépense MTD ${money(mtd.costAds)} vs rythme attendu ${money(normal)}.`});
+  }
+  const srch=s7.adsByType["SEARCH"]||{},pmx=s7.adsByType["PMAX"]||{};
+  if(srch.roas&&pmx.roas&&pmx.roas<srch.roas*.6)a.push({level:"w",label:"Ads",title:"Search surperforme PMAX",body:`Search ROAS ${ratio(srch.roas)} vs PMAX ${ratio(pmx.roas)}. Envisager rééquilibrage budget.`});
+  if(s7.pdpToAtc!=null&&s7.pdpToAtc>=1.5&&s7.pdpToAtc<2)a.push({level:"i",label:"Info",title:"PDP → ATC dans les clous",body:`Taux ajout panier 7J : ${pct(s7.pdpToAtc)}. Continue à renforcer la preuve sociale.`});
+  if(o.ca){
+    const dE=Math.max(1,new Date().getDate()-1);
+    const dM=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate();
+    const proj=mtd.revenue?mtd.revenue/dE*dM:null;
+    if(proj&&proj>=o.ca*.85&&proj<o.ca*.95)a.push({level:"i",label:"Info",title:"Projection MTD légèrement en retard",body:`Projection ${money(proj)} vs objectif ${money(o.ca)} (${pct(proj/o.ca*100)}).`});
+  }
+  return a.slice(0,12);
+}
 
-    function getDataQuality(d1){
-      const missing = [];
-      if(!d1.sessions) missing.push("sessions");
-      if(!d1.pdp) missing.push("PDP");
-      if(!d1.atc) missing.push("ATC");
-      if(!d1.costAds) missing.push("Ads");
-      if(!d1.klaviyoRevenue) missing.push("Klaviyo");
-      if(!missing.length) return { level:"ok", label:"Data OK" };
-      if(missing.length <= 2) return { level:"warn", label:"Data partielle : " + missing.join(", ") };
-      return { level:"bad", label:"Data à vérifier" };
-    }
+function getDataQuality(d1){
+  const miss=[];
+  if(!d1.sessions)miss.push("sessions");
+  if(!d1.orders)miss.push("commandes");
+  if(!d1.costAds)miss.push("Ads");
+  if(!d1.klaviyo)miss.push("Klaviyo");
+  if(!miss.length)return{level:"ok",label:"Data OK"};
+  if(miss.length<=2)return{level:"warn",label:"Data partielle : "+miss.join(", ")};
+  return{level:"bad",label:"Data à vérifier"};
+}
 
-    function getDecision(periods,obj,dataQuality){
-      const d1 = periods.d1;
-      const s7 = periods["7d"];
-      const p7 = periods.prev7d;
-      if(dataQuality.level === "bad") return { text:"Priorité data", detail:"Trop de sources sont vides sur J-1. Vérifier les syncs avant décision business." };
-      if(s7.pdpToAtc != null && s7.pdpToAtc < 1) return { text:"Priorité PDP", detail:`PDP → ATC à ${pct(s7.pdpToAtc)} sur 7J. Le produit ne pousse pas assez à l'ajout panier.` };
-      if(s7.atcToCheckout != null && s7.atcToCheckout < 50) return { text:"Priorité panier", detail:`ATC → Checkout à ${pct(s7.atcToCheckout)}. Il y a une friction entre panier et checkout.` };
-      if(s7.checkoutToOrders != null && s7.checkoutToOrders < 30) return { text:"Priorité checkout", detail:`Checkout → Commandes à ${pct(s7.checkoutToOrders)}. Le paiement ou la réassurance bloque.` };
-      if(s7.roas && d1.roas && d1.roas < s7.roas * .65) return { text:"Priorité Ads", detail:`ROAS hier ${ratio(d1.roas)} vs moyenne 7J ${ratio(s7.roas)}.` };
-      if(s7.convRate && p7.convRate && s7.convRate < p7.convRate * .85) return { text:"Priorité conversion", detail:`Conversion site en baisse : ${pct(s7.convRate)} vs ${pct(p7.convRate)}.` };
-      return { text:"Rien d'urgent", detail:"Surveiller PDP → ATC et arbitrage budget Ads." };
-    }
+function getDecision(p,o,dq){
+  const d1=p.d1,s7=p["7d"],p7=p.prev7d;
+  if(dq.level==="bad")return{text:"Priorité data",detail:"Trop de sources vides. Vérifier les syncs avant décision business."};
+  if(s7.pdpToAtc!=null&&s7.pdpToAtc<1)return{text:"Priorité page produit",detail:`PDP → ATC à ${pct(s7.pdpToAtc)} sur 7J. La page produit ne convertit pas assez en ajouts panier.`};
+  if(s7.atcToCheckout!=null&&s7.atcToCheckout<50)return{text:"Priorité panier",detail:`ATC → Checkout à ${pct(s7.atcToCheckout)}. Friction entre le panier et le checkout.`};
+  if(s7.checkoutToOrders!=null&&s7.checkoutToOrders<30)return{text:"Priorité checkout",detail:`Checkout → Commandes à ${pct(s7.checkoutToOrders)}. Le paiement ou la réassurance bloque.`};
+  if(d1.roas&&s7.roas&&d1.roas<s7.roas*.65)return{text:"Priorité publicité",detail:`ROAS hier ${ratio(d1.roas)} vs moyenne 7J ${ratio(s7.roas)}. Vérifier les campagnes.`};
+  if(s7.convRate&&p7.convRate&&s7.convRate<p7.convRate*.85)return{text:"Priorité conversion",detail:`Conv. rate en baisse : ${pct(s7.convRate)} vs ${pct(p7.convRate)} semaine précédente.`};
+  return{text:"Tout roule ✦",detail:"Surveiller PDP → ATC et équilibre budget PMAX / Search."};
+}
 
-    function buildAlerts(periods,obj){
-      const a = [];
-      const d1 = periods.d1, s7 = periods["7d"], p7 = periods.prev7d, mtd = periods.mtd;
-      const avgOrders7 = s7.orders ? s7.orders / 7 : null;
-      const avgRevenue7 = s7.revenue ? s7.revenue / 7 : null;
-      if(avgOrders7 && d1.orders < avgOrders7 * .7) a.push({level:"c",label:"Critique",title:"Commandes en chute",body:`Hier ${fmtZero(d1.orders)} commandes vs moyenne 7J ${fmtOne(avgOrders7)}/jour.`});
-      if(avgRevenue7 && d1.revenue < avgRevenue7 * .7) a.push({level:"c",label:"Critique",title:"CA en chute",body:`Hier ${moneyZero(d1.revenue)} vs moyenne 7J ${money(avgRevenue7)}/jour.`});
-      if(s7.convRate && p7.convRate && s7.convRate < p7.convRate * .85) a.push({level:"w",label:"Warning",title:"Conversion en baisse",body:`Conv. rate 7J ${pct(s7.convRate)} vs ${pct(p7.convRate)} semaine précédente.`});
-      if(s7.roas && d1.roas && d1.roas < s7.roas * .65) a.push({level:"c",label:"Ads",title:"ROAS en chute",body:`ROAS hier ${ratio(d1.roas)} vs moyenne 7J ${ratio(s7.roas)}.`});
-      if(s7.pdpToAtc != null && s7.pdpToAtc < 1) a.push({level:"c",label:"CRO",title:"PDP → ATC trop faible",body:`PDP → ATC 7J à ${pct(s7.pdpToAtc)}. Priorité : hero, preuve sociale, offre, CTA.`});
-      else if(s7.pdpToAtc != null && s7.pdpToAtc < 1.5) a.push({level:"w",label:"CRO",title:"PDP → ATC sous objectif",body:`PDP → ATC 7J à ${pct(s7.pdpToAtc)} vs objectif 1,5%+.`});
-      else if(s7.pdpToAtc != null && s7.pdpToAtc >= 1.5) a.push({level:"i",label:"CRO",title:"PDP commence à accrocher",body:`PDP → ATC 7J à ${pct(s7.pdpToAtc)}. Continuer à renforcer la preuve.`});
-      if(s7.atcToCheckout != null && s7.atcToCheckout < 50) a.push({level:"w",label:"Panier",title:"ATC → Checkout faible",body:`ATC → Checkout 7J à ${pct(s7.atcToCheckout)}. Vérifier panier, réassurance, livraison et moyens de paiement.`});
-      if(s7.checkoutToOrders != null && s7.checkoutToOrders < 30) a.push({level:"w",label:"Checkout",title:"Checkout → Commandes faible",body:`Checkout → Commandes 7J à ${pct(s7.checkoutToOrders)}. Vérifier paiement et friction checkout.`});
-      if(obj.ca){
-        const daysElapsed = Math.max(1, new Date().getDate() - 1);
-        const daysMonth = new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).getDate();
-        const projection = mtd.revenue ? mtd.revenue / daysElapsed * daysMonth : null;
-        if(projection && projection < obj.ca * .85) a.push({level:"c",label:"MTD",title:"Projection MTD insuffisante",body:`Projection ${money(projection)} vs objectif ${money(obj.ca)}.`});
-      }
-      if(obj.budgetAds){
-        const daysElapsed = Math.max(1, new Date().getDate() - 1);
-        const daysMonth = new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).getDate();
-        const normalSpend = obj.budgetAds * (daysElapsed / daysMonth);
-        if(mtd.costAds > normalSpend * 1.2) a.push({level:"w",label:"Budget",title:"Budget Ads consommé trop vite",body:`Dépense MTD ${money(mtd.costAds)} vs rythme attendu ${money(normalSpend)}.`});
-        if(mtd.costAds && mtd.costAds < normalSpend * .7) a.push({level:"i",label:"Budget",title:"Budget Ads sous-consommé",body:`Dépense MTD ${money(mtd.costAds)} vs rythme attendu ${money(normalSpend)}.`});
-      }
-      const search = s7.adsByType.SEARCH || {};
-      const pmax = s7.adsByType.PMAX || {};
-      if(search.roas && pmax.roas && pmax.roas < search.roas * .6) a.push({level:"w",label:"Ads",title:"Search surperforme PMAX",body:`Search ROAS ${ratio(search.roas)} vs PMAX ${ratio(pmax.roas)}. Envisager rééquilibrage budget.`});
-      return a.slice(0,10);
-    }
-
-    function getCurrentObjectives(rows,date){
-      const month = date.slice(0,7);
-      const row = rows.find(r => val(r,"Mois") === month) || {};
-      return {
-        ca: num(val(row,"CA_Objectif")),
-        orders: num(val(row,"Commandes_Objectif")),
-        budgetAds: num(val(row,"Budget_Ads_Mensuel")),
-        caAnnual: num(val(row,"CA_Annuel_Objectif")),
-        budgetAnnual: num(val(row,"Budget_Ads_Annuel"))
-      };
-    }
-
-    function between(rows,start,end){return rows.filter(r => isIso(val(r,"Date")) && val(r,"Date") >= start && val(r,"Date") <= end)}
-    function topRows(rows,field,limit){return [...rows].sort((a,b)=>num(val(b,field))-num(val(a,field))).slice(0,limit)}
-    function val(row,name){return row?.[name] ?? ""}
-    function sum(rows,field){return rows.reduce((a,r)=>a+num(val(r,field)),0)}
-    function num(v){if(v==null || v==="") return 0; const n = Number(String(v).replace(/\s/g,"").replace(",", ".")); return Number.isFinite(n) ? n : 0}
-    function safeDiv(a,b){return b ? a/b : null}
-    function money(v){return v ? eur.format(v) : "—"}
-    function moneyZero(v){return v == null || !Number.isFinite(v) ? "—" : eur.format(v)}
-    function fmt(v){return v ? nf.format(Math.round(v)) : "—"}
-    function fmtZero(v){return v == null || !Number.isFinite(v) ? "—" : nf.format(Math.round(v))}
-    function fmtOne(v){return v == null || !Number.isFinite(v) ? "—" : nf.format(Math.round(v*10)/10)}
-    function ratio(v){return v ? nf.format(Math.round(v*100)/100) : "—"}
-    function pct(v){return v == null || !Number.isFinite(v) ? "—" : `${nf.format(Math.round(v*10)/10)}%`}
-    function delta(cur,old,positiveUp=true,unit=""){
-      if(cur == null || old == null || !old) return `<span class="n">—</span>`;
-      const raw = unit === "pt" ? cur - old : (cur-old)/Math.abs(old)*100;
-      const good = positiveUp ? raw >= 0 : raw <= 0;
-      const arrow = raw >= 0 ? "▲" : "▼";
-      return `<span class="${good ? "g" : "r"}">${arrow} ${unit === "pt" ? `${Math.round(raw*10)/10}pt` : pct(Math.abs(raw))}</span>`;
-    }
-    function normalizeCampaignType(type){
-      const t = String(type || "").toUpperCase();
-      if(t.includes("PERFORMANCE_MAX") || t.includes("PMAX")) return "PMAX";
-      if(t.includes("SEARCH")) return "SEARCH";
-      if(t.includes("BRAND")) return "BRAND";
-      return t || "OTHER";
-    }
-    function parseDate(s){const [y,m,d] = String(s).slice(0,10).split("-").map(Number); return new Date(y,m-1,d)}
-    function addDays(d,n){const x = new Date(d); x.setDate(x.getDate()+n); return x}
-    function iso(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
-    function monthStart(d){return `${d.slice(0,7)}-01`}
-    function isIso(s){return /^\d{4}-\d{2}-\d{2}$/.test(String(s || ""))}
-    function isLeap(y){return y%4===0 && (y%100!==0 || y%400===0)}
-    function formatDateLabel(d){return isIso(d) ? new Date(`${d}T12:00:00`).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"}) : "Données non datées"}
-    function shortUrl(url){
-      try{
-        const u = new URL(String(url));
-        return u.pathname.replace(/^\/|\/$/g,"") || u.hostname;
-      }catch{
-        return String(url || "");
-      }
-    }
-    function escapeHtml(s){return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-    function sw(id,btn){
-      document.querySelectorAll(".hv").forEach(v=>v.classList.remove("on"));
-      document.querySelectorAll(".ht").forEach(t=>t.classList.remove("on"));
-      document.getElementById("v-"+id).classList.add("on");
-      btn.classList.add("on");
-    }
-  </script>
+// ─── UTILITIES ────────────────────────────────────────────────────────────────
+function between(rows,s,e){return rows.filter(r=>isIso(val(r,"Date"))&&val(r,"Date")>=s&&val(r,"Date")<=e)}
+function topRows(rows,field,limit){return[...rows].sort((a,b)=>num(val(b,field))-num(val(a,field))).slice(0,limit)}
+function val(row,name){return row?.[name]??""}
+function sum(rows,field){return rows.reduce((a,r)=>a+num(val(r,field)),0)}
+function num(v){if(v==null||v==="")return 0;const n=Number(String(v).replace(/\s/g,"").replace(",","."));return Number.isFinite(n)?n:0}
+function safeDiv(a,b){return b?a/b:null}
+function money(v){return v?EUR.format(v):"—"}
+function fmt(v){return v?NF.format(Math.round(v)):"—"}
+function ratio(v){return v?NF.format(Math.round(v*100)/100):"—"}
+function pct(v){return v==null||!Number.isFinite(v)?"—":`${NF.format(Math.round(v*10)/10)}%`}
+function delta(cur,old,posUp=true,unit=""){
+  if(cur==null||old==null||!old)return`<span class="n">—</span>`;
+  const raw=unit==="pt"?cur-old:(cur-old)/Math.abs(old)*100;
+  const good=posUp?raw>=0:raw<=0;
+  const arrow=raw>=0?"▲":"▼";
+  return`<span class="${good?"g":"r"}">${arrow} ${unit==="pt"?`${Math.round(raw*10)/10}pt`:pct(Math.abs(raw))}</span>`;
+}
+function normType(t){
+  const s=String(t||"").toUpperCase();
+  if(s.includes("PERFORMANCE_MAX")||s.includes("PMAX"))return"PMAX";
+  if(s.includes("SEARCH"))return"SEARCH";
+  if(s.includes("BRAND"))return"BRAND";
+  return s||"OTHER";
+}
+function parseDate(s){const[y,mo,d]=String(s).slice(0,10).split("-").map(Number);return new Date(y,mo-1,d)}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
+function iso(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function monthStart(d){return`${d.slice(0,7)}-01`}
+function isIso(s){return/^\d{4}-\d{2}-\d{2}$/.test(String(s||""))}
+function isLeap(y){return y%4===0&&(y%100!==0||y%400===0)}
+function fmtDateLabel(d){return isIso(d)?new Date(`${d}T12:00:00`).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"}):"—"}
+function shortUrl(url){try{const u=new URL(String(url));return u.pathname.replace(/^\/|\/$/g,"")||u.hostname;}catch{return String(url||"");}}
+function escHtml(s){return String(s??"").replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+</script>
 </body>
 </html>
