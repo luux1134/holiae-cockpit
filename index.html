@@ -117,8 +117,8 @@
 <script>
 const API_KEY  = "AIzaSyADK3alDzNTsEkbKGVDbrdHYBj0esGF0KU";
 const SHEET_ID = "17j732Xnp48sOWR_ignS3pgc5eKL4OPCJwUJWKH5Euv4";
-const SHEETS   = {shopify:"Shopify_Daily",ga4:"GA4_Channel",ads:"GoogleAds_Campaigns",st:"GoogleAds_SearchTerms",klav:"Klaviyo",klavD:"Klaviyo_Daily",gscP:"GSC_Pages",gscQ:"GSC_Queries",obj:"Objectifs"};
-const CKEY = "holiae-v8", TTL = 36e5;
+const SHEETS   = {shopify:"Shopify_Daily",ga4:"GA4_Channel",ads:"GoogleAds_Campaigns",st:"GoogleAds_SearchTerms",klav:"Klaviyo",klavD:"Klaviyo_Daily",klavA:"Klaviyo_Attribution_Daily",gscP:"GSC_Pages",gscQ:"GSC_Queries",obj:"Objectifs"};
+const CKEY = "holiae-v9", TTL = 36e5;
 const app = document.getElementById("app");
 const NF = new Intl.NumberFormat("fr-FR");
 const EU = new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR",maximumFractionDigits:0});
@@ -223,7 +223,7 @@ function model(raw){
 }
 function cdates(raw){const a=[];["shopify","ga4","ads"].forEach(k=>(raw[k]||[]).forEach(r=>{const d=gv(r,"Date");if(isIso(d))a.push(d);}));return[...new Set(a)].sort();}
 function rng(raw,s,e){
-  const sh=bt(raw.shopify||[],s,e),g4=bt(raw.ga4||[],s,e),a=bt(raw.ads||[],s,e),kd=bt(raw.klavD||[],s,e);
+  const sh=bt(raw.shopify||[],s,e),g4=bt(raw.ga4||[],s,e),a=bt(raw.ads||[],s,e),kd=bt(raw.klavD||[],s,e),ka=bt(raw.klavA||[],s,e);
   const sess=sm(g4,"Sessions")||sm(sh,"Sessions");
   const ord=sm(sh,"Orders")||sm(a,"Purchases");
   const rev=sm(sh,"Revenue")||sm(a,"Purchase value");
@@ -232,13 +232,26 @@ function rng(raw,s,e){
   return{sess,ord,rev,aov:dv(rev,ord),cr:sess?ord/sess*100:null,cost,reva,roas:dv(reva,cost),cpa:dv(cost,ord),klav,pdp,atc,chk,
     p2a:pdp?atc/pdp*100:null,a2c:atc?chk/atc*100:null,c2o:chk?ord/chk*100:null,
     byType:atype(a),camps:acamps(a),chs:chs(g4),
-    klavFlows:sm(kd,"Revenue_Flows"),klavCamps:sm(kd,"Revenue_Campaigns"),
+    klavFlows:sm(kd,"Revenue_Flows"),klavCamps:sm(kd,"Revenue_Campaigns"),klavItems:klavItems(ka),
     sp:topR(raw.gscP||[],"Clicks",10),sq:topR(raw.gscQ||[],"Clicks",10)};
 }
 function atype(rows){const o={};rows.forEach(r=>{const t=nt(gv(r,"Campaign type")||gv(r,"Type"));if(!o[t])o[t]={cost:0,rev:0,pur:0,clk:0};o[t].cost+=num(gv(r,"Cost")||gv(r,"Cout"));o[t].rev+=num(gv(r,"Purchase value")||gv(r,"Revenue_Ads"));o[t].pur+=num(gv(r,"Purchases")||gv(r,"Conversions"));o[t].clk+=num(gv(r,"Clicks")||gv(r,"Clics"));});Object.values(o).forEach(x=>x.roas=dv(x.rev,x.cost));return o;}
 function acamps(rows){const o={};rows.forEach(r=>{const nm=gv(r,"Campaign")||gv(r,"Campagne")||"Campagne";const t=nt(gv(r,"Campaign type")||gv(r,"Type"));if(!o[nm])o[nm]={name:nm,type:t,cost:0,rev:0,pur:0,clk:0};o[nm].cost+=num(gv(r,"Cost")||gv(r,"Cout"));o[nm].rev+=num(gv(r,"Purchase value")||gv(r,"Revenue_Ads"));o[nm].pur+=num(gv(r,"Purchases")||gv(r,"Conversions"));o[nm].clk+=num(gv(r,"Clicks")||gv(r,"Clics"));});Object.values(o).forEach(x=>{x.roas=dv(x.rev,x.cost);x.cpa=dv(x.cost,x.pur);});return o;}
 function chs(rows){const o={};rows.forEach(r=>{const c=gv(r,"Channel")||gv(r,"Canal")||"Autre";o[c]=(o[c]||0)+num(gv(r,"Sessions"));});return o;}
 function gobj(rows,date){const m=date.slice(0,7),r=rows.find(x=>gv(x,"Mois")===m)||{};return{ca:num(gv(r,"CA_Objectif")),ord:num(gv(r,"Commandes_Objectif")),bAds:num(gv(r,"Budget_Ads_Mensuel")),caY:num(gv(r,"CA_Annuel_Objectif")),bY:num(gv(r,"Budget_Ads_Annuel"))};}
+function klavItems(rows){
+  const out={};
+  rows.forEach(r=>{
+    const name=String(gv(r,"Name")||"").trim();
+    if(!name)return;
+    const type=String(gv(r,"Type")||"CRM").trim();
+    const key=type.toLowerCase()+"||"+name.toLowerCase();
+    if(!out[key])out[key]={name,type,revenue:0,orders:0};
+    out[key].revenue+=num(gv(r,"Revenue"));
+    out[key].orders+=num(gv(r,"Orders"));
+  });
+  return Object.values(out).sort((a,b)=>b.revenue-a.revenue);
+}
 
 // ── VIEWS ─────────────────────────────────────────────────────────────────────
 function vAlerts(m){const list=m.alerts.filter(a=>a.label!=="Rythme");return`<div class="hv on" id="v-alrt"><div class="sec">— Alertes · Ta todo du matin</div>${rhythmHero(m)}${list.length?list.map(a=>`<div class="al"><div class="dot ${a.lv}"></div><div style="flex:1"><div class="at">${a.title}</div><div class="as">${a.body}</div></div><span class="ab ${a.lv==="c"?"bc":a.lv==="w"?"bw":"bi"}">${a.label}</span></div>`).join(""):`<div class="empty" style="text-align:center;padding:24px;font-size:14px">Tout est dans les clous ✦<br><span style="font-size:11px">Aucune alerte active.</span></div>`}</div>`;}
@@ -520,11 +533,14 @@ function miniPg(l,val,obj,pv,sub){
 function klavPeriod(p,label){
   const has=p&&((p.klav||0)||(p.klavFlows||0)||(p.klavCamps||0));
   if(!has)return`<div class="sg">📧 CRM · ${esc(label)}</div><div class="empty">Aucune donnée Klaviyo sur cette période.</div>`;
+  const items=(p.klavItems||[]).slice(0,8);
   return`<div class="sg">📧 CRM · ${esc(label)}</div><div class="kg">
     ${kcard("Klaviyo Revenue",mo(p.klav),"Flows + campagnes","")}
     ${kcard("Flows",mo(p.klavFlows),"Automatiques","")}
     ${kcard("Campagnes",mo(p.klavCamps),"Manuelles","")}
-  </div>`;
+  </div>
+  <div class="sg">📧 Détail flows / campagnes · ${esc(label)}</div>
+  ${items.length?items.map(x=>`<div class="row"><span class="rn">${esc(x.name)}</span><div class="rm"><span class="rs">${esc(x.type)}</span><span class="rs">CA <span style="color:var(--accent)">${mo(x.revenue)}</span></span>${x.orders?`<span class="rs">Commandes ${fm(x.orders)}</span>`:""}</div></div>`).join(""):`<div class="empty">Détail flow/campagne indisponible. Lance le sync Klaviyo Attribution Daily pour remplir l'onglet dédié.</div>`}`;
 }
 
 function klavTop(m,p){
