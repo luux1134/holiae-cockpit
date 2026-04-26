@@ -95,6 +95,7 @@
       ads: "GoogleAds_Campaigns",
       searchTerms: "GoogleAds_SearchTerms",
       klaviyo: "Klaviyo",
+      klaviyoDaily: "Klaviyo_Daily",
       gscPages: "GSC_Pages",
       gscQueries: "GSC_Queries",
       objectifs: "Objectifs"
@@ -222,13 +223,13 @@
       const shopify = between(raw.shopify || [], start, end);
       const ga4 = between(raw.ga4 || [], start, end);
       const ads = between(raw.ads || [], start, end);
-      const klaviyo = between(raw.klaviyo || [], start, end);
+      const klaviyoDaily = between(raw.klaviyoDaily || [], start, end);
       const sessions = sum(ga4,"Sessions") || sum(shopify,"Sessions");
       const orders = sum(shopify,"Orders") || sum(ads,"Purchases");
       const revenue = sum(shopify,"Revenue") || sum(ads,"Purchase value");
       const costAds = sum(ads,"Cost");
       const revenueAds = sum(ads,"Purchase value");
-      const klaviyoRevenue = sum(klaviyo,"Revenue");
+      const klaviyoRevenue = sum(klaviyoDaily,"Revenue_Total");
       const pdp = sum(shopify,"Product page sessions");
       const atc = sum(shopify,"Add to cart");
       const checkout = sum(shopify,"Checkout started");
@@ -379,6 +380,57 @@
         if(!cur.cost && !old.cost) return "";
         return `<div class="row"><span class="rn">${type}</span><div class="rm"><span class="rs">Coût <span style="color:var(--accent)">${money(cur.cost)}</span></span><span class="rs">ROAS <span class="${(cur.roas||0) >= (old.roas||0) ? "g" : "r"}">${ratio(cur.roas)}</span></span></div></div>`;
       }).join("") || `<div class="empty">Aucune donnée Ads sur cette période.</div>`}`;
+    }
+
+    function klaviyoSummary(rows){
+      const out = {
+        revenue: 0,
+        flowRevenue: 0,
+        campaignRevenue: 0,
+        recipients: 0,
+        weightedOpen: 0,
+        weightedClick: 0,
+        weightedUnsub: 0,
+        top: []
+      };
+      rows.forEach(r => {
+        const type = String(val(r,"Type") || "").toLowerCase();
+        const name = val(r,"Name") || "Klaviyo";
+        const revenue = num(val(r,"Revenue"));
+        const recipients = num(val(r,"Recipients"));
+        out.revenue += revenue;
+        out.recipients += recipients;
+        out.weightedOpen += recipients * num(val(r,"Open rate"));
+        out.weightedClick += recipients * num(val(r,"Click rate"));
+        out.weightedUnsub += recipients * num(val(r,"Unsubscribe rate"));
+        if(type === "flow") out.flowRevenue += revenue;
+        if(type === "campaign") out.campaignRevenue += revenue;
+        if(revenue > 0) out.top.push({ name, type: type || "crm", revenue });
+      });
+      out.openRate = out.recipients ? out.weightedOpen / out.recipients * 100 : null;
+      out.clickRate = out.recipients ? out.weightedClick / out.recipients * 100 : null;
+      out.unsubRate = out.recipients ? out.weightedUnsub / out.recipients * 100 : null;
+      out.top = out.top.sort((a,b) => b.revenue - a.revenue).slice(0,4);
+      return out;
+    }
+
+    function klaviyoBlock(k){
+      if(!k || !k.recipients){
+        return `<div class="sec">— Klaviyo 30 jours</div><div class="empty">Klaviyo non synchronisé ou données indisponibles.</div>`;
+      }
+      const top = k.top.length
+        ? k.top.map(item => `<div class="row"><span class="rn">${escapeHtml(item.name)}</span><div class="rm"><span class="rs">${escapeHtml(item.type)}</span><span class="rs"><span style="color:var(--accent)">${money(item.revenue)}</span></span></div></div>`).join("")
+        : `<div class="empty">Aucun revenu CRM attribué dans le rapport Klaviyo 30 jours.</div>`;
+      return `<div class="sec">— Klaviyo 30 jours</div>
+        <div class="kg">
+          ${kpiCard("Revenue CRM", money(k.revenue), "Flows + campagnes", "")}
+          ${kpiCard("Flows", money(k.flowRevenue), "", "")}
+          ${kpiCard("Campagnes", money(k.campaignRevenue), "", "")}
+          ${kpiCard("Open rate", pct(k.openRate), `${fmt(k.recipients)} destinataires`, "")}
+          ${kpiCard("Click rate", pct(k.clickRate), "", "")}
+          ${kpiCard("Unsub rate", pct(k.unsubRate), "", "")}
+        </div>
+        ${top}`;
     }
 
     function seoBlock(p){
