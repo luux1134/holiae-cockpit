@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1f1a17">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Holiaē">
+  <title>Holiaē Cockpit</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Plus+Jakarta+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg-page:#1f1a17;
+      --bg-card:#26211e;
+      --bg-card2:#332e2c;
+      --accent:#f4d8a8;
+      --text-main:#fcf8f1;
+      --text-sec:#908b84;
+      --border:#332e2c;
+      --green:#4caf7d;
+      --red:#e05c5c;
+      --orange:#e8a64c;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:var(--bg-page);color:var(--text-main);font-family:"Plus Jakarta Sans",system-ui,sans-serif}
+    button{font:inherit}
+    .hd{min-height:100vh;background:var(--bg-page);padding:18px 14px 28px;color:var(--text-main)}
+    .hd-shell{max-width:1120px;margin:0 auto}
+    .hd-header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+    .hd-logo{font-family:"Cormorant Garamond",serif;font-size:23px;font-weight:300;font-style:italic;color:var(--accent);letter-spacing:.1em;white-space:nowrap}
+    .hd-date{text-align:right;font-size:10px;color:var(--text-sec);letter-spacing:.16em;text-transform:uppercase;line-height:1.6}
+    .hd-state{display:inline-block;margin-top:4px;color:var(--accent)}
+    .hd-tabs{position:sticky;top:0;z-index:5;display:flex;gap:3px;margin-bottom:18px;background:rgba(38,33,30,.96);padding:4px;border:1px solid var(--border);border-radius:8px;overflow-x:auto;scrollbar-width:none;backdrop-filter:blur(12px)}
+    .hd-tabs::-webkit-scrollbar{display:none}
+    .ht{padding:8px 13px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-sec);cursor:pointer;border-radius:5px;border:0;background:transparent;white-space:nowrap}
+    .ht:hover{color:var(--text-main);background:var(--bg-card2)}
+    .ht.on{color:#1f1a17;background:var(--accent)}
+    .ht.alert-t{color:var(--red)}
+    .ht.alert-t.on{background:#c0392b;color:var(--text-main)}
+    .hv{display:none}.hv.on{display:block}
+    .sec{font-size:9px;color:var(--text-sec);letter-spacing:.2em;text-transform:uppercase;margin:18px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border)}
+    .kg{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;margin-bottom:12px}
+    .kc{min-height:112px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;overflow:hidden}
+    .kl{font-size:9px;color:var(--text-sec);letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .kv{font-family:"Cormorant Garamond",serif;font-size:28px;font-weight:300;font-style:italic;color:var(--accent);line-height:1;margin-bottom:5px}
+    .kv2{font-size:11px;color:var(--text-sec);margin-bottom:4px;min-height:14px}
+    .kd{font-size:10px;letter-spacing:.04em;line-height:1.35}
+    .ks{font-size:10px;color:var(--text-sec);margin-top:6px;line-height:1.4}
+    .g{color:var(--green)}.r{color:var(--red)}.n{color:var(--text-sec)}.o{color:var(--orange)}
+    .pb{background:var(--bg-card2);border-radius:3px;height:5px;margin-top:8px;overflow:hidden}
+    .pf{height:100%;border-radius:3px}.pf.gold{background:var(--accent)}.pf.warn{background:var(--orange)}.pf.bad{background:var(--red)}
+    .row{background:var(--bg-card);border:1px solid var(--border);border-radius:7px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:7px}
+    .rn{font-size:11px;color:var(--text-main);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .rm{display:flex;gap:14px;flex-shrink:0}.rs{font-size:10px;color:var(--text-sec);white-space:nowrap}
+    .al{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:13px 15px;margin-bottom:9px;display:flex;align-items:flex-start;gap:11px}
+    .ad{width:7px;height:7px;border-radius:50%;margin-top:4px;flex-shrink:0}.ad.c{background:var(--red)}.ad.w{background:var(--orange)}.ad.i{background:var(--accent)}
+    .at{font-size:12px;color:var(--text-main);margin-bottom:3px}.as{font-size:10px;color:var(--text-sec);line-height:1.5}
+    .ab{font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:4px;margin-left:auto;flex-shrink:0;align-self:flex-start}
+    .bc{background:rgba(224,92,92,.18);color:var(--red)}.bw{background:rgba(232,166,76,.18);color:var(--orange)}.bi{background:rgba(244,216,168,.15);color:var(--accent)}
+    .funnel{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;align-items:end;margin-bottom:12px}
+    .fstep{min-width:0;display:flex;flex-direction:column;align-items:center;gap:5px}
+    .fl{font-size:9px;color:var(--text-sec);text-transform:uppercase;letter-spacing:.07em;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .fv{font-family:"Cormorant Garamond",serif;font-size:15px;font-style:italic;color:var(--accent)}
+    .fb{width:100%;min-height:4px;background:var(--accent);border-radius:3px 3px 0 0;opacity:.62}
+    .empty{background:var(--bg-card);border:1px dashed var(--border);border-radius:8px;padding:18px;color:var(--text-sec);font-size:12px;line-height:1.6}
+    .loading{min-height:100vh;display:grid;place-items:center;background:var(--bg-page);color:var(--accent);font-family:"Cormorant Garamond",serif;font-size:28px;font-style:italic}
+    .fine{font-size:10px;color:var(--text-sec);line-height:1.5;margin-top:10px}
+    @media(max-width:640px){
+      .hd{padding:14px 10px 24px}
+      .hd-header{align-items:flex-start}
+      .hd-logo{font-size:21px}
+      .hd-date{font-size:9px}
+      .kg{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+      .kc{padding:12px;min-height:104px}
+      .kv{font-size:25px}
+      .funnel{gap:3px}
+      .fl{font-size:8px}
+      .row{align-items:flex-start;flex-direction:column}
+      .rm{width:100%;justify-content:space-between}
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="loading">Chargement du cockpit Holiaē...</div>
+  <script>
+    const API_KEY = "AIzaSyADK3alDzNTsEkbKGVDbrdHYBj0esGF0KU";
+    const SHEET_ID = "17j732Xnp48sOWR_ignS3pgc5eKL4OPCJwUJWKH5Euv4";
+    const SHEETS = {
+      shopify: "Shopify_Daily",
+      ga4: "GA4_Channel",
+      ads: "GoogleAds_Campaigns",
+      searchTerms: "GoogleAds_SearchTerms",
+      klaviyo: "Klaviyo",
+      gscPages: "GSC_Pages",
+      gscQueries: "GSC_Queries",
+      objectifs: "Objectifs"
+    };
+    const CACHE_KEY = "holiae-cockpit-cache-v1";
+    const CACHE_TTL_MS = 60 * 60 * 1000;
+
+    const app = document.getElementById("app");
+    const nf = new Intl.NumberFormat("fr-FR");
+    const eur = new Intl.NumberFormat("fr-FR", { style:"currency", currency:"EUR", maximumFractionDigits:0 });
+
+    document.addEventListener("DOMContentLoaded", init);
+
+    async function init(){
+      if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+      try{
+        const data = await loadData();
+        render(data);
+      }catch(error){
+        const cached = readCache();
+        if(cached) render(cached.data, true);
+        else app.innerHTML = `<div class="hd"><div class="empty">Impossible de charger les données. Vérifie la clé API Google Sheets dans <code>index.html</code>.<br>${escapeHtml(error.message)}</div></div>`;
+      }
+    }
+
+    async function loadData(){
+      const cached = readCache();
+      if(cached && Date.now() - cached.timestamp < CACHE_TTL_MS) return cached.data;
+      if(!API_KEY || API_KEY === "TA_CLE_ICI") throw new Error("Clé API Google Sheets manquante.");
+      const entries = await Promise.all(Object.entries(SHEETS).map(async ([key, name]) => [key, await fetchSheet(name)]));
+      const data = Object.fromEntries(entries);
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp:Date.now(), data }));
+      return data;
+    }
+
+    async function fetchSheet(name){
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(name)}!A:Z?key=${API_KEY}`;
+      const res = await fetch(url);
+      if(!res.ok) {
+        if(res.status === 400 || res.status === 404) return [];
+        throw new Error(`${name}: ${res.status}`);
+      }
+      const json = await res.json();
+      return rowsToObjects(json.values || []);
+    }
+
+    function rowsToObjects(values){
+      if(!values.length) return [];
+      const headers = values[0].map(h => String(h || "").trim());
+      return values.slice(1).filter(row => row.some(Boolean)).map(row => {
+        const obj = {};
+        headers.forEach((h,i) => obj[h] = row[i] ?? "");
+        return obj;
+      });
+    }
+
+    function readCache(){
+      try{return JSON.parse(localStorage.getItem(CACHE_KEY) || "");}catch{return null;}
+    }
+
+    function render(raw, offline=false){
+      const model = buildModel(raw);
+      app.className = "hd";
+      app.innerHTML = `
+        <div class="hd-shell">
+          <div class="hd-header">
+            <div class="hd-logo">Holiaē ✦ Cockpit</div>
+            <div class="hd-date">${offline ? "Hors ligne · données cache" : "Màj quotidienne · 08h00"}<br><span class="hd-state">${formatDateLabel(model.lastDate)}</span></div>
+          </div>
+          <div class="hd-tabs">
+            ${tabButton("hier","Hier",true)}
+            ${tabButton("j7","7 jours")}
+            ${tabButton("mtd","Mois en cours")}
+            ${tabButton("j28","28 jours")}
+            ${tabButton("m3","3 mois")}
+            ${tabButton("ytd","Année")}
+            ${tabButton("alrt",`⚠ Alertes (${model.alerts.length})`,false,"alert-t")}
+          </div>
+          ${viewHier(model)}
+          ${viewPeriod(model,"j7","7 jours glissants","7d","prev7d")}
+          ${viewMtd(model)}
+          ${viewPeriod(model,"j28","28 jours glissants","28d","prev28d")}
+          ${viewPeriod(model,"m3","3 mois glissants","90d","prev90d",true)}
+          ${viewYtd(model)}
+          ${viewAlerts(model)}
+        </div>`;
+    }
+
+    function tabButton(id,label,on=false,extra=""){
+      return `<button class="ht ${extra} ${on ? "on" : ""}" onclick="sw('${id}',this)">${label}</button>`;
+    }
+
+    function buildModel(raw){
+      const dates = collectDates(raw);
+      const lastDate = dates.at(-1) || iso(addDays(new Date(), -1));
+      const d1 = lastDate;
+      const d2 = iso(addDays(parseDate(d1), -1));
+      const periods = {
+        d1: rangeMetrics(raw, d1, d1),
+        d2: rangeMetrics(raw, d2, d2),
+        "7d": rangeMetrics(raw, iso(addDays(parseDate(d1), -6)), d1),
+        prev7d: rangeMetrics(raw, iso(addDays(parseDate(d1), -13)), iso(addDays(parseDate(d1), -7))),
+        "28d": rangeMetrics(raw, iso(addDays(parseDate(d1), -27)), d1),
+        prev28d: rangeMetrics(raw, iso(addDays(parseDate(d1), -55)), iso(addDays(parseDate(d1), -28))),
+        "90d": rangeMetrics(raw, iso(addDays(parseDate(d1), -89)), d1),
+        prev90d: rangeMetrics(raw, iso(addDays(parseDate(d1), -179)), iso(addDays(parseDate(d1), -90))),
+        mtd: rangeMetrics(raw, monthStart(d1), d1),
+        ytd: rangeMetrics(raw, `${d1.slice(0,4)}-01-01`, d1)
+      };
+      const objectives = getCurrentObjectives(raw.objectifs || [], d1);
+      const alerts = buildAlerts(periods, objectives);
+      return { raw, dates, lastDate, d2, periods, objectives, alerts };
+    }
+
+    function collectDates(raw){
+      const all = [];
+      ["shopify","ga4","ads"].forEach(key => (raw[key] || []).forEach(r => {
+        const d = val(r,"Date");
+        if(isIso(d)) all.push(d);
+      }));
+      return [...new Set(all)].sort();
+    }
+
+    function rangeMetrics(raw,start,end){
+      const shopify = between(raw.shopify || [], start, end);
+      const ga4 = between(raw.ga4 || [], start, end);
+      const ads = between(raw.ads || [], start, end);
+      const klaviyo = between(raw.klaviyo || [], start, end);
+      const sessions = sum(ga4,"Sessions") || sum(shopify,"Sessions");
+      const orders = sum(shopify,"Orders") || sum(ads,"Purchases");
+      const revenue = sum(shopify,"Revenue") || sum(ads,"Purchase value");
+      const costAds = sum(ads,"Cost");
+      const revenueAds = sum(ads,"Purchase value");
+      const klaviyoRevenue = sum(klaviyo,"Revenue");
+      const pdp = sum(shopify,"Product page sessions");
+      const atc = sum(shopify,"Add to cart");
+      const checkout = sum(shopify,"Checkout started");
+      return {
+        sessions, orders, revenue,
+        aov: safeDiv(revenue, orders),
+        convRate: sessions ? orders / sessions * 100 : null,
+        costAds, revenueAds,
+        roas: safeDiv(revenueAds, costAds),
+        cpa: safeDiv(costAds, orders),
+        klaviyoRevenue,
+        pdp, atc, checkout, payment: null,
+        adsByType: adsTypes(ads),
+        channels: channels(ga4),
+        seoQueries: topRows(raw.gscQueries || [], "Clicks", 5),
+        seoPages: topRows(raw.gscPages || [], "Clicks", 5)
+      };
+    }
+
+    function adsTypes(rows){
+      const out = {};
+      rows.forEach(r => {
+        const type = normalizeCampaignType(val(r,"Campaign type") || val(r,"Type"));
+        if(!out[type]) out[type] = { cost:0, revenue:0, clicks:0, impressions:0 };
+        out[type].cost += num(val(r,"Cost") || val(r,"Cout"));
+        out[type].revenue += num(val(r,"Purchase value") || val(r,"Revenue_Ads"));
+        out[type].clicks += num(val(r,"Clicks") || val(r,"Clics"));
+        out[type].impressions += num(val(r,"Impressions"));
+      });
+      Object.values(out).forEach(v => v.roas = safeDiv(v.revenue, v.cost));
+      return out;
+    }
+
+    function channels(rows){
+      const out = {};
+      rows.forEach(r => {
+        const channel = val(r,"Channel") || val(r,"Canal") || "Autre";
+        out[channel] = (out[channel] || 0) + num(val(r,"Sessions"));
+      });
+      return out;
+    }
+
+    function viewHier(m){
+      const p = m.periods.d1, ref = m.periods.d2;
+      return `<div class="hv on" id="v-hier">
+        <div class="sec">— Hier · ${formatDateLabel(m.lastDate)} vs ${formatDateLabel(m.d2)}</div>
+        ${kpiGrid(p, ref)}
+        ${funnelBlock(p, ref)}
+        ${adsDetail(p, ref)}
+      </div>`;
+    }
+
+    function viewPeriod(m,id,title,key,refKey,withSeo=false){
+      const p = m.periods[key], ref = m.periods[refKey];
+      return `<div class="hv" id="v-${id}">
+        <div class="sec">— ${title}</div>
+        ${kpiGrid(p, ref)}
+        ${funnelBlock(p, ref)}
+        ${adsDetail(p, ref)}
+        ${withSeo ? seoBlock(p) + channelBlock(p) : ""}
+      </div>`;
+    }
+
+    function viewMtd(m){
+      const p = m.periods.mtd;
+      const obj = m.objectives;
+      const progress = obj.ca ? p.revenue / obj.ca * 100 : null;
+      const daysElapsed = Math.max(1, parseDate(m.lastDate).getDate());
+      const daysMonth = new Date(Number(m.lastDate.slice(0,4)), Number(m.lastDate.slice(5,7)), 0).getDate();
+      const projection = p.revenue ? p.revenue / daysElapsed * daysMonth : null;
+      const needed = obj.ca && projection ? Math.max(0, obj.ca - p.revenue) / Math.max(1, daysMonth - daysElapsed) : null;
+      return `<div class="hv" id="v-mtd">
+        <div class="sec">— Mois en cours · ${m.lastDate.slice(0,7)}</div>
+        <div class="kg">
+          ${progressCard("CA MTD", money(p.revenue), obj.ca ? `Obj. ${money(obj.ca)}` : "Objectif non renseigné", progress, projection ? `Projection ${money(projection)}` : "Projection indisponible")}
+          ${progressCard("Commandes", fmt(p.orders), obj.orders ? `Obj. ${fmt(obj.orders)}` : "Objectif non renseigné", obj.orders ? p.orders / obj.orders * 100 : null, "")}
+          ${progressCard("Budget Ads", money(p.costAds), obj.budgetAds ? `Budget ${money(obj.budgetAds)}` : "Budget non renseigné", obj.budgetAds ? p.costAds / obj.budgetAds * 100 : null, "")}
+          ${kpiCard("ROAS MTD", ratio(p.roas), "", "")}
+          ${kpiCard("Klaviyo MTD", money(p.klaviyoRevenue), "", "")}
+          ${kpiCard("Rythme requis", needed ? money(needed)+"/j" : "—", `${Math.max(0, daysMonth-daysElapsed)} jours restants`, "")}
+        </div>
+        ${funnelBlock(p)}
+      </div>`;
+    }
+
+    function viewYtd(m){
+      const p = m.periods.ytd;
+      const obj = m.objectives;
+      const start = new Date(Number(m.lastDate.slice(0,4)),0,1);
+      const elapsed = Math.max(1, Math.ceil((parseDate(m.lastDate)-start)/86400000)+1);
+      const daysYear = isLeap(Number(m.lastDate.slice(0,4))) ? 366 : 365;
+      const projection = p.revenue ? p.revenue / elapsed * daysYear : null;
+      return `<div class="hv" id="v-ytd">
+        <div class="sec">— Année en cours · ${m.lastDate.slice(0,4)}</div>
+        <div class="kg">
+          ${progressCard("CA YTD", money(p.revenue), obj.caAnnual ? `Obj. ${money(obj.caAnnual)}` : "Objectif non renseigné", obj.caAnnual ? p.revenue / obj.caAnnual * 100 : null, projection ? `Projection ${money(projection)}` : "")}
+          ${kpiCard("Commandes YTD", fmt(p.orders), "", "")}
+          ${progressCard("Budget Ads YTD", money(p.costAds), obj.budgetAnnual ? `Budget ${money(obj.budgetAnnual)}` : "Budget non renseigné", obj.budgetAnnual ? p.costAds / obj.budgetAnnual * 100 : null, "")}
+          ${kpiCard("ROAS YTD", ratio(p.roas), "", "")}
+          ${kpiCard("CAC YTD", money(p.cpa), "", "")}
+          ${kpiCard("Klaviyo YTD", money(p.klaviyoRevenue), p.revenue ? `${pct(p.klaviyoRevenue / p.revenue * 100)} du CA` : "", "")}
+        </div>
+      </div>`;
+    }
+
+    function kpiGrid(p,ref){
+      return `<div class="kg">
+        ${kpiCard("Sessions", fmt(p.sessions), ref ? `Réf. ${fmt(ref.sessions)}` : "", delta(p.sessions, ref?.sessions, true))}
+        ${kpiCard("Commandes", fmt(p.orders), ref ? `Réf. ${fmt(ref.orders)}` : "", delta(p.orders, ref?.orders, true))}
+        ${kpiCard("CA", money(p.revenue), ref ? `Réf. ${money(ref.revenue)}` : "", delta(p.revenue, ref?.revenue, true))}
+        ${kpiCard("AOV", money(p.aov), ref ? `Réf. ${money(ref.aov)}` : "", delta(p.aov, ref?.aov, true))}
+        ${kpiCard("Conv. Rate", pct(p.convRate), ref ? `Réf. ${pct(ref.convRate)}` : "", delta(p.convRate, ref?.convRate, true, "pt"))}
+        ${kpiCard("CPA", money(p.cpa), ref ? `Réf. ${money(ref.cpa)}` : "", delta(p.cpa, ref?.cpa, false))}
+        ${kpiCard("ROAS", ratio(p.roas), ref ? `Réf. ${ratio(ref.roas)}` : "", delta(p.roas, ref?.roas, true))}
+        ${kpiCard("Coût Ads", money(p.costAds), ref ? `Réf. ${money(ref.costAds)}` : "", delta(p.costAds, ref?.costAds, false))}
+        ${kpiCard("Klaviyo", money(p.klaviyoRevenue), ref ? `Réf. ${money(ref.klaviyoRevenue)}` : "", delta(p.klaviyoRevenue, ref?.klaviyoRevenue, true))}
+      </div>`;
+    }
+
+    function kpiCard(label,value,ref,deltaHtml){
+      return `<div class="kc"><div class="kl">${label}</div><div class="kv">${value}</div><div class="kv2">${ref || ""}</div><div class="kd">${deltaHtml || ""}</div></div>`;
+    }
+
+    function progressCard(label,value,ref,progress,sub){
+      const w = progress == null ? 0 : Math.max(0, Math.min(100, progress));
+      const cls = progress == null ? "gold" : progress < 70 ? "bad" : progress < 90 ? "warn" : "gold";
+      return `<div class="kc"><div class="kl">${label}</div><div class="kv">${value}</div><div class="kd n">${ref}</div>${progress == null ? "" : `<div class="pb"><div class="pf ${cls}" style="width:${w}%"></div></div><div class="ks">${pct(progress)} · ${sub}</div>`}</div>`;
+    }
+
+    function funnelBlock(p){
+      const steps = [
+        ["Sessions", p.sessions, 52],
+        ["PDP", p.pdp, 38],
+        ["ATC", p.atc, 24],
+        ["Checkout", p.checkout, 14],
+        ["Orders", p.orders, 8]
+      ];
+      const hasData = steps.some(s => s[1]);
+      if(!hasData) return `<div class="sec">— Funnel</div><div class="empty">Funnel incomplet : Shopify ne remonte pas encore Sessions / PDP / ATC / Checkout. À brancher via GA4 ecommerce events.</div>`;
+      return `<div class="sec">— Funnel</div><div class="funnel">${steps.map(s => `<div class="fstep"><div class="fl">${s[0]}</div><div class="fv">${fmt(s[1])}</div><div class="fb" style="height:${s[2]}px"></div></div>`).join("")}</div>`;
+    }
+
+    function adsDetail(p,ref){
+      const types = ["PMAX","SEARCH","BRAND"];
+      return `<div class="sec">— Google Ads</div>${types.map(type => {
+        const cur = p.adsByType[type] || {};
+        const old = ref?.adsByType?.[type] || {};
+        if(!cur.cost && !old.cost) return "";
+        return `<div class="row"><span class="rn">${type}</span><div class="rm"><span class="rs">Coût <span style="color:var(--accent)">${money(cur.cost)}</span></span><span class="rs">ROAS <span class="${(cur.roas||0) >= (old.roas||0) ? "g" : "r"}">${ratio(cur.roas)}</span></span></div></div>`;
+      }).join("") || `<div class="empty">Aucune donnée Ads sur cette période.</div>`}`;
+    }
+
+    function seoBlock(p){
+      return `<div class="sec">— Top SEO · GSC</div>${p.seoQueries.map(r => `<div class="row"><span class="rn">${escapeHtml(val(r,"Query") || val(r,"Page"))}</span><div class="rm"><span class="rs">Clics <span style="color:var(--accent)">${fmt(num(val(r,"Clicks")))}</span></span><span class="rs">Pos. ${ratio(num(val(r,"Position")))}</span></div></div>`).join("") || `<div class="empty">Données SEO insuffisantes.</div>`}`;
+    }
+
+    function channelBlock(p){
+      const total = Object.values(p.channels).reduce((a,b)=>a+b,0);
+      return `<div class="sec">— Trafic par canal</div>${Object.entries(p.channels).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([name,s]) => `<div class="row"><span class="rn">${escapeHtml(name)}</span><div class="rm"><span class="rs">${fmt(s)} sessions</span><span class="rs">${pct(total ? s/total*100 : null)}</span></div></div>`).join("") || `<div class="empty">Aucune donnée canal.</div>`}`;
+    }
+
+    function viewAlerts(m){
+      return `<div class="hv" id="v-alrt"><div class="sec">— Alertes actives</div>${m.alerts.length ? m.alerts.map(alert => `<div class="al"><div class="ad ${alert.level}"></div><div style="flex:1"><div class="at">${alert.title}</div><div class="as">${alert.body}</div></div><span class="ab ${alert.level === "c" ? "bc" : alert.level === "w" ? "bw" : "bi"}">${alert.label}</span></div>`).join("") : `<div class="empty">Tout est dans les clous ✦</div>`}</div>`;
+    }
+
+    function buildAlerts(periods,obj){
+      const a = [];
+      const d1 = periods.d1, s7 = periods["7d"], p7 = periods.prev7d, mtd = periods.mtd;
+      const avgOrders7 = s7.orders ? s7.orders / 7 : null;
+      const avgRevenue7 = s7.revenue ? s7.revenue / 7 : null;
+      if(avgOrders7 && d1.orders < avgOrders7 * .7) a.push({level:"c",label:"Critique",title:"Commandes en chute",body:`Hier ${fmt(d1.orders)} commandes vs moyenne 7J ${fmt(avgOrders7)}/jour.`});
+      if(avgRevenue7 && d1.revenue < avgRevenue7 * .7) a.push({level:"c",label:"Critique",title:"CA en chute",body:`Hier ${money(d1.revenue)} vs moyenne 7J ${money(avgRevenue7)}/jour.`});
+      if(s7.convRate && p7.convRate && s7.convRate < p7.convRate * .85) a.push({level:"w",label:"Warning",title:"Conversion en baisse",body:`Conv. rate 7J ${pct(s7.convRate)} vs ${pct(p7.convRate)} semaine précédente.`});
+      if(s7.roas && d1.roas && d1.roas < s7.roas * .65) a.push({level:"c",label:"Ads",title:"ROAS en chute",body:`ROAS hier ${ratio(d1.roas)} vs moyenne 7J ${ratio(s7.roas)}.`});
+      if(obj.ca){
+        const today = parseDate(Object.keys(periods).length ? document.querySelector(".hd-state")?.textContent : "");
+        const last = periods.d1;
+        const daysElapsed = Math.max(1, new Date().getDate() - 1);
+        const daysMonth = new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).getDate();
+        const projection = mtd.revenue ? mtd.revenue / daysElapsed * daysMonth : null;
+        if(projection && projection < obj.ca * .85) a.push({level:"c",label:"MTD",title:"Projection MTD insuffisante",body:`Projection ${money(projection)} vs objectif ${money(obj.ca)}.`});
+      }
+      if(s7.klaviyoRevenue === 0) a.push({level:"i",label:"CRM",title:"Aucun revenu Klaviyo 7J",body:"Vérifier flows actifs, tracking et attribution."});
+      return a.slice(0,10);
+    }
+
+    function getCurrentObjectives(rows,date){
+      const month = date.slice(0,7);
+      const row = rows.find(r => val(r,"Mois") === month) || {};
+      return {
+        ca: num(val(row,"CA_Objectif")),
+        orders: num(val(row,"Commandes_Objectif")),
+        budgetAds: num(val(row,"Budget_Ads_Mensuel")),
+        caAnnual: num(val(row,"CA_Annuel_Objectif")),
+        budgetAnnual: num(val(row,"Budget_Ads_Annuel"))
+      };
+    }
+
+    function between(rows,start,end){return rows.filter(r => isIso(val(r,"Date")) && val(r,"Date") >= start && val(r,"Date") <= end)}
+    function topRows(rows,field,limit){return [...rows].sort((a,b)=>num(val(b,field))-num(val(a,field))).slice(0,limit)}
+    function val(row,name){return row?.[name] ?? ""}
+    function sum(rows,field){return rows.reduce((a,r)=>a+num(val(r,field)),0)}
+    function num(v){if(v==null || v==="") return 0; const n = Number(String(v).replace(/\s/g,"").replace(",", ".")); return Number.isFinite(n) ? n : 0}
+    function safeDiv(a,b){return b ? a/b : null}
+    function money(v){return v ? eur.format(v) : "—"}
+    function fmt(v){return v ? nf.format(Math.round(v)) : "—"}
+    function ratio(v){return v ? nf.format(Math.round(v*100)/100) : "—"}
+    function pct(v){return v == null || !Number.isFinite(v) ? "—" : `${nf.format(Math.round(v*10)/10)}%`}
+    function delta(cur,old,positiveUp=true,unit=""){
+      if(cur == null || old == null || !old) return `<span class="n">—</span>`;
+      const raw = unit === "pt" ? cur - old : (cur-old)/Math.abs(old)*100;
+      const good = positiveUp ? raw >= 0 : raw <= 0;
+      const arrow = raw >= 0 ? "▲" : "▼";
+      return `<span class="${good ? "g" : "r"}">${arrow} ${unit === "pt" ? `${Math.round(raw*10)/10}pt` : pct(Math.abs(raw))}</span>`;
+    }
+    function normalizeCampaignType(type){
+      const t = String(type || "").toUpperCase();
+      if(t.includes("PERFORMANCE_MAX") || t.includes("PMAX")) return "PMAX";
+      if(t.includes("SEARCH")) return "SEARCH";
+      if(t.includes("BRAND")) return "BRAND";
+      return t || "OTHER";
+    }
+    function parseDate(s){const [y,m,d] = String(s).slice(0,10).split("-").map(Number); return new Date(y,m-1,d)}
+    function addDays(d,n){const x = new Date(d); x.setDate(x.getDate()+n); return x}
+    function iso(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+    function monthStart(d){return `${d.slice(0,7)}-01`}
+    function isIso(s){return /^\d{4}-\d{2}-\d{2}$/.test(String(s || ""))}
+    function isLeap(y){return y%4===0 && (y%100!==0 || y%400===0)}
+    function formatDateLabel(d){return isIso(d) ? new Date(`${d}T12:00:00`).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"}) : "Données non datées"}
+    function escapeHtml(s){return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+    function sw(id,btn){
+      document.querySelectorAll(".hv").forEach(v=>v.classList.remove("on"));
+      document.querySelectorAll(".ht").forEach(t=>t.classList.remove("on"));
+      document.getElementById("v-"+id).classList.add("on");
+      btn.classList.add("on");
+    }
+  </script>
+</body>
+</html>
