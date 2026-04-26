@@ -399,8 +399,8 @@
       const d1 = periods.d1, s7 = periods["7d"], p7 = periods.prev7d, mtd = periods.mtd;
       const avgOrders7 = s7.orders ? s7.orders / 7 : null;
       const avgRevenue7 = s7.revenue ? s7.revenue / 7 : null;
-      if(avgOrders7 && d1.orders < avgOrders7 * .7) a.push({level:"c",label:"Critique",title:"Commandes en chute",body:`Hier ${fmt(d1.orders)} commandes vs moyenne 7J ${fmt(avgOrders7)}/jour.`});
-      if(avgRevenue7 && d1.revenue < avgRevenue7 * .7) a.push({level:"c",label:"Critique",title:"CA en chute",body:`Hier ${money(d1.revenue)} vs moyenne 7J ${money(avgRevenue7)}/jour.`});
+      if(avgOrders7 && d1.orders < avgOrders7 * .7) a.push({level:"c",label:"Critique",title:"Commandes en chute",body:`Hier ${fmtZero(d1.orders)} commandes vs moyenne 7J ${fmtOne(avgOrders7)}/jour.`});
+      if(avgRevenue7 && d1.revenue < avgRevenue7 * .7) a.push({level:"c",label:"Critique",title:"CA en chute",body:`Hier ${moneyZero(d1.revenue)} vs moyenne 7J ${money(avgRevenue7)}/jour.`});
       if(s7.convRate && p7.convRate && s7.convRate < p7.convRate * .85) a.push({level:"w",label:"Warning",title:"Conversion en baisse",body:`Conv. rate 7J ${pct(s7.convRate)} vs ${pct(p7.convRate)} semaine précédente.`});
       if(s7.roas && d1.roas && d1.roas < s7.roas * .65) a.push({level:"c",label:"Ads",title:"ROAS en chute",body:`ROAS hier ${ratio(d1.roas)} vs moyenne 7J ${ratio(s7.roas)}.`});
       if(obj.ca){
@@ -411,7 +411,6 @@
         const projection = mtd.revenue ? mtd.revenue / daysElapsed * daysMonth : null;
         if(projection && projection < obj.ca * .85) a.push({level:"c",label:"MTD",title:"Projection MTD insuffisante",body:`Projection ${money(projection)} vs objectif ${money(obj.ca)}.`});
       }
-      if(s7.klaviyoRevenue === 0) a.push({level:"i",label:"CRM",title:"Aucun revenu Klaviyo 7J",body:"Vérifier flows actifs, tracking et attribution."});
       return a.slice(0,10);
     }
 
@@ -434,7 +433,10 @@
     function num(v){if(v==null || v==="") return 0; const n = Number(String(v).replace(/\s/g,"").replace(",", ".")); return Number.isFinite(n) ? n : 0}
     function safeDiv(a,b){return b ? a/b : null}
     function money(v){return v ? eur.format(v) : "—"}
+    function moneyZero(v){return v == null || !Number.isFinite(v) ? "—" : eur.format(v)}
     function fmt(v){return v ? nf.format(Math.round(v)) : "—"}
+    function fmtZero(v){return v == null || !Number.isFinite(v) ? "—" : nf.format(Math.round(v))}
+    function fmtOne(v){return v == null || !Number.isFinite(v) ? "—" : nf.format(Math.round(v*10)/10)}
     function ratio(v){return v ? nf.format(Math.round(v*100)/100) : "—"}
     function pct(v){return v == null || !Number.isFinite(v) ? "—" : `${nf.format(Math.round(v*10)/10)}%`}
     function delta(cur,old,positiveUp=true,unit=""){
