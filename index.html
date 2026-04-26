@@ -93,6 +93,19 @@
     .klt-f{background:rgba(244,216,168,.12);color:var(--accent)}.klt-c{background:rgba(76,175,125,.12);color:var(--g)}
     .klrow-m{display:flex;gap:14px;flex-wrap:wrap}
     .klrow-ms{font-size:10px;color:var(--sec);white-space:nowrap}
+    .cal{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px}
+    .cal-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .cal-t{font-size:10px;color:var(--accent);letter-spacing:.16em;text-transform:uppercase}
+    .cal-b{border:1px solid var(--border);background:var(--card2);color:var(--txt);border-radius:5px;width:28px;height:24px;cursor:pointer}
+    .cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+    .cal-w{font-size:8px;color:var(--sec);text-align:center;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
+    .cal-d{min-height:46px;background:rgba(51,46,44,.55);border:1px solid rgba(51,46,44,.9);border-radius:6px;padding:5px;display:flex;flex-direction:column;gap:4px;overflow:hidden}
+    .cal-d.today{border-color:var(--accent)}
+    .cal-n{font-size:9px;color:var(--sec);display:flex;justify-content:space-between}
+    .cal-o{display:flex;gap:2px;flex-wrap:wrap}
+    .sale-dot{width:5px;height:5px;border-radius:50%;background:var(--g);flex-shrink:0}
+    .sale-more{font-size:8px;color:var(--g);line-height:1}
+    .act{font-size:10px;color:var(--accent);line-height:1.45;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)}
     .lex-s{width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--txt);font-family:"Plus Jakarta Sans",sans-serif;margin-bottom:16px;outline:none}
     .lex-s:focus{border-color:var(--accent)}.lex-s::placeholder{color:var(--sec)}
     .lex-i{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:8px}
@@ -118,10 +131,12 @@
 const API_KEY  = "AIzaSyADK3alDzNTsEkbKGVDbrdHYBj0esGF0KU";
 const SHEET_ID = "17j732Xnp48sOWR_ignS3pgc5eKL4OPCJwUJWKH5Euv4";
 const SHEETS   = {shopify:"Shopify_Daily",ga4:"GA4_Channel",ads:"GoogleAds_Campaigns",st:"GoogleAds_SearchTerms",klav:"Klaviyo",klavD:"Klaviyo_Daily",klavA:"Klaviyo_Attribution_Daily",gscP:"GSC_Pages",gscQ:"GSC_Queries",obj:"Objectifs"};
-const CKEY = "holiae-v9", TTL = 36e5;
+const CKEY = "holiae-v12", TTL = 36e5;
 const app = document.getElementById("app");
 const NF = new Intl.NumberFormat("fr-FR");
 const EU = new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR",maximumFractionDigits:0});
+let CAL_MONTH = "";
+let HOLIAE_MODEL = null;
 
 document.addEventListener("DOMContentLoaded",init);
 async function init(){
@@ -152,6 +167,8 @@ function writeCache(d){try{sessionStorage.setItem(CKEY,JSON.stringify({t:Date.no
 // ── RENDER ────────────────────────────────────────────────────────────────────
 function render(raw,off=false){
   const m=model(raw);
+  HOLIAE_MODEL=m;
+  if(!CAL_MONTH)CAL_MONTH=m.ld.slice(0,7);
   const h=tabHealth(m);
   app.className="wrap";
   app.innerHTML=`<div class="shell">
@@ -254,7 +271,7 @@ function klavItems(rows){
 }
 
 // ── VIEWS ─────────────────────────────────────────────────────────────────────
-function vAlerts(m){const list=m.alerts.filter(a=>a.label!=="Rythme");return`<div class="hv on" id="v-alrt"><div class="sec">— Alertes · Ta todo du matin</div>${rhythmHero(m)}${list.length?list.map(a=>`<div class="al"><div class="dot ${a.lv}"></div><div style="flex:1"><div class="at">${a.title}</div><div class="as">${a.body}</div></div><span class="ab ${a.lv==="c"?"bc":a.lv==="w"?"bw":"bi"}">${a.label}</span></div>`).join(""):`<div class="empty" style="text-align:center;padding:24px;font-size:14px">Tout est dans les clous ✦<br><span style="font-size:11px">Aucune alerte active.</span></div>`}</div>`;}
+function vAlerts(m){const list=m.alerts.filter(a=>a.label!=="Rythme");return`<div class="hv on" id="v-alrt"><div class="sec">— Alertes · Ta todo du matin</div>${rhythmHero(m)}<div class="sg">Calendrier ventes · mois</div><div id="sales-calendar">${salesCalendar(m)}</div>${list.length?list.map(a=>`<div class="al"><div class="dot ${a.lv}"></div><div style="flex:1"><div class="at">${a.title}</div><div class="as">${a.body}</div>${a.action?`<div class="act">Action suggérée : ${esc(a.action)}</div>`:""}</div><span class="ab ${a.lv==="c"?"bc":a.lv==="w"?"bw":"bi"}">${a.label}</span></div>`).join(""):`<div class="empty" style="text-align:center;padding:24px;font-size:14px">Tout est dans les clous ✦<br><span style="font-size:11px">Aucune alerte active.</span></div>`}</div>`;}
 function vHier(m){return`<div class="hv" id="v-hier"><div class="sec">— Hier · ${fd(m.ld)} vs ${fd(m.d2)}</div>${secs(m.p.d1,m.p.d2,m,"d1","Hier")}</div>`;}
 function vPer(m,id,title,key,rk,extra=false){const p=m.p[key],ref=m.p[rk];return`<div class="hv" id="v-${id}"><div class="sec">— ${title}</div>${secs(p,ref,m,key,title)}</div>`;}
 
@@ -275,10 +292,11 @@ function vMtd(m){
     ${pc("Budget Ads",mo(p.cost),o.bAds?`Budget ${mo(o.bAds)}`:"Budget non renseigné",o.bAds?p.cost/o.bAds*100:null,"")}
     ${kcard("ROAS MTD",rt(p.roas),"","")}${kcard("CPA",mo(p.cpa),"","")}
   </div>
+  ${klavSummary(p,"Mois en cours")}
   <div class="sg">🛒 Funnel</div>${funnel(p)}
   <div class="sg">🎯 Campagnes Ads</div>${camps(p)}
   ${chR(p)}
-  ${klavPeriod(p,"Mois en cours")}</div>`;
+  ${klavDetail(p,"Mois en cours")}</div>`;
 }
 
 function vYtd(m){
@@ -299,10 +317,33 @@ function vYtd(m){
     ${pc("Budget Ads YTD",mo(p.cost),o.bY?`Budget ${mo(o.bY)}`:"Non renseigné",o.bY?p.cost/o.bY*100:null,"")}
     ${kcard("ROAS YTD",rt(p.roas),"","")}${kcard("CAC YTD",mo(p.cpa),"Coût acquisition client","")}
   </div>
+  ${klavSummary(p,"Année")}
   <div class="sg">🛒 Funnel</div>${funnel(p)}
   <div class="sg">🎯 Campagnes Ads</div>${camps(p)}
   ${chR(p)}
-  ${klavPeriod(p,"Année")}</div>`;
+  ${klavDetail(p,"Année")}</div>`;
+}
+
+function salesCalendar(m){
+  const ym=CAL_MONTH||m.ld.slice(0,7),y=+ym.slice(0,4),mo0=+ym.slice(5,7)-1;
+  const first=new Date(y,mo0,1),days=new Date(y,mo0+1,0).getDate(),offset=(first.getDay()+6)%7;
+  const orders={};
+  (m.raw.shopify||[]).forEach(r=>{const d=gv(r,"Date");if(String(d).slice(0,7)===ym)orders[d]=(orders[d]||0)+num(gv(r,"Orders"));});
+  const cells=[];
+  for(let i=0;i<offset;i++)cells.push(`<div></div>`);
+  for(let d=1;d<=days;d++){
+    const isoDay=`${ym}-${String(d).padStart(2,"0")}`,o=Math.round(orders[isoDay]||0),dots=Math.min(o,9);
+    const wd=new Date(y,mo0,d).toLocaleDateString("fr-FR",{weekday:"short"}).slice(0,3);
+    cells.push(`<div class="cal-d ${isoDay===m.ld?"today":""}"><div class="cal-n"><span>${d}</span><span>${wd}</span></div><div class="cal-o">${Array.from({length:dots}).map(()=>`<span class="sale-dot"></span>`).join("")}${o>9?`<span class="sale-more">+${o-9}</span>`:""}</div></div>`);
+  }
+  return`<div class="cal"><div class="cal-h"><button class="cal-b" onclick="moveCal(-1)">‹</button><div class="cal-t">${first.toLocaleDateString("fr-FR",{month:"long",year:"numeric"})}</div><button class="cal-b" onclick="moveCal(1)">›</button></div><div class="cal-g">${["lun","mar","mer","jeu","ven","sam","dim"].map(x=>`<div class="cal-w">${x}</div>`).join("")}${cells.join("")}</div><div class="ks">1 point vert = 1 vente. Les journées sans point n'ont aucune commande enregistrée.</div></div>`;
+}
+function moveCal(n){
+  if(!HOLIAE_MODEL)return;
+  const y=+CAL_MONTH.slice(0,4),m=+CAL_MONTH.slice(5,7)-1,d=new Date(y,m+n,1);
+  CAL_MONTH=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+  const el=document.getElementById("sales-calendar");
+  if(el)el.innerHTML=salesCalendar(HOLIAE_MODEL);
 }
 
 function vAds(m){
@@ -317,20 +358,21 @@ function vAds(m){
   <div class="sg">🎯 Décisions par campagne</div>
   ${cl.length?cl.map(c=>{const r=arec(c);return`<div class="adc"><div class="adc-h"><span class="adc-b" style="background:${r.bg};color:${r.color}">${r.label}</span><span class="adc-n">${esc(c.name)}</span><span class="adc-t">${esc(c.type)}</span></div><div class="adc-m"><div><div class="adc-ml">Dépense</div><div class="adc-mv">${mo(c.cost)}</div></div><div><div class="adc-ml">Ventes</div><div class="adc-mv">${fm(c.pur)}</div></div><div><div class="adc-ml">ROAS</div><div class="adc-mv" style="color:${rc(c.roas)}">${rt(c.roas)}</div></div><div><div class="adc-ml">CPA</div><div class="adc-mv">${mo(c.cpa)}</div></div></div><div class="adc-a">→ ${esc(r.action)}</div></div>`;}).join(""):`<div class="empty">Aucune donnée campagne sur 7 jours.</div>`}
   <div class="sg">🔍 Top requêtes Search</div>
-  ${topSearchTerms(m.raw.st||[],8).map(r=>{const tr=termRec(r);return`<div class="row"><span class="rn">${esc(r.term)}<br><span class="rs">${esc(tr)}</span></span><div class="rm"><span class="rs">Clics <span style="color:var(--accent)">${fm(r.clicks)}</span></span><span class="rs">Conv. ${fm(r.pur)}</span><span class="rs">Coût ${mo(r.cost)}</span><span class="rs">Valeur ${mo(r.value)}</span></div></div>`;}).join("")||`<div class="empty">Données Search Terms indisponibles.</div>`}
+  ${topSearchTerms(m.raw.st||[],8).map(r=>{const tr=termRec(r);return`<div class="row"><span class="rn">${esc(r.term)}<br><span class="rs">${esc(tr)}</span></span><div class="rm"><span class="rs">Clics <span style="color:var(--accent)">${fm(r.clicks)}</span></span><span class="rs">CTR ${pt(r.ctr)}</span><span class="rs">Conv. ${fm(r.pur)}</span><span class="rs">ROAS ${rt(r.roas)}</span><span class="rs">Coût ${mo(r.cost)}</span></div></div>`;}).join("")||`<div class="empty">Données Search Terms indisponibles.</div>`}
   </div>`;
 }
 
 function arec(c){
-  const roas=c.roas||0,spend=c.cost||0,pur=c.pur||0;
-  if(spend<30)return{label:"PEU DE DONNÉES",bg:"rgba(144,139,132,.15)",color:"#908b84",ac:"bi",action:"Moins de 30€ dépensés. Attendre plus de données."};
-  if(roas>=4&&pur>=3)return{label:"SCALER ↑",bg:"rgba(76,175,125,.16)",color:"var(--g)",ac:"bg",action:`ROAS ${rt(roas)} avec ${fm(pur)} ventes. Augmenter le budget de 20-30% max par semaine.`};
-  if(roas>=3&&pur>=2)return{label:"MAINTENIR =",bg:"rgba(76,175,125,.10)",color:"var(--g)",ac:"bg",action:`ROAS correct à ${rt(roas)}. Garder stable et surveiller 7 jours de plus.`};
-  if(roas>=2)return{label:"ANALYSER ?",bg:"rgba(232,166,76,.18)",color:"var(--o)",ac:"bw",action:`ROAS moyen à ${rt(roas)}. Vérifier créatifs, audiences et pages de destination.`};
-  if(spend>=50)return{label:"COUPER ✕",bg:"rgba(224,92,92,.18)",color:"var(--r)",ac:"bc",action:`ROAS insuffisant ${rt(roas)} pour ${mo(spend)} dépensés. Arrêter ou retravailler.`};
-  return{label:"ANALYSER ?",bg:"rgba(232,166,76,.18)",color:"var(--o)",ac:"bw",action:"Performances mixtes. Analyser créatifs et ciblage."};
+  const roas=c.roas||0,spend=c.cost||0,pur=c.pur||0,cpa=c.cpa||0,clicks=c.clk||0,cvr=clicks?pur/clicks*100:null;
+  if(spend<30)return{label:"OBSERVER",bg:"rgba(144,139,132,.15)",color:"#908b84",ac:"bi",action:"Pas assez de signal. Attendre 50-80 EUR de spend ou 2 ventes avant de toucher au budget."};
+  if(roas>=4&&pur>=3)return{label:"SCALER +20%",bg:"rgba(76,175,125,.16)",color:"var(--g)",ac:"bg",action:`ROAS ${rt(roas)} avec ${fm(pur)} ventes. Monter le budget de 15-20%, puis surveiller CPA (${mo(cpa)}) pendant 48h.`};
+  if(roas>=3&&pur>=2)return{label:"GARDER",bg:"rgba(76,175,125,.10)",color:"var(--g)",ac:"bg",action:`Rentable mais pas encore à scaler fort. Garder stable, isoler les meilleurs termes/assets, refaire le point dans 3 jours.`};
+  if(spend>=80&&!pur)return{label:"COUPER",bg:"rgba(224,92,92,.18)",color:"var(--r)",ac:"bc",action:"Spend significatif sans vente. Pause ou exclusion des requêtes faibles, puis relance avec angle plus intentionniste."};
+  if(spend>=50&&roas<2)return{label:"RÉDUIRE",bg:"rgba(224,92,92,.18)",color:"var(--r)",ac:"bc",action:`ROAS ${rt(roas)} trop bas. Baisser 20-40% ou couper ce qui dépense sans convertir.`};
+  if(pur>0&&roas<3)return{label:"OPTIMISER",bg:"rgba(232,166,76,.18)",color:"var(--o)",ac:"bw",action:`Des ventes existent, mais marge faible. Améliorer annonce/page, regarder le taux clic->vente (${pt(cvr)}).`};
+  return{label:"TESTER",bg:"rgba(232,166,76,.18)",color:"var(--o)",ac:"bw",action:"Signal encore fragile. Ne pas scaler. Chercher ce qui consomme le budget et couper les segments faibles."};
 }
-function grec(p){const r=p.roas||0;if(!p.cost)return{text:"Aucune donnée Ads",detail:"Vérifier la connexion Google Ads.",label:"Données",cls:"warn"};if(r>=4)return{text:"Scaler le budget",detail:`ROAS global ${rt(r)}. Campagnes rentables. Augmenter progressivement.`,label:"Scaler",cls:"good"};if(r>=3)return{text:"Maintenir le cap",detail:`ROAS ${rt(r)}. Correct. Surveiller et optimiser les créatifs.`,label:"Maintenir",cls:"good"};if(r>=2)return{text:"Analyser et optimiser",detail:`ROAS ${rt(r)}. Marge insuffisante pour scaler. Identifier ce qui tire vers le bas.`,label:"Analyser",cls:"warn"};return{text:"Réduire ou retravailler",detail:`ROAS ${rt(r)}. Coûte plus que ça rapporte. Action urgente.`,label:"Critique",cls:"bad"};}
+function grec(p){const r=p.roas||0,cpa=p.cpa||0;if(!p.cost)return{text:"Aucune donnée Ads",detail:"Sync Google Ads vide. Relancer la source avant de prendre une décision.",label:"Données",cls:"warn"};if(r>=4&&p.ord>=3)return{text:"Scaler prudemment",detail:`ROAS ${rt(r)} sur ${mo(p.cost)}. Augmenter uniquement les campagnes gagnantes de 15-20%, pas le compte entier. CPA actuel ${mo(cpa)}.`,label:"Scaler",cls:"good"};if(r>=3)return{text:"Garder et nettoyer",detail:`ROAS ${rt(r)}. Garder le budget stable, exclure les requêtes faibles et pousser les termes qui convertissent.`,label:"Maintenir",cls:"good"};if(r>=2)return{text:"Optimiser avant de scaler",detail:`ROAS ${rt(r)}. Trop juste pour augmenter. Couper les campagnes/termes sans vente et retravailler l'annonce ou la landing.`,label:"Optimiser",cls:"warn"};return{text:"Protéger le cash",detail:`ROAS ${rt(r)} pour ${mo(p.cost)} dépensés. Réduire ou couper les poches non rentables avant de remettre du budget.`,label:"Critique",cls:"bad"};}
 function rc(r){return(r||0)>=3?"var(--g)":(r||0)>=2?"var(--o)":"var(--r)";}
 
 function vSeo(m){
@@ -346,12 +388,13 @@ function vSeo(m){
     ${kcard("CTR moyen",pt(ti?tc/ti*100:null),"Obj. >3%","")}${kcard("Position moyenne",ap?`${Math.round(ap*10)/10}`:"—","Top 5 = excellent","")}
   </div>
   <div class="sg">🎯 Pages · Recommandations</div>
-  ${pg.length?pg.map(r=>{const rec=srec(r);if(!rec)return"";const pos=num(gv(r,"Position")),ctr=num(gv(r,"CTR")),cl=num(gv(r,"Clicks")),im=num(gv(r,"Impressions"));return`<div class="seoc"><div class="seoc-h"><span class="seoc-u">${esc(surl(gv(r,"Page")))}</span><span class="ab ${rec.ac}">${rec.label}</span></div><div class="seoc-m"><span class="seoc-ms">Position <strong style="color:${pos<=3?"var(--g)":pos<=10?"var(--o)":"var(--r)"}">${pos?Math.round(pos*10)/10:"—"}</strong></span><span class="seoc-ms">Clics <strong style="color:var(--accent)">${fm(cl)}</strong></span><span class="seoc-ms">Impr. ${fm(im)}</span><span class="seoc-ms">CTR <strong style="color:${ctr>=3?"var(--g)":ctr>=1?"var(--o)":"var(--r)"}">${pt(ctr)}</strong></span></div><div class="seoc-a">→ ${esc(rec.action)}</div></div>`;}).join(""):`<div class="empty">Pas de données GSC Pages. Vérifier Google Search Console.</div>`}
+  ${pg.length?pg.map(r=>{const rec=srec(r);if(!rec)return"";const pos=num(gv(r,"Position")),ctr=ctrv(r),cl=num(gv(r,"Clicks")),im=num(gv(r,"Impressions"));return`<div class="seoc"><div class="seoc-h"><span class="seoc-u">${esc(surl(gv(r,"Page")))}</span><span class="ab ${rec.ac}">${rec.label}</span></div><div class="seoc-m"><span class="seoc-ms">Position <strong style="color:${pos<=3?"var(--g)":pos<=10?"var(--o)":"var(--r)"}">${pos?Math.round(pos*10)/10:"—"}</strong></span><span class="seoc-ms">Clics <strong style="color:var(--accent)">${fm(cl)}</strong></span><span class="seoc-ms">Impr. ${fm(im)}</span><span class="seoc-ms">CTR <strong style="color:${ctr>=3?"var(--g)":ctr>=1?"var(--o)":"var(--r)"}">${pt(ctr)}</strong></span></div><div class="seoc-a">→ ${esc(rec.action)}</div></div>`;}).join(""):`<div class="empty">Pas de données GSC Pages. Vérifier Google Search Console.</div>`}
   <div class="sg">🔍 Top requêtes · 28 jours</div>
-  ${qr.map(r=>{const pos=num(gv(r,"Position")),ctr=num(gv(r,"CTR"));return`<div class="row"><span class="rn">${esc(gv(r,"Query")||"—")}</span><div class="rm"><span class="rs">Pos. <span style="color:${pos<=3?"var(--g)":pos<=10?"var(--o)":"var(--r)"}">${pos?Math.round(pos*10)/10:"—"}</span></span><span class="rs">Clics <span style="color:var(--accent)">${fm(num(gv(r,"Clicks")))}</span></span><span class="rs">CTR <span style="color:${ctr>=3?"var(--g)":"var(--sec)"}">${pt(ctr)}</span></span></div></div>`;}).join("")||`<div class="empty">Pas de données requêtes.</div>`}
+  ${qr.map(r=>{const pos=num(gv(r,"Position")),ctr=ctrv(r);return`<div class="row"><span class="rn">${esc(gv(r,"Query")||"—")}<br><span class="rs">${esc(qrec(r))}</span></span><div class="rm"><span class="rs">Pos. <span style="color:${pos<=3?"var(--g)":pos<=10?"var(--o)":"var(--r)"}">${pos?Math.round(pos*10)/10:"—"}</span></span><span class="rs">Clics <span style="color:var(--accent)">${fm(num(gv(r,"Clicks")))}</span></span><span class="rs">CTR <span style="color:${ctr>=3?"var(--g)":"var(--sec)"}">${pt(ctr)}</span></span></div></div>`;}).join("")||`<div class="empty">Pas de données requêtes.</div>`}
   </div>`;
 }
-function srec(r){const pos=num(gv(r,"Position")),ctr=num(gv(r,"CTR")),im=num(gv(r,"Impressions"));if(!pos&&!im)return null;if(pos<=3&&ctr>=3)return{label:"OK ✓",ac:"bg",action:"Bonne position et bon CTR. Maintenir le contenu à jour."};if(pos<=5&&ctr<2)return{label:"AMÉLIORER CTR",ac:"bw",action:`Position ${Math.round(pos*10)/10} mais CTR ${Math.round(ctr*10)/10}%. Retravaille le title et la méta description.`};if(pos>=4&&pos<=10&&im>100)return{label:"QUICK WIN ⚡",ac:"bg",action:`Position ${Math.round(pos*10)/10} — proche du top 3. Enrichir le contenu et optimiser H1 + liens internes.`};if(pos>10&&im>50)return{label:"CONTENU",ac:"bw",action:`Position ${Math.round(pos*10)/10} hors top 10. Enrichir le contenu et le maillage interne.`};if(pos>20)return{label:"RETRAVAILLER",ac:"bc",action:`Position ${Math.round(pos*10)/10}. Page peu visible. Revoir le contenu et la stratégie de liens.`};return{label:"SURVEILLER",ac:"bi",action:`Position ${Math.round(pos*10)/10}. Surveiller l'évolution.`};}
+function srec(r){const pos=num(gv(r,"Position")),ctr=ctrv(r),im=num(gv(r,"Impressions"));if(!pos&&!im)return null;if(pos<=3&&ctr>=3)return{label:"OK",ac:"bg",action:"Bonne position et bon CTR. Ne pas tout réécrire : ajouter seulement preuves, FAQ ou mise à jour légère."};if(pos<=3&&ctr<2)return{label:"CTR À CORRIGER",ac:"bw",action:`Déjà haut dans Google mais CTR ${Math.round(ctr*10)/10}%. Réécrire title/meta avec bénéfice clair et preuve, sans toucher au contenu lourd.`};if(pos>=4&&pos<=10&&im>100)return{label:"QUICK WIN",ac:"bg",action:`Position ${Math.round(pos*10)/10}. Ajouter 1 section utile, 3-5 liens internes et une FAQ pour viser top 3.`};if(pos>10&&im>100)return{label:"RENFORCER",ac:"bw",action:`Volume présent mais page trop basse. Créer/renforcer un cluster autour de cette intention, puis mailler vers la page.`};if(pos>20)return{label:"RETRAVAILLER",ac:"bc",action:`Position ${Math.round(pos*10)/10}. Pas prioritaire sauf si la requête est très business. Revoir l'angle avant d'écrire plus.`};return{label:"SURVEILLER",ac:"bi",action:`Position ${Math.round(pos*10)/10}. Attendre plus de signal ou traiter après les quick wins.`};}
+function qrec(r){const pos=num(gv(r,"Position")),ctr=ctrv(r),im=num(gv(r,"Impressions")),cl=num(gv(r,"Clicks"));if(pos<=3&&ctr<2&&im>100)return"On est visible mais pas assez cliqué : tester un title plus orienté bénéfice/preuve.";if(pos>=4&&pos<=10&&im>100)return"Quick win : ajouter la requête dans H2/FAQ + lien interne depuis une page forte.";if(pos>10&&im>200)return"Demande existante mais autorité insuffisante : créer un contenu dédié ou renforcer le maillage.";if(cl>0)return"Conserver et suivre : cette requête apporte déjà du trafic.";return"Pas d'action immédiate tant que le volume reste faible.";}
 
 function vKlav(m){
   const p=m.p["28d"];
@@ -361,7 +404,7 @@ function vKlav(m){
   const tr=p.klav,fr=p.klavFlows,cr2=p.klavCamps,tre=sm(rows,"Recipients");
   const wo=rows.reduce((a,r)=>a+num(gv(r,"Recipients"))*num(gv(r,"Open rate")),0);
   const wc=rows.reduce((a,r)=>a+num(gv(r,"Recipients"))*num(gv(r,"Click rate")),0);
-  const klRow=(r,tp)=>{const rv=num(gv(r,"Revenue")),rc2=num(gv(r,"Recipients")),or=num(gv(r,"Open rate")),clr=num(gv(r,"Click rate")),ur=num(gv(r,"Unsubscribe rate"));return`<div class="klrow"><div class="klrow-h"><span class="klrow-n">${esc(gv(r,"Name")||"—")}</span><span class="klrow-t ${tp==="flow"?"klt-f":"klt-c"}">${tp==="flow"?"Flow":"Campagne"}</span></div><div class="klrow-m"><span class="klrow-ms">Revenue <strong style="color:var(--accent)">${mo(rv)}</strong></span>${rc2?`<span class="klrow-ms">Dest. ${fm(rc2)}</span>`:""}<span class="klrow-ms">Open <span style="color:${or>=20?"var(--g)":"var(--o)"}">${pt(or)}</span></span><span class="klrow-ms">Click <span style="color:${clr>=2?"var(--g)":"var(--sec)"}">${pt(clr)}</span></span>${ur?`<span class="klrow-ms">Unsub <span style="color:${ur>0.5?"var(--r)":"var(--sec)"}">${pt(ur)}</span></span>`:""}</div></div>`;};
+  const klRow=(r,tp)=>{const rv=num(gv(r,"Revenue")),rc2=num(gv(r,"Recipients")),or=num(gv(r,"Open rate")),clr=num(gv(r,"Click rate")),ur=num(gv(r,"Unsubscribe rate")),rec=crmItemRec(r,tp);return`<div class="klrow"><div class="klrow-h"><span class="klrow-n">${esc(gv(r,"Name")||"—")}</span><span class="klrow-t ${tp==="flow"?"klt-f":"klt-c"}">${tp==="flow"?"Flow":"Campagne"}</span></div><div class="klrow-m"><span class="klrow-ms">Revenue <strong style="color:var(--accent)">${mo(rv)}</strong></span>${rc2?`<span class="klrow-ms">Dest. ${fm(rc2)}</span>`:""}<span class="klrow-ms">Open <span style="color:${or>=20?"var(--g)":"var(--o)"}">${pt(or)}</span></span><span class="klrow-ms">Click <span style="color:${clr>=2?"var(--g)":"var(--sec)"}">${pt(clr)}</span></span>${ur?`<span class="klrow-ms">Unsub <span style="color:${ur>0.5?"var(--r)":"var(--sec)"}">${pt(ur)}</span></span>`:""}</div><div class="act">${esc(rec)}</div></div>`;};
   const cr3=crmGlobalRec(m);
   return`<div class="hv" id="v-klv"><div class="sec">— CRM · Flows & Campagnes · 28 jours</div>
   <div class="dblk"><div><div class="dtit">Recommandation globale CRM</div><div class="dmain">${esc(cr3.text)}</div><div class="ks" style="margin-top:5px">${esc(cr3.detail)}</div></div><span class="badge ${cr3.cls}">${esc(cr3.label)}</span></div>
@@ -451,10 +494,11 @@ function secs(p,ref,m,key,label){
     ${kcard("ROAS",rt(p.roas),ref?`Réf. ${rt(ref.roas)}`:"",dl(p.roas,ref?.roas,true))}
     ${kcard("CPA",mo(p.cpa),ref?`Réf. ${mo(ref.cpa)}`:"",dl(p.cpa,ref?.cpa,false))}
   </div>
+  ${klavSummary(p,label||"Période")}
   <div class="sg">🛒 Funnel · Taux de passage</div>${funnel(p)}
   <div class="sg">🎯 Campagnes Ads</div>${camps(p)}
   ${chR(p)}
-  ${klavPeriod(p,label||"Période")}`;
+  ${klavDetail(p,label||"Période")}`;
 }
 
 function kcard(l,val,ref,dh){return`<div class="kc"><div class="kl">${l}</div><div class="kv">${val}</div><div class="kv2">${ref||""}</div><div class="kd">${dh||""}</div></div>`;}
@@ -477,7 +521,7 @@ function camps(p){
   return cl.map(c=>`<div class="row"><span class="rn">${esc(c.name)}</span><div class="rm"><span class="rs">${esc(c.type)}</span><span class="rs">Ventes <span style="color:var(--accent)">${fm(c.pur)}</span></span><span class="rs">ROAS <span style="color:${rc(c.roas)}">${rt(c.roas)}</span></span><span class="rs">Dépense ${mo(c.cost)}</span></div></div>`).join("");
 }
 
-function seoR(p){return`<div class="sg">🔍 Top pages SEO</div>${p.sp.map(r=>`<div class="row"><span class="rn">${esc(surl(gv(r,"Page")))}</span><div class="rm"><span class="rs">Pos. <span style="color:var(--accent)">${rt(num(gv(r,"Position")))}</span></span><span class="rs">Clics ${fm(num(gv(r,"Clicks")))}</span><span class="rs">CTR ${pt(num(gv(r,"CTR")))}</span></div></div>`).join("")||`<div class="empty">Pas de données SEO.</div>`}`;}
+function seoR(p){return`<div class="sg">🔍 Top pages SEO</div>${p.sp.map(r=>`<div class="row"><span class="rn">${esc(surl(gv(r,"Page")))}</span><div class="rm"><span class="rs">Pos. <span style="color:var(--accent)">${rt(num(gv(r,"Position")))}</span></span><span class="rs">Clics ${fm(num(gv(r,"Clicks")))}</span><span class="rs">CTR ${pt(ctrv(r))}</span></div></div>`).join("")||`<div class="empty">Pas de données SEO.</div>`}`;}
 function chR(p){const tot=Object.values(p.chs).reduce((a,b)=>a+b,0);return`<div class="sg">🌐 Trafic par canal</div>${Object.entries(p.chs).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n,s])=>`<div class="row"><span class="rn">${esc(n)}</span><div class="rm"><span class="rs">${fm(s)} sessions</span><span class="rs">${pt(tot?s/tot*100:null)}</span></div></div>`).join("")||`<div class="empty">Aucune donnée canal.</div>`}`;}
 
 
@@ -530,16 +574,19 @@ function miniPg(l,val,obj,pv,sub){
   </div>`;
 }
 
-function klavPeriod(p,label){
+function klavSummary(p,label){
   const has=p&&((p.klav||0)||(p.klavFlows||0)||(p.klavCamps||0));
   if(!has)return`<div class="sg">📧 CRM · ${esc(label)}</div><div class="empty">Aucune donnée Klaviyo sur cette période.</div>`;
-  const items=(p.klavItems||[]).slice(0,8);
   return`<div class="sg">📧 CRM · ${esc(label)}</div><div class="kg">
     ${kcard("Klaviyo Revenue",mo(p.klav),"Flows + campagnes","")}
     ${kcard("Flows",mo(p.klavFlows),"Automatiques","")}
     ${kcard("Campagnes",mo(p.klavCamps),"Manuelles","")}
-  </div>
-  <div class="sg">📧 Détail flows / campagnes · ${esc(label)}</div>
+  </div>`;
+}
+
+function klavDetail(p,label){
+  const items=(p&&p.klavItems||[]).slice(0,8);
+  return`<div class="sg">📧 Détail flows / campagnes · ${esc(label)}</div>
   ${items.length?items.map(x=>`<div class="row"><span class="rn">${esc(x.name)}</span><div class="rm"><span class="rs">${esc(x.type)}</span><span class="rs">CA <span style="color:var(--accent)">${mo(x.revenue)}</span></span>${x.orders?`<span class="rs">Commandes ${fm(x.orders)}</span>`:""}</div></div>`).join(""):`<div class="empty">Détail flow/campagne indisponible. Lance le sync Klaviyo Attribution Daily pour remplir l'onglet dédié.</div>`}`;
 }
 
@@ -602,10 +649,10 @@ function seoGlobalRec(pages,queries){
   const ti=pages.reduce((a,r)=>a+num(gv(r,"Impressions")),0);
   const avgCtr=ti?tc/ti*100:0;
   const qWins=pages.filter(r=>num(gv(r,"Position"))>=4&&num(gv(r,"Position"))<=10&&num(gv(r,"Impressions"))>100).length;
-  if(avgPos<=4&&avgCtr>=3)return{text:"SEO en bonne santé",detail:`Position moyenne ${Math.round(avgPos*10)/10} · CTR ${Math.round(avgCtr*10)/10}%. Maintenir la cadence éditoriale.`,label:"Bon",cls:"good"};
-  if(qWins>=2)return{text:`${qWins} Quick Wins à saisir`,detail:`${qWins} pages en position 4-10 avec du volume. Enrichir le contenu pour passer en top 3.`,label:"Action",cls:"warn"};
-  if(avgPos<=7)return{text:"Améliorer le CTR",detail:`Position moyenne ${Math.round(avgPos*10)/10} mais CTR ${Math.round(avgCtr*10)/10}%. Retravaille les titles et méta descriptions.`,label:"CTR",cls:"warn"};
-  return{text:"Travail de fond requis",detail:`Position moyenne ${Math.round(avgPos*10)/10}. Investir dans le contenu et le maillage interne.`,label:"Contenu",cls:"bad"};
+  if(qWins>=2)return{text:`Traiter ${qWins} quick wins`,detail:`Priorité : pages en position 4-10 avec impressions. Pour chacune : title/meta, 1 section utile, FAQ et 3 liens internes.`,label:"Action",cls:"warn"};
+  if(avgPos<=4&&avgCtr>=3)return{text:"SEO sain",detail:`Position moyenne ${Math.round(avgPos*10)/10} · CTR ${Math.round(avgCtr*10)/10}%. Ne pas casser ce qui marche : mise à jour légère + maillage vers les pages business.`,label:"Bon",cls:"good"};
+  if(avgPos<=7)return{text:"Gagner des clics",detail:`Position moyenne ${Math.round(avgPos*10)/10} mais CTR ${Math.round(avgCtr*10)/10}%. Action : réécrire les titles/meta des pages visibles avant de produire plus de contenu.`,label:"CTR",cls:"warn"};
+  return{text:"Renforcer l'autorité",detail:`Position moyenne ${Math.round(avgPos*10)/10}. Action : créer des contenus de soutien et envoyer des liens internes vers les pages qui vendent.`,label:"Contenu",cls:"bad"};
 }
 
 function crmGlobalRec(m){
@@ -620,31 +667,41 @@ function crmGlobalRec(m){
   const flows=rows.filter(r=>String(gv(r,"Type")||"").toLowerCase()==="flow");
   const flowRev=sm(flows,"Revenue");
   const flowShare=totalRev?flowRev/totalRev*100:0;
-  if(avgUnsub>0.5)return{text:"Attention aux désinscriptions",detail:`Taux de désinscription moyen ${Math.round(avgUnsub*10)/10}%. Revoir la fréquence et le ciblage des campagnes.`,label:"Urgence",cls:"bad"};
-  if(flowShare<30&&totalRev>0)return{text:"Activer plus de flows",detail:`Les flows ne représentent que ${Math.round(flowShare)}% du CA CRM. Mettre en place abandon panier, post-achat, win-back.`,label:"Flows",cls:"warn"};
-  if(avgOpen>=20&&totalRev>0)return{text:"CRM performant",detail:`Open rate ${Math.round(avgOpen*10)/10}% · Revenue ${mo(totalRev)}. Augmenter la fréquence des campagnes.`,label:"Bon",cls:"good"};
-  return{text:"Améliorer l'engagement",detail:`Open rate ${Math.round(avgOpen*10)/10}%. Tester de nouveaux objets d'email et segmenter la liste.`,label:"Engagement",cls:"warn"};
+  if(avgUnsub>0.5)return{text:"Pression trop forte",detail:`Unsub moyen ${Math.round(avgUnsub*10)/10}%. Action : réduire la fréquence des campagnes larges et segmenter par intention/achat récent.`,label:"Urgence",cls:"bad"};
+  if(flowShare<30&&totalRev>0)return{text:"Automatiser plus de CA",detail:`Flows = ${Math.round(flowShare)}% du CA CRM. Action : renforcer abandon checkout/panier, post-achat et win-back avant d'augmenter les campagnes.`,label:"Flows",cls:"warn"};
+  if(avgOpen>=20&&totalRev>0)return{text:"CRM exploitable",detail:`Open ${Math.round(avgOpen*10)/10}% · Revenue ${mo(totalRev)}. Action : répliquer les angles qui vendent, pas juste envoyer plus souvent.`,label:"Bon",cls:"good"};
+  return{text:"Travailler l'accroche",detail:`Open ${Math.round(avgOpen*10)/10}%. Action : tester objet + preview text, puis segmenter les non-acheteurs chauds séparément.`,label:"Engagement",cls:"warn"};
+}
+function crmItemRec(r,tp){
+  const rv=num(gv(r,"Revenue")),rec=num(gv(r,"Recipients")),op=num(gv(r,"Open rate")),cl=num(gv(r,"Click rate")),un=num(gv(r,"Unsubscribe rate"));
+  if(un>0.5)return"Action : pression trop forte. Réduire fréquence ou resserrer l'audience avant le prochain envoi.";
+  if(rv>0&&cl>=2)return tp==="flow"?"Action : flow vendeur. Ne pas modifier brutalement, tester seulement 1 amélioration d'objet/CTA.":"Action : angle vendeur. Le réutiliser dans une nouvelle campagne ou une relance segmentée.";
+  if(rec>=100&&op<18)return"Action : problème d'ouverture. Tester objet + preview text, pas le contenu interne en premier.";
+  if(op>=20&&cl<1.5)return"Action : l'objet fait ouvrir mais le contenu ne pousse pas assez au clic. Revoir offre, CTA et premier écran.";
+  if(tp==="flow"&&rec>=50&&!rv)return"Action : vérifier trigger, délai et offre. Le flow tourne mais ne vend pas encore.";
+  if(tp==="campaign"&&rec>=100&&!rv)return"Action : campagne sans CA. Ne pas dupliquer telle quelle, changer angle ou segment.";
+  return"Action : garder en observation, pas assez de signal pour décider proprement.";
 }
 
 // ── ALERTS ────────────────────────────────────────────────────────────────────
 function alerts(p,o){
   const a=[],d1=p.d1,s7=p["7d"],p7=p.p7d,mtd=p.mtd;
   const a7O=s7.ord?s7.ord/7:null,a7R=s7.rev?s7.rev/7:null;
-  if(!d1.sess&&!d1.ord)a.push({lv:"c",label:"Data",title:"Données Shopify manquantes",body:"Sessions et commandes à zéro sur J-1. Vérifier la connexion API Shopify."});
-  if(a7O&&d1.ord<a7O*.7)a.push({lv:"c",label:"Critique",title:"Commandes en chute",body:`Hier ${fm(d1.ord)} vs moyenne 7J ${fm(a7O)}/j (−${pt((1-d1.ord/a7O)*100)}).`});
-  if(a7R&&d1.rev<a7R*.7)a.push({lv:"c",label:"Critique",title:"CA en chute",body:`Hier ${mo(d1.rev)} vs moyenne 7J ${mo(a7R)}/j.`});
-  if(d1.roas&&s7.roas&&d1.roas<s7.roas*.65)a.push({lv:"c",label:"Ads",title:"ROAS en chute",body:`ROAS hier ${rt(d1.roas)} vs moyenne 7J ${rt(s7.roas)}.`});
-  if(s7.p2a!=null&&s7.p2a<1)a.push({lv:"c",label:"CRO",title:"PDP → ATC trop faible",body:`Taux ajout panier 7J : ${pt(s7.p2a)}. Objectif 1,5%+. Retravailler la page produit.`});
+  if(!d1.sess&&!d1.ord)a.push({lv:"c",label:"Data",title:"Données Shopify manquantes",body:"Sessions et commandes à zéro sur J-1. Vérifier la connexion API Shopify.",action:"Relancer le sync Shopify/GA4 avant d'analyser. Si Shopify est OK mais GA4 vide, vérifier uniquement GA4."});
+  if(a7O&&d1.ord<a7O*.7)a.push({lv:"c",label:"Critique",title:"Commandes en chute",body:`Hier ${fm(d1.ord)} vs moyenne 7J ${fm(a7O)}/j (−${pt((1-d1.ord/a7O)*100)}).`,action:"Regarder d'abord trafic par canal et campagnes Ads hier. Si trafic stable, inspecter PDP, panier et checkout."});
+  if(a7R&&d1.rev<a7R*.7)a.push({lv:"c",label:"Critique",title:"CA en chute",body:`Hier ${mo(d1.rev)} vs moyenne 7J ${mo(a7R)}/j.`,action:"Identifier si le problème vient du volume de commandes ou du panier moyen. Adapter offre/bundle si AOV baisse."});
+  if(d1.roas&&s7.roas&&d1.roas<s7.roas*.65)a.push({lv:"c",label:"Ads",title:"ROAS en chute",body:`ROAS hier ${rt(d1.roas)} vs moyenne 7J ${rt(s7.roas)}.`,action:"Ne pas augmenter le budget. Couper les requêtes/campagnes qui ont dépensé hier sans achat."});
+  if(s7.p2a!=null&&s7.p2a<1)a.push({lv:"c",label:"CRO",title:"PDP → ATC trop faible",body:`Taux ajout panier 7J : ${pt(s7.p2a)}. Objectif 1,5%+. Retravailler la page produit.`,action:"Priorité PDP : bénéfice au-dessus de la ligne de flottaison, preuve client, offre claire, CTA visible mobile."});
   if(o.ca){const dE=Math.max(1,new Date().getDate()-1),dM=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate(),proj=mtd.rev?mtd.rev/dE*dM:null;if(proj&&proj<o.ca*.85)a.push({lv:"c",label:"MTD",title:"Projection MTD insuffisante",body:`Projection ${mo(proj)} vs objectif ${mo(o.ca)} → écart ${mo(o.ca-proj)}.`});else if(proj&&proj<o.ca*.95)a.push({lv:"i",label:"Info",title:"Projection MTD légèrement en retard",body:`Projection ${mo(proj)} (${pt(proj/o.ca*100)} de l'objectif).`});
   // Rythme requis
   if(o.ca&&mtd.rev!=null){const daysLeft=Math.max(1,dM-dE);const need=Math.max(0,o.ca-mtd.rev)/daysLeft;if(need>0)a.push({lv:"i",label:"Rythme",title:`Il faut ${mo(need)}/jour pour atteindre l'objectif`,body:`CA MTD ${mo(mtd.rev)} · Objectif ${mo(o.ca)} · ${daysLeft} jours restants · Rythme actuel ${mo(mtd.rev/Math.max(1,dE))}/j.`});else a.push({lv:"i",label:"Rythme",title:"Objectif mensuel déjà atteint ✦",body:`CA MTD ${mo(mtd.rev)} dépasse l'objectif ${mo(o.ca)}.`});}}
-  if(s7.cr&&p7.cr&&s7.cr<p7.cr*.85)a.push({lv:"w",label:"Warning",title:"Taux de conversion en baisse",body:`Conv. rate 7J ${pt(s7.cr)} vs ${pt(p7.cr)} semaine précédente.`});
-  if(a7O&&d1.ord<a7O*.85&&d1.ord>=a7O*.7)a.push({lv:"w",label:"Warning",title:"Commandes en légère baisse",body:`Hier ${fm(d1.ord)} vs moyenne 7J ${fm(a7O)}/j.`});
-  if(s7.a2c!=null&&s7.a2c<50)a.push({lv:"w",label:"Panier",title:"ATC → Checkout faible",body:`${pt(s7.a2c)} des ajouts panier arrivent au checkout.`});
-  if(s7.c2o!=null&&s7.c2o<30)a.push({lv:"w",label:"Checkout",title:"Checkout → Commandes faible",body:`${pt(s7.c2o)} des checkouts aboutissent à une commande.`});
+  if(s7.cr&&p7.cr&&s7.cr<p7.cr*.85)a.push({lv:"w",label:"Warning",title:"Taux de conversion en baisse",body:`Conv. rate 7J ${pt(s7.cr)} vs ${pt(p7.cr)} semaine précédente.`,action:"Comparer mobile vs desktop et Ads vs organique. Si la baisse est partout, regarder offre/PDP plutôt que ciblage."});
+  if(a7O&&d1.ord<a7O*.85&&d1.ord>=a7O*.7)a.push({lv:"w",label:"Warning",title:"Commandes en légère baisse",body:`Hier ${fm(d1.ord)} vs moyenne 7J ${fm(a7O)}/j.`,action:"Surveiller demain. Si 2 jours de suite, passer en mode diagnostic trafic -> PDP -> checkout."});
+  if(s7.a2c!=null&&s7.a2c<50)a.push({lv:"w",label:"Panier",title:"ATC → Checkout faible",body:`${pt(s7.a2c)} des ajouts panier arrivent au checkout.`,action:"Vérifier frais de livraison, délais, codes promo et clarté du panier. Le blocage est après le clic panier."});
+  if(s7.c2o!=null&&s7.c2o<30)a.push({lv:"w",label:"Checkout",title:"Checkout → Commandes faible",body:`${pt(s7.c2o)} des checkouts aboutissent à une commande.`,action:"Tester le checkout mobile, moyens de paiement, frais surprises et réassurance livraison/retours."});
   if(o.bAds){const dE=Math.max(1,new Date().getDate()-1),dM=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate(),norm=o.bAds*(dE/dM);if(mtd.cost>norm*1.2)a.push({lv:"w",label:"Budget",title:"Budget Ads trop rapide",body:`Dépense MTD ${mo(mtd.cost)} vs rythme attendu ${mo(norm)}.`});if(mtd.cost&&mtd.cost<norm*.7)a.push({lv:"i",label:"Budget",title:"Budget Ads sous-consommé",body:`Dépense MTD ${mo(mtd.cost)} vs rythme attendu ${mo(norm)}.`});}
   const sr=s7.byType["SEARCH"]||{},pm=s7.byType["PMAX"]||{};
-  if(sr.roas&&pm.roas&&pm.roas<sr.roas*.6)a.push({lv:"w",label:"Ads",title:"Search surperforme PMAX",body:`Search ROAS ${rt(sr.roas)} vs PMAX ${rt(pm.roas)}. Envisager rééquilibrage.`});
+  if(sr.roas&&pm.roas&&pm.roas<sr.roas*.6)a.push({lv:"w",label:"Ads",title:"Search surperforme PMAX",body:`Search ROAS ${rt(sr.roas)} vs PMAX ${rt(pm.roas)}. Envisager rééquilibrage.`,action:"Déplacer progressivement du budget PMAX vers Search. Garder PMAX seulement si elle nourrit du retargeting rentable."});
   return a.slice(0,12);
 }
 function dqual(d1){const m=[];if(!d1.sess)m.push("sessions");if(!d1.ord)m.push("commandes");if(!d1.cost)m.push("Ads");if(!d1.klav)m.push("Klaviyo");if(!m.length)return{level:"ok",label:"Data OK"};if(m.length<=2)return{level:"warn",label:"Data partielle : "+m.join(", ")};return{level:"bad",label:"Data à vérifier"};}
@@ -667,17 +724,20 @@ function topSearchTerms(rows,l){
     out[key].pur+=num(gv(r,"Purchases")||gv(r,"Conversions"));
     out[key].value+=num(gv(r,"Purchase value")||gv(r,"Revenue_Ads"));
   });
-  return Object.values(out).sort((a,b)=>b.clicks-a.clicks||b.cost-a.cost).slice(0,l);
+  return Object.values(out).map(x=>({...x,ctr:x.impr?x.clicks/x.impr*100:null,roas:dv(x.value,x.cost),cpa:dv(x.cost,x.pur)})).sort((a,b)=>b.clicks-a.clicks||b.cost-a.cost).slice(0,l);
 }
 function termRec(r){
-  if(r.pur>0)return"Convertit : garder / isoler en exact si le volume monte.";
-  if(r.cost>=20&&r.clicks>=10)return"Dépense sans vente : surveiller ou exclure si l'intention est faible.";
-  if(r.clicks>=5)return"Volume utile : surveiller encore avant décision.";
-  return"Peu de données.";
+  if(r.pur>0&&r.roas>=3)return"Rentable : isoler en exact ou groupe dédié, et monter doucement si le volume suit.";
+  if(r.pur>0)return"Convertit mais marge faible : garder, puis améliorer annonce/page avant de scaler.";
+  if(r.cost>=20&&r.clicks>=10)return"Dépense sans vente : exclure si intention faible, sinon tester une annonce plus directe.";
+  if(r.clicks>=8&&r.ctr!=null&&r.ctr<2)return"Beaucoup d'affichages mais peu de clics : titre/annonce à rendre plus précis.";
+  if(r.clicks>=5)return"Signal utile : attendre encore ou surveiller le coût avant exclusion.";
+  return"Peu de données : aucune décision forte.";
 }
 function gv(row,n){return row?.[n]??"";}
 function sm(rows,f){return rows.reduce((a,r)=>a+num(gv(r,f)),0);}
 function num(x){if(x==null||x==="")return 0;const v=Number(String(x).replace(/\s/g,"").replace(",","."));return Number.isFinite(v)?v:0;}
+function ctrv(r){const v=num(gv(r,"CTR"));return v&&v<=1?v*100:v;}
 function dv(a,b){return b?a/b:null;}
 function mo(x){return x?EU.format(x):"—";}
 function fm(x){return x?NF.format(Math.round(x)):"—";}
