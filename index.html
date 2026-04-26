@@ -118,7 +118,7 @@
 const API_KEY  = "AIzaSyADK3alDzNTsEkbKGVDbrdHYBj0esGF0KU";
 const SHEET_ID = "17j732Xnp48sOWR_ignS3pgc5eKL4OPCJwUJWKH5Euv4";
 const SHEETS   = {shopify:"Shopify_Daily",ga4:"GA4_Channel",ads:"GoogleAds_Campaigns",st:"GoogleAds_SearchTerms",klav:"Klaviyo",klavD:"Klaviyo_Daily",gscP:"GSC_Pages",gscQ:"GSC_Queries",obj:"Objectifs"};
-const CKEY = "holiae-v7", TTL = 36e5;
+const CKEY = "holiae-v8", TTL = 36e5;
 const app = document.getElementById("app");
 const NF = new Intl.NumberFormat("fr-FR");
 const EU = new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR",maximumFractionDigits:0});
@@ -242,8 +242,8 @@ function gobj(rows,date){const m=date.slice(0,7),r=rows.find(x=>gv(x,"Mois")===m
 
 // ── VIEWS ─────────────────────────────────────────────────────────────────────
 function vAlerts(m){const list=m.alerts.filter(a=>a.label!=="Rythme");return`<div class="hv on" id="v-alrt"><div class="sec">— Alertes · Ta todo du matin</div>${rhythmHero(m)}${list.length?list.map(a=>`<div class="al"><div class="dot ${a.lv}"></div><div style="flex:1"><div class="at">${a.title}</div><div class="as">${a.body}</div></div><span class="ab ${a.lv==="c"?"bc":a.lv==="w"?"bw":"bi"}">${a.label}</span></div>`).join(""):`<div class="empty" style="text-align:center;padding:24px;font-size:14px">Tout est dans les clous ✦<br><span style="font-size:11px">Aucune alerte active.</span></div>`}</div>`;}
-function vHier(m){return`<div class="hv" id="v-hier"><div class="sec">— Hier · ${fd(m.ld)} vs ${fd(m.d2)}</div>${secs(m.p.d1,m.p.d2,m,"d1")}</div>`;}
-function vPer(m,id,title,key,rk,extra=false){const p=m.p[key],ref=m.p[rk];const withCh=["7d","28d"].includes(key);return`<div class="hv" id="v-${id}"><div class="sec">— ${title}</div>${secs(p,ref,m,key)}${withCh?chR(p):""}${extra?seoR(p)+chR(p):""}</div>`;}
+function vHier(m){return`<div class="hv" id="v-hier"><div class="sec">— Hier · ${fd(m.ld)} vs ${fd(m.d2)}</div>${secs(m.p.d1,m.p.d2,m,"d1","Hier")}</div>`;}
+function vPer(m,id,title,key,rk,extra=false){const p=m.p[key],ref=m.p[rk];return`<div class="hv" id="v-${id}"><div class="sec">— ${title}</div>${secs(p,ref,m,key,title)}</div>`;}
 
 function vMtd(m){
   const p=m.p.mtd,o=m.ob;
@@ -262,11 +262,10 @@ function vMtd(m){
     ${pc("Budget Ads",mo(p.cost),o.bAds?`Budget ${mo(o.bAds)}`:"Budget non renseigné",o.bAds?p.cost/o.bAds*100:null,"")}
     ${kcard("ROAS MTD",rt(p.roas),"","")}${kcard("CPA",mo(p.cpa),"","")}
   </div>
-  <div class="sg">📧 Email · Klaviyo</div><div class="kg">${kcard("Klaviyo MTD",mo(p.klav),"Flows + campagnes","")}</div>
   <div class="sg">🛒 Funnel</div>${funnel(p)}
   <div class="sg">🎯 Campagnes Ads</div>${camps(p)}
-  <div class="sg">🌐 Trafic par canal</div>${chR(p)}
-  <div class="sg">📧 CRM · Top performers</div>${klavTop(m,p)}</div>`;
+  ${chR(p)}
+  ${klavPeriod(p,"Mois en cours")}</div>`;
 }
 
 function vYtd(m){
@@ -287,9 +286,10 @@ function vYtd(m){
     ${pc("Budget Ads YTD",mo(p.cost),o.bY?`Budget ${mo(o.bY)}`:"Non renseigné",o.bY?p.cost/o.bY*100:null,"")}
     ${kcard("ROAS YTD",rt(p.roas),"","")}${kcard("CAC YTD",mo(p.cpa),"Coût acquisition client","")}
   </div>
-  <div class="sg">📧 Email · Klaviyo</div><div class="kg">${kcard("Klaviyo YTD",mo(p.klav),p.rev?pt(p.klav/p.rev*100)+" du CA":"","")}</div>
   <div class="sg">🛒 Funnel</div>${funnel(p)}
-  <div class="sg">🎯 Campagnes Ads</div>${camps(p)}</div>`;
+  <div class="sg">🎯 Campagnes Ads</div>${camps(p)}
+  ${chR(p)}
+  ${klavPeriod(p,"Année")}</div>`;
 }
 
 function vAds(m){
@@ -422,7 +422,7 @@ function vLex(){
 }
 
 // ── UI COMPONENTS ─────────────────────────────────────────────────────────────
-function secs(p,ref,m,key){
+function secs(p,ref,m,key,label){
   const g=key&&m?goalSet(m,key):{};
   return`
   <div class="sg">💰 Business</div><div class="kg">
@@ -438,12 +438,10 @@ function secs(p,ref,m,key){
     ${kcard("ROAS",rt(p.roas),ref?`Réf. ${rt(ref.roas)}`:"",dl(p.roas,ref?.roas,true))}
     ${kcard("CPA",mo(p.cpa),ref?`Réf. ${mo(ref.cpa)}`:"",dl(p.cpa,ref?.cpa,false))}
   </div>
-  <div class="sg">📧 Email · Klaviyo</div><div class="kg">
-    ${kcard("Klaviyo Revenue",mo(p.klav),ref?`Réf. ${mo(ref.klav)}`:"",dl(p.klav,ref?.klav,true))}
-  </div>
   <div class="sg">🛒 Funnel · Taux de passage</div>${funnel(p)}
   <div class="sg">🎯 Campagnes Ads</div>${camps(p)}
-  ${m?"<div class='sg'>📧 CRM · Top performers</div>"+klavTop(m,p):""}`;
+  ${chR(p)}
+  ${klavPeriod(p,label||"Période")}`;
 }
 
 function kcard(l,val,ref,dh){return`<div class="kc"><div class="kl">${l}</div><div class="kv">${val}</div><div class="kv2">${ref||""}</div><div class="kd">${dh||""}</div></div>`;}
@@ -516,6 +514,16 @@ function miniPg(l,val,obj,pv,sub){
     <div style="font-size:9px;color:var(--sec);margin-bottom:5px">Obj. ${obj}</div>
     <div class="pb"><div class="pf ${cls}" style="width:${w}%"></div></div>
     ${sub?`<div style="font-size:9px;color:var(--sec);margin-top:3px">${sub}</div>`:""}
+  </div>`;
+}
+
+function klavPeriod(p,label){
+  const has=p&&((p.klav||0)||(p.klavFlows||0)||(p.klavCamps||0));
+  if(!has)return`<div class="sg">📧 CRM · ${esc(label)}</div><div class="empty">Aucune donnée Klaviyo sur cette période.</div>`;
+  return`<div class="sg">📧 CRM · ${esc(label)}</div><div class="kg">
+    ${kcard("Klaviyo Revenue",mo(p.klav),"Flows + campagnes","")}
+    ${kcard("Flows",mo(p.klavFlows),"Automatiques","")}
+    ${kcard("Campagnes",mo(p.klavCamps),"Manuelles","")}
   </div>`;
 }
 
