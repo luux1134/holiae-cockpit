@@ -134,7 +134,14 @@ async function load(){
   if(!API_KEY||API_KEY==="TA_CLE_ICI")throw new Error("Clé API manquante.");
   const e=await Promise.all(Object.entries(SHEETS).map(async([k,nm])=>[k,await fsheet(nm)]));
   const d=Object.fromEntries(e);
-  localStorage.setItem(CKEY,JSON.stringify({t:Date.now(),d}));
+  try{
+    // Vider tous les anciens caches Holiaē avant d'écrire
+    Object.keys(localStorage).filter(k=>k.startsWith("holiae")).forEach(k=>localStorage.removeItem(k));
+    localStorage.setItem(CKEY,JSON.stringify({t:Date.now(),d}));
+  }catch(e){
+    // Quota dépassé : on tourne sans cache, pas de plantage
+    console.warn("Cache localStorage plein, mode sans cache.");
+  }
   return d;
 }
 async function fsheet(nm){
@@ -149,6 +156,7 @@ function rcache(){try{return JSON.parse(localStorage.getItem(CKEY)||"");}catch{r
 // ── RENDER ────────────────────────────────────────────────────────────────────
 function render(raw,off=false){
   const m=model(raw);
+  const h=tabHealth(m);
   app.className="wrap";
   app.innerHTML=`<div class="shell">
   <div class="hdr">
@@ -157,9 +165,9 @@ function render(raw,off=false){
   </div>
   <div class="tabs">
     ${tb("alrt","⚠ Alertes ("+m.alerts.length+")",true,"ta")}
-    ${tb("hier","Hier")}${tb("j7","7 jours")}${tb("mtd","Mois en cours")}
-    ${tb("j28","28 jours")}${tb("m3","3 mois")}${tb("ytd","Année")}
-    ${tb("ads","Ads 7J")}${tb("seo","SEO 28J")}${tb("klv","Klaviyo")}${tb("lex","Lexique")}
+    ${tbh("hier","Hier",h.hier)}${tbh("j7","7 jours",h.j7)}${tbh("mtd","Mois",h.mtd)}
+    ${tbh("j28","28 jours",h.j28)}${tbh("m3","3 mois",h.m3)}${tbh("ytd","Année",h.ytd)}
+    ${tbh("ads","Ads 7J",h.ads)}${tbh("seo","SEO 28J",h.seo)}${tbh("klv","CRM 28J",h.klv)}${tb("lex","Lexique")}
   </div>
   ${vAlerts(m)}${vHier(m)}${vPer(m,"j7","7 jours glissants","7d","p7d")}
   ${vMtd(m)}${vPer(m,"j28","28 jours glissants","28d","p28d")}
@@ -168,6 +176,36 @@ function render(raw,off=false){
 </div>`;
 }
 function tb(id,l,on=false,x=""){return`<button class="ht ${x} ${on?"on":""}" onclick="sw('${id}',this)">${l}</button>`;}
+function tbh(id,l,health){const dot=health==="g"?"🟢":health==="o"?"🟠":"🔴";return`<button class="ht" onclick="sw('${id}',this)">${dot} ${l}</button>`;}
+function tabHealth(m){
+  const p=m.p,o=m.ob;
+  const h=(ok,warn)=>ok?"g":warn?"o":"r";
+  // Hier: commandes J1 vs moy 7J
+  const a7=p["7d"].ord?p["7d"].ord/7:null;
+  const hier=!a7?"o":h(p.d1.ord>=a7*.85,p.d1.ord>=a7*.7);
+  // 7J: conv rate vs prev
+  const j7=!p["7d"].cr||!p.p7d.cr?"o":h(p["7d"].cr>=p.p7d.cr*.95,p["7d"].cr>=p.p7d.cr*.85);
+  // MTD: projection vs objectif
+  const dE=Math.max(1,new Date().getDate()-1),dM=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate();
+  const proj=p.mtd.rev?p.mtd.rev/dE*dM:null;
+  const mtd=!proj||!o.ca?"o":h(proj>=o.ca*.95,proj>=o.ca*.85);
+  // 28J: revenue vs prev
+  const j28=!p["28d"].rev||!p.p28d.rev?"o":h(p["28d"].rev>=p.p28d.rev*.95,p["28d"].rev>=p.p28d.rev*.85);
+  // 3M: revenue vs prev
+  const m3=!p["90d"].rev||!p.p90d.rev?"o":h(p["90d"].rev>=p.p90d.rev*.95,p["90d"].rev>=p.p90d.rev*.85);
+  // YTD: projection vs objectif annuel
+  const start=new Date(+m.ld.slice(0,4),0,1),el=Math.max(1,Math.ceil((pd(m.ld)-start)/864e5)+1),dY=leap(+m.ld.slice(0,4))?366:365;
+  const projY=p.ytd.rev?p.ytd.rev/el*dY:null;
+  const ytd=!projY||!o.caY?"o":h(projY>=o.caY*.95,projY>=o.caY*.85);
+  // Ads: ROAS global 7J
+  const ads=!p["7d"].roas?"o":h(p["7d"].roas>=3,p["7d"].roas>=2);
+  // SEO: position moyenne
+  const sp=p["28d"].sp,avgPos=sp.length?sp.reduce((a,r)=>a+num(gv(r,"Position")),0)/sp.length:null;
+  const seo=!avgPos?"o":h(avgPos<=5,avgPos<=10);
+  // CRM: klaviyo 28J vs prev
+  const klv=!p["28d"].klav||!p.p28d.klav?"o":h(p["28d"].klav>=p.p28d.klav*.95,p["28d"].klav>=p.p28d.klav*.85);
+  return{hier,j7,mtd,j28,m3,ytd,ads,seo,klv};
+}
 function sw(id,btn){document.querySelectorAll(".hv").forEach(x=>x.classList.remove("on"));document.querySelectorAll(".ht").forEach(x=>x.classList.remove("on"));document.getElementById("v-"+id).classList.add("on");btn.classList.add("on");}
 
 // ── MODEL ─────────────────────────────────────────────────────────────────────
@@ -226,7 +264,6 @@ function vMtd(m){
   <div class="sg">📈 Publicité</div><div class="kg">
     ${pc("Budget Ads",mo(p.cost),o.bAds?`Budget ${mo(o.bAds)}`:"Budget non renseigné",o.bAds?p.cost/o.bAds*100:null,"")}
     ${kcard("ROAS MTD",rt(p.roas),"","")}${kcard("CPA",mo(p.cpa),"","")}
-    ${kcard("Rythme requis",need?mo(need)+"/j":"—",`${Math.max(0,dM-dE)} jours restants`,"")}
   </div>
   <div class="sg">📧 Email · Klaviyo</div><div class="kg">${kcard("Klaviyo MTD",mo(p.klav),"Flows + campagnes","")}</div>
   <div class="sg">🛒 Funnel</div>${funnel(p)}
@@ -444,7 +481,9 @@ function alerts(p,o){
   if(a7R&&d1.rev<a7R*.7)a.push({lv:"c",label:"Critique",title:"CA en chute",body:`Hier ${mo(d1.rev)} vs moyenne 7J ${mo(a7R)}/j.`});
   if(d1.roas&&s7.roas&&d1.roas<s7.roas*.65)a.push({lv:"c",label:"Ads",title:"ROAS en chute",body:`ROAS hier ${rt(d1.roas)} vs moyenne 7J ${rt(s7.roas)}.`});
   if(s7.p2a!=null&&s7.p2a<1)a.push({lv:"c",label:"CRO",title:"PDP → ATC trop faible",body:`Taux ajout panier 7J : ${pt(s7.p2a)}. Objectif 1,5%+. Retravailler la page produit.`});
-  if(o.ca){const dE=Math.max(1,new Date().getDate()-1),dM=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate(),proj=mtd.rev?mtd.rev/dE*dM:null;if(proj&&proj<o.ca*.85)a.push({lv:"c",label:"MTD",title:"Projection MTD insuffisante",body:`Projection ${mo(proj)} vs objectif ${mo(o.ca)} → écart ${mo(o.ca-proj)}.`});else if(proj&&proj<o.ca*.95)a.push({lv:"i",label:"Info",title:"Projection MTD légèrement en retard",body:`Projection ${mo(proj)} (${pt(proj/o.ca*100)} de l'objectif).`});}
+  if(o.ca){const dE=Math.max(1,new Date().getDate()-1),dM=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate(),proj=mtd.rev?mtd.rev/dE*dM:null;if(proj&&proj<o.ca*.85)a.push({lv:"c",label:"MTD",title:"Projection MTD insuffisante",body:`Projection ${mo(proj)} vs objectif ${mo(o.ca)} → écart ${mo(o.ca-proj)}.`});else if(proj&&proj<o.ca*.95)a.push({lv:"i",label:"Info",title:"Projection MTD légèrement en retard",body:`Projection ${mo(proj)} (${pt(proj/o.ca*100)} de l'objectif).`});
+  // Rythme requis
+  if(o.ca&&mtd.rev!=null){const daysLeft=Math.max(1,dM-dE);const need=Math.max(0,o.ca-mtd.rev)/daysLeft;if(need>0)a.push({lv:"i",label:"Rythme",title:`Il faut ${mo(need)}/jour pour atteindre l'objectif`,body:`CA MTD ${mo(mtd.rev)} · Objectif ${mo(o.ca)} · ${daysLeft} jours restants · Rythme actuel ${mo(mtd.rev/Math.max(1,dE))}/j.`});else a.push({lv:"i",label:"Rythme",title:"Objectif mensuel déjà atteint ✦",body:`CA MTD ${mo(mtd.rev)} dépasse l'objectif ${mo(o.ca)}.`});}}
   if(s7.cr&&p7.cr&&s7.cr<p7.cr*.85)a.push({lv:"w",label:"Warning",title:"Taux de conversion en baisse",body:`Conv. rate 7J ${pt(s7.cr)} vs ${pt(p7.cr)} semaine précédente.`});
   if(a7O&&d1.ord<a7O*.85&&d1.ord>=a7O*.7)a.push({lv:"w",label:"Warning",title:"Commandes en légère baisse",body:`Hier ${fm(d1.ord)} vs moyenne 7J ${fm(a7O)}/j.`});
   if(s7.a2c!=null&&s7.a2c<50)a.push({lv:"w",label:"Panier",title:"ATC → Checkout faible",body:`${pt(s7.a2c)} des ajouts panier arrivent au checkout.`});
