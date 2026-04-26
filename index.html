@@ -12,121 +12,103 @@
   <link rel="apple-touch-icon" href="icon-192.png">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Plus+Jakarta+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --bg-page:#1f1a17;--bg-card:#26211e;--bg-card2:#332e2c;
-      --accent:#f4d8a8;--text-main:#fcf8f1;--text-sec:#908b84;
-      --border:#332e2c;--green:#4caf7d;--red:#e05c5c;--orange:#e8a64c;
-    }
+    :root{--bg:#1f1a17;--card:#26211e;--card2:#332e2c;--accent:#f4d8a8;--txt:#fcf8f1;--sec:#908b84;--border:#332e2c;--g:#4caf7d;--r:#e05c5c;--o:#e8a64c;}
     *{box-sizing:border-box}
-    html,body{margin:0;min-height:100%;background:var(--bg-page);color:var(--text-main);font-family:"Plus Jakarta Sans",system-ui,sans-serif}
+    html,body{margin:0;min-height:100%;background:var(--bg);color:var(--txt);font-family:"Plus Jakarta Sans",system-ui,sans-serif}
     button{font:inherit}
-    .hd{min-height:100vh;background:var(--bg-page);padding:18px 14px 40px}
-    .hd-shell{max-width:1120px;margin:0 auto}
-    .hd-header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)}
-    .hd-logo{font-family:"Cormorant Garamond",serif;font-size:23px;font-weight:300;font-style:italic;color:var(--accent);letter-spacing:.1em;white-space:nowrap}
-    .hd-date{text-align:right;font-size:10px;color:var(--text-sec);letter-spacing:.16em;text-transform:uppercase;line-height:1.6}
-    .hd-state{display:inline-block;margin-top:4px;color:var(--accent)}
-    .hd-tabs{position:sticky;top:0;z-index:5;display:flex;gap:3px;margin-bottom:20px;background:rgba(38,33,30,.96);padding:4px;border:1px solid var(--border);border-radius:8px;overflow-x:auto;scrollbar-width:none;backdrop-filter:blur(12px)}
-    .hd-tabs::-webkit-scrollbar{display:none}
-    .ht{padding:8px 13px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-sec);cursor:pointer;border-radius:5px;border:0;background:transparent;white-space:nowrap}
-    .ht:hover{color:var(--text-main);background:var(--bg-card2)}
+    .wrap{min-height:100vh;background:var(--bg);padding:18px 14px 40px}
+    .shell{max-width:1120px;margin:0 auto}
+    .hdr{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+    .logo{font-family:"Cormorant Garamond",serif;font-size:23px;font-weight:300;font-style:italic;color:var(--accent);letter-spacing:.1em;white-space:nowrap}
+    .stamp{text-align:right;font-size:10px;color:var(--sec);letter-spacing:.16em;text-transform:uppercase;line-height:1.6}
+    .stamp span{display:inline-block;margin-top:4px;color:var(--accent)}
+    .tabs{position:sticky;top:0;z-index:5;display:flex;gap:3px;margin-bottom:20px;background:rgba(38,33,30,.96);padding:4px;border:1px solid var(--border);border-radius:8px;overflow-x:auto;scrollbar-width:none;backdrop-filter:blur(12px)}
+    .tabs::-webkit-scrollbar{display:none}
+    .ht{padding:8px 13px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--sec);cursor:pointer;border-radius:5px;border:0;background:transparent;white-space:nowrap}
+    .ht:hover{color:var(--txt);background:var(--card2)}
     .ht.on{color:#1f1a17;background:var(--accent)}
-    .ht.alert-t{color:var(--red)}.ht.alert-t.on{background:#c0392b;color:var(--text-main)}
+    .ht.ta{color:var(--r)}.ht.ta.on{background:#c0392b;color:var(--txt)}
     .hv{display:none}.hv.on{display:block}
-    /* Section headers */
-    .sec{font-size:9px;color:var(--text-sec);letter-spacing:.2em;text-transform:uppercase;margin:20px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border)}
-    .sec-group{font-size:10px;color:var(--text-sec);letter-spacing:.15em;text-transform:uppercase;margin:16px 0 8px;display:flex;align-items:center;gap:8px}
-    .sec-group::after{content:"";flex:1;height:1px;background:var(--border)}
-    /* KPI Cards */
-    .kg{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;margin-bottom:4px}
-    .kg3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:4px}
-    .kc{min-height:108px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;overflow:hidden}
-    .kl{font-size:9px;color:var(--text-sec);letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px}
-    .kv{font-family:"Cormorant Garamond",serif;font-size:28px;font-weight:300;font-style:italic;color:var(--accent);line-height:1;margin-bottom:5px}
-    .kv2{font-size:11px;color:var(--text-sec);margin-bottom:4px;min-height:14px}
-    .kd{font-size:10px;letter-spacing:.04em;line-height:1.35}
-    .ks{font-size:10px;color:var(--text-sec);margin-top:6px;line-height:1.4}
-    .g{color:var(--green)}.r{color:var(--red)}.n{color:var(--text-sec)}.o{color:var(--orange)}
-    /* Progress bars */
-    .pb{background:var(--bg-card2);border-radius:3px;height:5px;margin-top:8px;overflow:hidden}
-    .pf{height:100%;border-radius:3px}.pf.gold{background:var(--accent)}.pf.warn{background:var(--orange)}.pf.bad{background:var(--red)}
-    /* Rows */
-    .row{background:var(--bg-card);border:1px solid var(--border);border-radius:7px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:7px}
-    .rn{font-size:11px;color:var(--text-main);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+    .sec{font-size:9px;color:var(--sec);letter-spacing:.2em;text-transform:uppercase;margin:20px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border)}
+    .sg{font-size:10px;color:var(--sec);letter-spacing:.15em;text-transform:uppercase;margin:16px 0 8px;display:flex;align-items:center;gap:8px}
+    .sg::after{content:"";flex:1;height:1px;background:var(--border)}
+    .kg{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-bottom:4px}
+    .kc{min-height:108px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;overflow:hidden}
+    .kl{font-size:9px;color:var(--sec);letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px}
+    .kv{font-family:"Cormorant Garamond",serif;font-size:27px;font-weight:300;font-style:italic;color:var(--accent);line-height:1;margin-bottom:5px}
+    .kv2{font-size:11px;color:var(--sec);margin-bottom:4px;min-height:14px}
+    .kd{font-size:10px;letter-spacing:.04em}
+    .ks{font-size:10px;color:var(--sec);margin-top:6px;line-height:1.4}
+    .G{color:var(--g)}.R{color:var(--r)}.N{color:var(--sec)}.O{color:var(--o)}
+    .pb{background:var(--card2);border-radius:3px;height:5px;margin-top:8px;overflow:hidden}
+    .pf{height:100%;border-radius:3px}.pf.gold{background:var(--accent)}.pf.warn{background:var(--o)}.pf.bad{background:var(--r)}
+    .row{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:7px}
+    .rn{font-size:11px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
     .rm{display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
-    .rs{font-size:10px;color:var(--text-sec);white-space:nowrap}
-    /* Alerts */
-    .al{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:13px 15px;margin-bottom:9px;display:flex;align-items:flex-start;gap:11px}
-    .ad{width:7px;height:7px;border-radius:50%;margin-top:4px;flex-shrink:0}.ad.c{background:var(--red)}.ad.w{background:var(--orange)}.ad.i{background:var(--accent)}
-    .at{font-size:12px;color:var(--text-main);margin-bottom:3px;font-weight:500}
-    .as{font-size:10px;color:var(--text-sec);line-height:1.5}
+    .rs{font-size:10px;color:var(--sec);white-space:nowrap}
+    .al{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:13px 15px;margin-bottom:9px;display:flex;align-items:flex-start;gap:11px}
+    .dot{width:7px;height:7px;border-radius:50%;margin-top:4px;flex-shrink:0}
+    .dot.c{background:var(--r)}.dot.w{background:var(--o)}.dot.i{background:var(--accent)}
+    .at{font-size:12px;color:var(--txt);margin-bottom:3px;font-weight:500}
+    .as{font-size:10px;color:var(--sec);line-height:1.5}
     .ab{font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:4px;margin-left:auto;flex-shrink:0;align-self:flex-start}
-    .bc{background:rgba(224,92,92,.18);color:var(--red)}.bw{background:rgba(232,166,76,.18);color:var(--orange)}.bi{background:rgba(244,216,168,.15);color:var(--accent)}
-    .bg{background:rgba(76,175,125,.16);color:var(--green)}
-    /* Funnel */
+    .bc{background:rgba(224,92,92,.18);color:var(--r)}.bw{background:rgba(232,166,76,.18);color:var(--o)}
+    .bi{background:rgba(244,216,168,.15);color:var(--accent)}.bg{background:rgba(76,175,125,.16);color:var(--g)}
     .funnel{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;align-items:end;margin-bottom:10px;padding:10px 0}
     .fstep{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
-    .fl{font-size:9px;color:var(--text-sec);text-transform:uppercase;letter-spacing:.07em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;text-align:center}
+    .fl{font-size:9px;color:var(--sec);text-transform:uppercase;letter-spacing:.07em;width:100%;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .fv{font-family:"Cormorant Garamond",serif;font-size:15px;font-style:italic;color:var(--accent)}
-    .fs{font-size:9px;color:var(--green);min-height:12px;text-align:center}
+    .fs{font-size:9px;color:var(--g);min-height:12px;text-align:center}
     .fb{width:100%;background:var(--accent);border-radius:3px 3px 0 0;opacity:.6}
-    /* Decision block */
-    .decision{display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:16px}
-    .decision-title{font-size:9px;color:var(--text-sec);letter-spacing:.18em;text-transform:uppercase;margin-bottom:5px}
-    .decision-main{font-size:15px;color:var(--text-main);font-weight:500}
+    .dblk{display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:16px}
+    .dtit{font-size:9px;color:var(--sec);letter-spacing:.18em;text-transform:uppercase;margin-bottom:5px}
+    .dmain{font-size:15px;color:var(--txt);font-weight:500}
     .badge{font-size:9px;letter-spacing:.12em;text-transform:uppercase;border-radius:4px;padding:4px 10px;white-space:nowrap;font-weight:500}
-    .badge.good{background:rgba(76,175,125,.16);color:var(--green)}
-    .badge.warn{background:rgba(232,166,76,.18);color:var(--orange)}
-    .badge.bad{background:rgba(224,92,92,.18);color:var(--red)}
-    /* Ads decision card */
-    .ad-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:8px}
-    .ad-card-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-    .ad-decision-badge{font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:4px;font-weight:600;white-space:nowrap}
-    .ad-card-name{font-size:12px;color:var(--text-main);font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .ad-card-type{font-size:9px;color:var(--text-sec);letter-spacing:.1em;text-transform:uppercase}
-    .ad-metrics{display:flex;gap:16px;flex-wrap:wrap}
-    .ad-metric{display:flex;flex-direction:column;gap:2px}
-    .ad-metric-label{font-size:8px;color:var(--text-sec);letter-spacing:.15em;text-transform:uppercase}
-    .ad-metric-value{font-size:13px;font-family:"Cormorant Garamond",serif;font-style:italic;color:var(--accent)}
-    .ad-action{font-size:10px;color:var(--text-sec);line-height:1.5;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
-    /* SEO recommendation card */
-    .seo-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:13px 15px;margin-bottom:8px}
-    .seo-card-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:6px}
-    .seo-card-url{font-size:11px;color:var(--text-main);flex:1;word-break:break-all}
-    .seo-metrics{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:6px}
-    .seo-metric{font-size:10px;color:var(--text-sec)}
-    .seo-action{font-size:10px;color:var(--text-sec);line-height:1.5;padding-top:6px;border-top:1px solid var(--border)}
-    /* Lexique */
-    .lex-cat{margin-bottom:20px}
-    .lex-item{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:8px}
-    .lex-term{font-family:"Cormorant Garamond",serif;font-size:18px;font-style:italic;color:var(--accent);margin-bottom:5px}
-    .lex-short{font-size:10px;color:var(--text-sec);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
-    .lex-def{font-size:12px;color:var(--text-main);line-height:1.7}
-    .lex-ex{font-size:11px;color:var(--text-sec);margin-top:6px;font-style:italic}
-    /* Misc */
-    .empty{background:var(--bg-card);border:1px dashed var(--border);border-radius:8px;padding:16px;color:var(--text-sec);font-size:12px;line-height:1.6}
-    .loading{min-height:100vh;display:grid;place-items:center;background:var(--bg-page);color:var(--accent);font-family:"Cormorant Garamond",serif;font-size:28px;font-style:italic}
-    .vs-block{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:8px}
-    .vs-title{font-size:9px;color:var(--text-sec);letter-spacing:.2em;text-transform:uppercase;margin-bottom:12px}
-    .vs-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .vs-side{background:var(--bg-card2);border-radius:6px;padding:12px}
-    .vs-name{font-size:10px;color:var(--text-sec);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
-    .vs-kpi{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
-    .vs-kl{font-size:9px;color:var(--text-sec)}
-    .vs-kv{font-family:"Cormorant Garamond",serif;font-size:16px;font-style:italic;color:var(--accent)}
+    .badge.good{background:rgba(76,175,125,.16);color:var(--g)}.badge.warn{background:rgba(232,166,76,.18);color:var(--o)}.badge.bad{background:rgba(224,92,92,.18);color:var(--r)}
+    .adc{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:8px}
+    .adc-h{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+    .adc-b{font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:4px;font-weight:600;white-space:nowrap}
+    .adc-n{font-size:12px;color:var(--txt);font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .adc-t{font-size:9px;color:var(--sec);letter-spacing:.1em;text-transform:uppercase;flex-shrink:0}
+    .adc-m{display:flex;gap:16px;flex-wrap:wrap}
+    .adc-ml{font-size:8px;color:var(--sec);letter-spacing:.15em;text-transform:uppercase}
+    .adc-mv{font-size:14px;font-family:"Cormorant Garamond",serif;font-style:italic;color:var(--accent)}
+    .adc-a{font-size:10px;color:var(--sec);line-height:1.5;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+    .vs{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:8px}
+    .vsg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .vss{background:var(--card2);border-radius:6px;padding:12px}
+    .vsn{font-size:10px;color:var(--sec);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+    .vsk{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+    .vskl{font-size:9px;color:var(--sec)}.vskv{font-family:"Cormorant Garamond",serif;font-size:16px;font-style:italic;color:var(--accent)}
+    .seoc{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:13px 15px;margin-bottom:8px}
+    .seoc-h{display:flex;align-items:flex-start;gap:10px;margin-bottom:6px}
+    .seoc-u{font-size:11px;color:var(--txt);flex:1;word-break:break-all}
+    .seoc-m{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+    .seoc-ms{font-size:10px;color:var(--sec)}
+    .seoc-a{font-size:10px;color:var(--sec);line-height:1.5;padding-top:6px;border-top:1px solid var(--border)}
+    .klrow{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:7px}
+    .klrow-h{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+    .klrow-n{font-size:12px;color:var(--txt);font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .klrow-t{font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:4px}
+    .klt-f{background:rgba(244,216,168,.12);color:var(--accent)}.klt-c{background:rgba(76,175,125,.12);color:var(--g)}
+    .klrow-m{display:flex;gap:14px;flex-wrap:wrap}
+    .klrow-ms{font-size:10px;color:var(--sec);white-space:nowrap}
+    .lex-s{width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--txt);font-family:"Plus Jakarta Sans",sans-serif;margin-bottom:16px;outline:none}
+    .lex-s:focus{border-color:var(--accent)}.lex-s::placeholder{color:var(--sec)}
+    .lex-i{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:8px}
+    .lex-t{font-family:"Cormorant Garamond",serif;font-size:18px;font-style:italic;color:var(--accent);margin-bottom:4px}
+    .lex-sh{font-size:9px;color:var(--sec);letter-spacing:.15em;text-transform:uppercase;margin-bottom:6px}
+    .lex-d{font-size:12px;color:var(--txt);line-height:1.7}
+    .lex-e{font-size:11px;color:var(--sec);margin-top:6px;font-style:italic}
+    .empty{background:var(--card);border:1px dashed var(--border);border-radius:8px;padding:16px;color:var(--sec);font-size:12px;line-height:1.6;margin-bottom:8px}
+    .loading{min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--accent);font-family:"Cormorant Garamond",serif;font-size:28px;font-style:italic}
     @media(max-width:640px){
-      .hd{padding:14px 10px 28px}
-      .hd-logo{font-size:20px}
+      .wrap{padding:14px 10px 28px}.logo{font-size:20px}
       .kg{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-      .kg3{grid-template-columns:1fr}
-      .kc{padding:12px;min-height:100px}
-      .kv{font-size:24px}
+      .kc{padding:12px;min-height:100px}.kv{font-size:24px}
       .funnel{gap:3px}.fl{font-size:8px}
-      .row{flex-direction:column;align-items:flex-start}
-      .rm{width:100%;justify-content:flex-start}
-      .decision{flex-direction:column;align-items:flex-start}
-      .vs-grid{grid-template-columns:1fr}
-      .ad-metrics{gap:10px}
+      .row,.dblk{flex-direction:column;align-items:flex-start}
+      .rm{width:100%}.vsg{grid-template-columns:1fr}.adc-m{gap:10px}
     }
   </style>
 </head>
@@ -135,680 +117,369 @@
 <script>
 const API_KEY  = "AIzaSyADK3alDzNTsEkbKGVDbrdHYBj0esGF0KU";
 const SHEET_ID = "17j732Xnp48sOWR_ignS3pgc5eKL4OPCJwUJWKH5Euv4";
-const SHEETS = {
-  shopify:"Shopify_Daily", ga4:"GA4_Channel",
-  ads:"GoogleAds_Campaigns", searchTerms:"GoogleAds_SearchTerms",
-  klaviyo:"Klaviyo", klaviyoDaily:"Klaviyo_Daily",
-  gscPages:"GSC_Pages", gscQueries:"GSC_Queries", objectifs:"Objectifs"
-};
-const CACHE_KEY = "holiae-cockpit-v2";
-const CACHE_TTL = 60*60*1000;
+const SHEETS   = {shopify:"Shopify_Daily",ga4:"GA4_Channel",ads:"GoogleAds_Campaigns",st:"GoogleAds_SearchTerms",klav:"Klaviyo",klavD:"Klaviyo_Daily",gscP:"GSC_Pages",gscQ:"GSC_Queries",obj:"Objectifs"};
+const CKEY = "holiae-v4", TTL = 36e5;
 const app = document.getElementById("app");
 const NF = new Intl.NumberFormat("fr-FR");
-const EUR = new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR",maximumFractionDigits:0});
+const EU = new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR",maximumFractionDigits:0});
 
-document.addEventListener("DOMContentLoaded", init);
-
+document.addEventListener("DOMContentLoaded",init);
 async function init(){
-  if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
-  try{
-    render(await loadData());
-  }catch(err){
-    const cached = readCache();
-    if(cached) render(cached.data,true);
-    else app.innerHTML=`<div class="hd"><div class="empty">Impossible de charger les données.<br>${escHtml(err.message)}</div></div>`;
-  }
+  if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+  try{render(await load());}
+  catch(e){const c=rcache();if(c)render(c.d,true);else app.innerHTML=`<div class="wrap"><div class="empty">Erreur chargement.<br>${esc(e.message)}</div></div>`;}
 }
-
-async function loadData(){
-  const cached=readCache();
-  if(cached && Date.now()-cached.ts < CACHE_TTL) return cached.data;
-  if(!API_KEY||API_KEY==="TA_CLE_ICI") throw new Error("Clé API Google Sheets manquante.");
-  const entries=await Promise.all(Object.entries(SHEETS).map(async([k,n])=>[k,await fetchSheet(n)]));
-  const data=Object.fromEntries(entries);
-  localStorage.setItem(CACHE_KEY,JSON.stringify({ts:Date.now(),data}));
-  return data;
+async function load(){
+  const c=rcache();if(c&&Date.now()-c.t<TTL)return c.d;
+  if(!API_KEY||API_KEY==="TA_CLE_ICI")throw new Error("Clé API manquante.");
+  const e=await Promise.all(Object.entries(SHEETS).map(async([k,nm])=>[k,await fsheet(nm)]));
+  const d=Object.fromEntries(e);
+  localStorage.setItem(CKEY,JSON.stringify({t:Date.now(),d}));
+  return d;
 }
-
-async function fetchSheet(name){
-  const url=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(name)}!A:Z?key=${API_KEY}`;
-  const res=await fetch(url);
-  if(!res.ok){if(res.status===400||res.status===404)return [];throw new Error(`${name}: ${res.status}`);}
-  const json=await res.json();
-  return rowsToObjects(json.values||[]);
+async function fsheet(nm){
+  const u=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(nm)}!A:Z?key=${API_KEY}`;
+  const r=await fetch(u);
+  if(!r.ok){if(r.status===400||r.status===404)return[];throw new Error(`${nm}:${r.status}`);}
+  return r2o((await r.json()).values||[]);
 }
+function r2o(v){if(!v.length)return[];const h=v[0].map(x=>String(x||"").trim());return v.slice(1).filter(r=>r.some(Boolean)).map(r=>{const o={};h.forEach((k,i)=>o[k]=r[i]??"");return o;});}
+function rcache(){try{return JSON.parse(localStorage.getItem(CKEY)||"");}catch{return null;}}
 
-function rowsToObjects(vals){
-  if(!vals.length)return[];
-  const hd=vals[0].map(h=>String(h||"").trim());
-  return vals.slice(1).filter(r=>r.some(Boolean)).map(r=>{const o={};hd.forEach((h,i)=>o[h]=r[i]??"");return o;});
-}
-function readCache(){try{return JSON.parse(localStorage.getItem(CACHE_KEY)||"");}catch{return null;}}
-
-// ─── RENDER ───────────────────────────────────────────────────────────────────
-function render(raw,offline=false){
-  const m=buildModel(raw);
-  app.className="hd";
-  app.innerHTML=`
-<div class="hd-shell">
-  <div class="hd-header">
-    <div class="hd-logo">Holiaē ✦ Cockpit</div>
-    <div class="hd-date">${offline?"Hors ligne · cache":"Màj · 08h00"}<br><span class="hd-state">${fmtDateLabel(m.lastDate)}</span></div>
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render(raw,off=false){
+  const m=model(raw);
+  app.className="wrap";
+  app.innerHTML=`<div class="shell">
+  <div class="hdr">
+    <div class="logo">Holiaē ✦ Cockpit</div>
+    <div class="stamp">${off?"Hors ligne · cache":"Màj · 08h00"}<br><span>${fd(m.ld)}</span></div>
   </div>
-  <div class="hd-tabs">
-    ${tb("hier","Hier",true)}${tb("j7","7 jours")}${tb("mtd","Mois en cours")}
+  <div class="tabs">
+    ${tb("alrt","⚠ Alertes ("+m.alerts.length+")",true,"ta")}
+    ${tb("hier","Hier")}${tb("j7","7 jours")}${tb("mtd","Mois en cours")}
     ${tb("j28","28 jours")}${tb("m3","3 mois")}${tb("ytd","Année")}
-    ${tb("ads","Ads 7J")}${tb("seo","SEO 28J")}${tb("lex","Lexique")}
-    ${tb("alrt","⚠ Alertes ("+m.alerts.length+")",false,"alert-t")}
+    ${tb("ads","Ads 7J")}${tb("seo","SEO 28J")}${tb("klv","Klaviyo")}${tb("lex","Lexique")}
   </div>
-  ${decisionBlock(m)}
-  ${viewHier(m)}
-  ${viewPeriod(m,"j7","7 jours glissants","7d","prev7d")}
-  ${viewMtd(m)}
-  ${viewPeriod(m,"j28","28 jours glissants","28d","prev28d")}
-  ${viewPeriod(m,"m3","3 mois glissants","90d","prev90d",true)}
-  ${viewYtd(m)}
-  ${viewAds(m)}
-  ${viewSeo(m)}
-  ${viewLexique()}
-  ${viewAlerts(m)}
+  ${vAlerts(m)}${vHier(m)}${vPer(m,"j7","7 jours glissants","7d","p7d")}
+  ${vMtd(m)}${vPer(m,"j28","28 jours glissants","28d","p28d")}
+  ${vPer(m,"m3","3 mois glissants","90d","p90d",true)}
+  ${vYtd(m)}${vAds(m)}${vSeo(m)}${vKlav(m)}${vLex()}
 </div>`;
 }
+function tb(id,l,on=false,x=""){return`<button class="ht ${x} ${on?"on":""}" onclick="sw('${id}',this)">${l}</button>`;}
+function sw(id,btn){document.querySelectorAll(".hv").forEach(x=>x.classList.remove("on"));document.querySelectorAll(".ht").forEach(x=>x.classList.remove("on"));document.getElementById("v-"+id).classList.add("on");btn.classList.add("on");}
 
-function tb(id,label,on=false,extra=""){
-  return `<button class="ht ${extra} ${on?"on":""}" onclick="sw('${id}',this)">${label}</button>`;
-}
-function sw(id,btn){
-  document.querySelectorAll(".hv").forEach(v=>v.classList.remove("on"));
-  document.querySelectorAll(".ht").forEach(t=>t.classList.remove("on"));
-  document.getElementById("v-"+id).classList.add("on");
-  btn.classList.add("on");
-}
-
-function decisionBlock(m){
-  const q=m.dataQuality,d=m.decision;
-  const cls=q.level==="ok"?"good":q.level==="warn"?"warn":"bad";
-  return `<div class="decision">
-    <div><div class="decision-title">Priorité du jour</div>
-    <div class="decision-main">${escHtml(d.text||"Rien d'urgent")}</div>
-    <div class="ks" style="margin-top:5px">${escHtml(d.detail||"")}</div></div>
-    <span class="badge ${cls}">${escHtml(q.label)}</span>
-  </div>`;
-}
-
-// ─── MODEL ────────────────────────────────────────────────────────────────────
-function buildModel(raw){
-  const dates=collectDates(raw);
-  const lastDate=dates.at(-1)||iso(addDays(new Date(),-1));
-  const d2=iso(addDays(parseDate(lastDate),-1));
+// ── MODEL ─────────────────────────────────────────────────────────────────────
+function model(raw){
+  const dates=cdates(raw);
+  const ld=dates.at(-1)||iso(add(new Date(),-1));
+  const d2=iso(add(pd(ld),-1));
   const p={
-    d1:  rangeMet(raw,lastDate,lastDate),
-    d2:  rangeMet(raw,d2,d2),
-    "7d":  rangeMet(raw,iso(addDays(parseDate(lastDate),-6)),lastDate),
-    prev7d:  rangeMet(raw,iso(addDays(parseDate(lastDate),-13)),iso(addDays(parseDate(lastDate),-7))),
-    "28d": rangeMet(raw,iso(addDays(parseDate(lastDate),-27)),lastDate),
-    prev28d: rangeMet(raw,iso(addDays(parseDate(lastDate),-55)),iso(addDays(parseDate(lastDate),-28))),
-    "90d": rangeMet(raw,iso(addDays(parseDate(lastDate),-89)),lastDate),
-    prev90d: rangeMet(raw,iso(addDays(parseDate(lastDate),-179)),iso(addDays(parseDate(lastDate),-90))),
-    mtd: rangeMet(raw,monthStart(lastDate),lastDate),
-    ytd: rangeMet(raw,lastDate.slice(0,4)+"-01-01",lastDate)
+    d1:rng(raw,ld,ld),d2:rng(raw,d2,d2),
+    "7d":rng(raw,iso(add(pd(ld),-6)),ld),p7d:rng(raw,iso(add(pd(ld),-13)),iso(add(pd(ld),-7))),
+    "28d":rng(raw,iso(add(pd(ld),-27)),ld),p28d:rng(raw,iso(add(pd(ld),-55)),iso(add(pd(ld),-28))),
+    "90d":rng(raw,iso(add(pd(ld),-89)),ld),p90d:rng(raw,iso(add(pd(ld),-179)),iso(add(pd(ld),-90))),
+    mtd:rng(raw,ld.slice(0,7)+"-01",ld),ytd:rng(raw,ld.slice(0,4)+"-01-01",ld)
   };
-  const obj=getObj(raw.objectifs||[],lastDate);
-  const alerts=buildAlerts(p,obj);
-  const dq=getDataQuality(p.d1);
-  return{raw,dates,lastDate,d2,periods:p,objectives:obj,alerts,dataQuality:dq,decision:getDecision(p,obj,dq)};
+  const ob=gobj(raw.obj||[],ld);
+  const al=alerts(p,ob);
+  const dq=dqual(p.d1);
+  return{raw,dates,ld,d2,p,ob,alerts:al,dq,dec:gdec(p,ob,dq)};
+}
+function cdates(raw){const a=[];["shopify","ga4","ads"].forEach(k=>(raw[k]||[]).forEach(r=>{const d=gv(r,"Date");if(isIso(d))a.push(d);}));return[...new Set(a)].sort();}
+function rng(raw,s,e){
+  const sh=bt(raw.shopify||[],s,e),g4=bt(raw.ga4||[],s,e),a=bt(raw.ads||[],s,e),kd=bt(raw.klavD||[],s,e);
+  const sess=sm(g4,"Sessions")||sm(sh,"Sessions");
+  const ord=sm(sh,"Orders")||sm(a,"Purchases");
+  const rev=sm(sh,"Revenue")||sm(a,"Purchase value");
+  const cost=sm(a,"Cost"),reva=sm(a,"Purchase value"),klav=sm(kd,"Revenue_Total");
+  const pdp=sm(sh,"Product page sessions"),atc=sm(sh,"Add to cart"),chk=sm(sh,"Checkout started");
+  return{sess,ord,rev,aov:dv(rev,ord),cr:sess?ord/sess*100:null,cost,reva,roas:dv(reva,cost),cpa:dv(cost,ord),klav,pdp,atc,chk,
+    p2a:pdp?atc/pdp*100:null,a2c:atc?chk/atc*100:null,c2o:chk?ord/chk*100:null,
+    byType:atype(a),camps:acamps(a),chs:chs(g4),
+    sp:topR(raw.gscP||[],"Clicks",10),sq:topR(raw.gscQ||[],"Clicks",10)};
+}
+function atype(rows){const o={};rows.forEach(r=>{const t=nt(gv(r,"Campaign type")||gv(r,"Type"));if(!o[t])o[t]={cost:0,rev:0,pur:0,clk:0};o[t].cost+=num(gv(r,"Cost")||gv(r,"Cout"));o[t].rev+=num(gv(r,"Purchase value")||gv(r,"Revenue_Ads"));o[t].pur+=num(gv(r,"Purchases")||gv(r,"Conversions"));o[t].clk+=num(gv(r,"Clicks")||gv(r,"Clics"));});Object.values(o).forEach(x=>x.roas=dv(x.rev,x.cost));return o;}
+function acamps(rows){const o={};rows.forEach(r=>{const nm=gv(r,"Campaign")||gv(r,"Campagne")||"Campagne";const t=nt(gv(r,"Campaign type")||gv(r,"Type"));if(!o[nm])o[nm]={name:nm,type:t,cost:0,rev:0,pur:0,clk:0};o[nm].cost+=num(gv(r,"Cost")||gv(r,"Cout"));o[nm].rev+=num(gv(r,"Purchase value")||gv(r,"Revenue_Ads"));o[nm].pur+=num(gv(r,"Purchases")||gv(r,"Conversions"));o[nm].clk+=num(gv(r,"Clicks")||gv(r,"Clics"));});Object.values(o).forEach(x=>{x.roas=dv(x.rev,x.cost);x.cpa=dv(x.cost,x.pur);});return o;}
+function chs(rows){const o={};rows.forEach(r=>{const c=gv(r,"Channel")||gv(r,"Canal")||"Autre";o[c]=(o[c]||0)+num(gv(r,"Sessions"));});return o;}
+function gobj(rows,date){const m=date.slice(0,7),r=rows.find(x=>gv(x,"Mois")===m)||{};return{ca:num(gv(r,"CA_Objectif")),ord:num(gv(r,"Commandes_Objectif")),bAds:num(gv(r,"Budget_Ads_Mensuel")),caY:num(gv(r,"CA_Annuel_Objectif")),bY:num(gv(r,"Budget_Ads_Annuel"))};}
+
+// ── VIEWS ─────────────────────────────────────────────────────────────────────
+function vAlerts(m){return`<div class="hv on" id="v-alrt"><div class="sec">— Alertes · Ta todo du matin</div>${m.alerts.length?m.alerts.map(a=>`<div class="al"><div class="dot ${a.lv}"></div><div style="flex:1"><div class="at">${a.title}</div><div class="as">${a.body}</div></div><span class="ab ${a.lv==="c"?"bc":a.lv==="w"?"bw":"bi"}">${a.label}</span></div>`).join(""):`<div class="empty" style="text-align:center;padding:24px;font-size:14px">Tout est dans les clous ✦<br><span style="font-size:11px">Aucune alerte active.</span></div>`}</div>`;}
+function vHier(m){return`<div class="hv" id="v-hier"><div class="sec">— Hier · ${fd(m.ld)} vs ${fd(m.d2)}</div>${secs(m.p.d1,m.p.d2)}</div>`;}
+function vPer(m,id,title,key,rk,extra=false){const p=m.p[key],ref=m.p[rk];return`<div class="hv" id="v-${id}"><div class="sec">— ${title}</div>${secs(p,ref)}${extra?seoR(p)+chR(p):""}</div>`;}
+
+function vMtd(m){
+  const p=m.p.mtd,o=m.ob;
+  const dE=Math.max(1,pd(m.ld).getDate());
+  const dM=new Date(+m.ld.slice(0,4),+m.ld.slice(5,7),0).getDate();
+  const proj=p.rev?p.rev/dE*dM:null;
+  const need=o.ca&&proj?Math.max(0,o.ca-p.rev)/Math.max(1,dM-dE):null;
+  return`<div class="hv" id="v-mtd"><div class="sec">— Mois en cours · ${m.ld.slice(0,7)} · J${dE}/${dM}</div>
+  <div class="sg">💰 Business</div><div class="kg">
+    ${pc("CA MTD",mo(p.rev),o.ca?`Obj. ${mo(o.ca)}`:"Objectif non renseigné",o.ca?p.rev/o.ca*100:null,proj?`Proj. ${mo(proj)}`:"")}
+    ${pc("Commandes",fm(p.ord),o.ord?`Obj. ${fm(o.ord)}`:"Objectif non renseigné",o.ord?p.ord/o.ord*100:null,"")}
+    ${kcard("Panier moyen (AOV)",mo(p.aov),"","")}${kcard("Sessions",fm(p.sess),"","")}
+    ${kcard("Conv. Rate",pt(p.cr),"","")}${kcard("Add to Cart",fm(p.atc),"","")}
+  </div>
+  <div class="sg">📈 Publicité</div><div class="kg">
+    ${pc("Budget Ads",mo(p.cost),o.bAds?`Budget ${mo(o.bAds)}`:"Budget non renseigné",o.bAds?p.cost/o.bAds*100:null,"")}
+    ${kcard("ROAS MTD",rt(p.roas),"","")}${kcard("CPA",mo(p.cpa),"","")}
+    ${kcard("Rythme requis",need?mo(need)+"/j":"—",`${Math.max(0,dM-dE)} jours restants`,"")}
+  </div>
+  <div class="sg">📧 Email · Klaviyo</div><div class="kg">${kcard("Klaviyo MTD",mo(p.klav),"Flows + campagnes","")}</div>
+  <div class="sg">🛒 Funnel</div>${funnel(p)}
+  <div class="sg">🎯 Campagnes Ads</div>${camps(p)}</div>`;
 }
 
-function collectDates(raw){
-  const all=[];
-  ["shopify","ga4","ads"].forEach(k=>(raw[k]||[]).forEach(r=>{const d=val(r,"Date");if(isIso(d))all.push(d);}));
-  return[...new Set(all)].sort();
+function vYtd(m){
+  const p=m.p.ytd,o=m.ob;
+  const st=new Date(+m.ld.slice(0,4),0,1);
+  const el=Math.max(1,Math.ceil((pd(m.ld)-st)/864e5)+1);
+  const dY=leap(+m.ld.slice(0,4))?366:365;
+  const proj=p.rev?p.rev/el*dY:null;
+  return`<div class="hv" id="v-ytd"><div class="sec">— Année en cours · ${m.ld.slice(0,4)} · ${el}j/${dY}</div>
+  <div class="sg">💰 Business</div><div class="kg">
+    ${pc("CA YTD",mo(p.rev),o.caY?`Obj. ${mo(o.caY)}`:"Objectif non renseigné",o.caY?p.rev/o.caY*100:null,proj?`Proj. ${mo(proj)}`:"")}
+    ${kcard("Commandes YTD",fm(p.ord),"","")}${kcard("Panier moyen (AOV)",mo(p.aov),"","")}
+    ${kcard("Sessions YTD",fm(p.sess),"","")}${kcard("Conv. Rate",pt(p.cr),"","")}${kcard("Add to Cart",fm(p.atc),"","")}
+  </div>
+  <div class="sg">📈 Publicité</div><div class="kg">
+    ${pc("Budget Ads YTD",mo(p.cost),o.bY?`Budget ${mo(o.bY)}`:"Non renseigné",o.bY?p.cost/o.bY*100:null,"")}
+    ${kcard("ROAS YTD",rt(p.roas),"","")}${kcard("CAC YTD",mo(p.cpa),"Coût acquisition client","")}
+  </div>
+  <div class="sg">📧 Email · Klaviyo</div><div class="kg">${kcard("Klaviyo YTD",mo(p.klav),p.rev?pt(p.klav/p.rev*100)+" du CA":"","")}</div>
+  <div class="sg">🛒 Funnel</div>${funnel(p)}
+  <div class="sg">🎯 Campagnes Ads</div>${camps(p)}</div>`;
 }
 
-function rangeMet(raw,start,end){
-  const s=between(raw.shopify||[],start,end);
-  const g=between(raw.ga4||[],start,end);
-  const a=between(raw.ads||[],start,end);
-  const kd=between(raw.klaviyoDaily||[],start,end);
-  const sessions=sum(g,"Sessions")||sum(s,"Sessions");
-  const orders=sum(s,"Orders")||sum(a,"Purchases");
-  const revenue=sum(s,"Revenue")||sum(a,"Purchase value");
-  const costAds=sum(a,"Cost");
-  const revAds=sum(a,"Purchase value");
-  const klav=sum(kd,"Revenue_Total");
-  const pdp=sum(s,"Product page sessions");
-  const atc=sum(s,"Add to cart");
-  const checkout=sum(s,"Checkout started");
-  return{
-    sessions,orders,revenue,
-    aov:safeDiv(revenue,orders),
-    convRate:sessions?orders/sessions*100:null,
-    costAds,revAds,
-    roas:safeDiv(revAds,costAds),
-    cpa:safeDiv(costAds,orders),
-    klaviyo:klav,
-    pdp,atc,checkout,
-    pdpToAtc:pdp?atc/pdp*100:null,
-    atcToCheckout:atc?checkout/atc*100:null,
-    checkoutToOrders:checkout?orders/checkout*100:null,
-    adsByType:adsTypes(a),
-    adsCampaigns:adsCamps(a),
-    channels:channels(g),
-    seoPages:topRows(raw.gscPages||[],"Clicks",10),
-    seoQueries:topRows(raw.gscQueries||[],"Clicks",10)
-  };
-}
-
-function adsTypes(rows){
-  const out={};
-  rows.forEach(r=>{
-    const t=normType(val(r,"Campaign type")||val(r,"Type"));
-    if(!out[t])out[t]={cost:0,revenue:0,purchases:0,clicks:0};
-    out[t].cost+=num(val(r,"Cost")||val(r,"Cout"));
-    out[t].revenue+=num(val(r,"Purchase value")||val(r,"Revenue_Ads"));
-    out[t].purchases+=num(val(r,"Purchases")||val(r,"Conversions"));
-    out[t].clicks+=num(val(r,"Clicks")||val(r,"Clics"));
-  });
-  Object.values(out).forEach(v=>v.roas=safeDiv(v.revenue,v.cost));
-  return out;
-}
-
-function adsCamps(rows){
-  const out={};
-  rows.forEach(r=>{
-    const n=val(r,"Campaign")||val(r,"Campagne")||"Campagne";
-    const t=normType(val(r,"Campaign type")||val(r,"Type"));
-    if(!out[n])out[n]={name:n,type:t,cost:0,revenue:0,purchases:0,clicks:0};
-    out[n].cost+=num(val(r,"Cost")||val(r,"Cout"));
-    out[n].revenue+=num(val(r,"Purchase value")||val(r,"Revenue_Ads"));
-    out[n].purchases+=num(val(r,"Purchases")||val(r,"Conversions"));
-    out[n].clicks+=num(val(r,"Clicks")||val(r,"Clics"));
-  });
-  Object.values(out).forEach(v=>{v.roas=safeDiv(v.revenue,v.cost);v.cpa=safeDiv(v.cost,v.purchases);});
-  return out;
-}
-
-function channels(rows){
-  const out={};
-  rows.forEach(r=>{const c=val(r,"Channel")||val(r,"Canal")||"Autre";out[c]=(out[c]||0)+num(val(r,"Sessions"));});
-  return out;
-}
-
-function getObj(rows,date){
-  const month=date.slice(0,7);
-  const row=rows.find(r=>val(r,"Mois")===month)||{};
-  return{ca:num(val(row,"CA_Objectif")),orders:num(val(row,"Commandes_Objectif")),budgetAds:num(val(row,"Budget_Ads_Mensuel")),caAnnual:num(val(row,"CA_Annuel_Objectif")),budgetAnnual:num(val(row,"Budget_Ads_Annuel"))};
-}
-
-// ─── VIEWS ────────────────────────────────────────────────────────────────────
-function viewHier(m){
-  return`<div class="hv on" id="v-hier">
-    <div class="sec">— Hier · ${fmtDateLabel(m.lastDate)} vs ${fmtDateLabel(m.d2)}</div>
-    ${kpiSections(m.periods.d1,m.periods.d2)}
+function vAds(m){
+  const p=m.p["7d"],cl=Object.values(p.camps||{}).sort((a,b)=>b.cost-a.cost);
+  const pm=p.byType["PMAX"]||{},sr=p.byType["SEARCH"]||{};
+  const gr=grec(p);
+  return`<div class="hv" id="v-ads"><div class="sec">— Publicité · Décisions · 7 jours glissants</div>
+  <div class="dblk"><div><div class="dtit">Recommandation globale</div><div class="dmain">${esc(gr.text)}</div><div class="ks" style="margin-top:5px">${esc(gr.detail)}</div></div><span class="badge ${gr.cls}">${esc(gr.label)}</span></div>
+  <div class="sg">📊 Vue globale · 7 jours</div><div class="kg">
+    ${kcard("Dépense totale",mo(p.cost),"","")}${kcard("ROAS global",rt(p.roas),"","")}
+    ${kcard("Ventes Ads",fm(p.ord),"","")}${kcard("CPA moyen",mo(p.cpa),"","")}
+  </div>
+  <div class="sg">⚖️ PMAX vs Search</div>
+  <div class="vs"><div class="vsg">
+    <div class="vss"><div class="vsn">Performance Max (PMAX)</div>
+      <div class="vsk"><span class="vskl">Dépense</span><span class="vskv">${mo(pm.cost)}</span></div>
+      <div class="vsk"><span class="vskl">ROAS</span><span class="vskv" style="color:${rc(pm.roas)}">${rt(pm.roas)}</span></div>
+      <div class="vsk"><span class="vskl">Ventes</span><span class="vskv">${fm(pm.pur)}</span></div>
+      <div style="margin-top:8px"><span class="ab ${arec(pm).ac}">${arec(pm).label}</span></div>
+    </div>
+    <div class="vss"><div class="vsn">Search</div>
+      <div class="vsk"><span class="vskl">Dépense</span><span class="vskv">${mo(sr.cost)}</span></div>
+      <div class="vsk"><span class="vskl">ROAS</span><span class="vskv" style="color:${rc(sr.roas)}">${rt(sr.roas)}</span></div>
+      <div class="vsk"><span class="vskl">Ventes</span><span class="vskv">${fm(sr.pur)}</span></div>
+      <div style="margin-top:8px"><span class="ab ${arec(sr).ac}">${arec(sr).label}</span></div>
+    </div>
+  </div></div>
+  <div class="sg">🎯 Décisions par campagne</div>
+  ${cl.length?cl.map(c=>{const r=arec(c);return`<div class="adc"><div class="adc-h"><span class="adc-b" style="background:${r.bg};color:${r.color}">${r.label}</span><span class="adc-n">${esc(c.name)}</span><span class="adc-t">${esc(c.type)}</span></div><div class="adc-m"><div><div class="adc-ml">Dépense</div><div class="adc-mv">${mo(c.cost)}</div></div><div><div class="adc-ml">Ventes</div><div class="adc-mv">${fm(c.pur)}</div></div><div><div class="adc-ml">ROAS</div><div class="adc-mv" style="color:${rc(c.roas)}">${rt(c.roas)}</div></div><div><div class="adc-ml">CPA</div><div class="adc-mv">${mo(c.cpa)}</div></div></div><div class="adc-a">→ ${esc(r.action)}</div></div>`;}).join(""):`<div class="empty">Aucune donnée campagne sur 7 jours.</div>`}
+  <div class="sg">🔍 Top requêtes Search</div>
+  ${topR(m.raw.st||[],"Clicks",8).map(r=>`<div class="row"><span class="rn">${esc(gv(r,"Search term")||gv(r,"Keyword")||gv(r,"Query")||"—")}</span><div class="rm"><span class="rs">Clics <span style="color:var(--accent)">${fm(num(gv(r,"Clicks")))}</span></span><span class="rs">Conv. ${fm(num(gv(r,"Conversions")))}</span><span class="rs">Coût ${mo(num(gv(r,"Cost")))}</span></div></div>`).join("")||`<div class="empty">Données Search Terms indisponibles.</div>`}
   </div>`;
 }
 
-function viewPeriod(m,id,title,key,refKey,withSeo=false){
-  const p=m.periods[key],ref=m.periods[refKey];
-  return`<div class="hv" id="v-${id}">
-    <div class="sec">— ${title}</div>
-    ${kpiSections(p,ref)}
-    ${withSeo?seoRows(p)+channelRows(p):""}
+function arec(c){
+  const roas=c.roas||0,spend=c.cost||0,pur=c.pur||0;
+  if(spend<30)return{label:"PEU DE DONNÉES",bg:"rgba(144,139,132,.15)",color:"#908b84",ac:"bi",action:"Moins de 30€ dépensés. Attendre plus de données."};
+  if(roas>=4&&pur>=3)return{label:"SCALER ↑",bg:"rgba(76,175,125,.16)",color:"var(--g)",ac:"bg",action:`ROAS ${rt(roas)} avec ${fm(pur)} ventes. Augmenter le budget de 20-30% max par semaine.`};
+  if(roas>=3&&pur>=2)return{label:"MAINTENIR =",bg:"rgba(76,175,125,.10)",color:"var(--g)",ac:"bg",action:`ROAS correct à ${rt(roas)}. Garder stable et surveiller 7 jours de plus.`};
+  if(roas>=2)return{label:"ANALYSER ?",bg:"rgba(232,166,76,.18)",color:"var(--o)",ac:"bw",action:`ROAS moyen à ${rt(roas)}. Vérifier créatifs, audiences et pages de destination.`};
+  if(spend>=50)return{label:"COUPER ✕",bg:"rgba(224,92,92,.18)",color:"var(--r)",ac:"bc",action:`ROAS insuffisant ${rt(roas)} pour ${mo(spend)} dépensés. Arrêter ou retravailler.`};
+  return{label:"ANALYSER ?",bg:"rgba(232,166,76,.18)",color:"var(--o)",ac:"bw",action:"Performances mixtes. Analyser créatifs et ciblage."};
+}
+function grec(p){const r=p.roas||0;if(!p.cost)return{text:"Aucune donnée Ads",detail:"Vérifier la connexion Google Ads.",label:"Données",cls:"warn"};if(r>=4)return{text:"Scaler le budget",detail:`ROAS global ${rt(r)}. Campagnes rentables. Augmenter progressivement.`,label:"Scaler",cls:"good"};if(r>=3)return{text:"Maintenir le cap",detail:`ROAS ${rt(r)}. Correct. Surveiller et optimiser les créatifs.`,label:"Maintenir",cls:"good"};if(r>=2)return{text:"Analyser et optimiser",detail:`ROAS ${rt(r)}. Marge insuffisante pour scaler. Identifier ce qui tire vers le bas.`,label:"Analyser",cls:"warn"};return{text:"Réduire ou retravailler",detail:`ROAS ${rt(r)}. Coûte plus que ça rapporte. Action urgente.`,label:"Critique",cls:"bad"};}
+function rc(r){return(r||0)>=3?"var(--g)":(r||0)>=2?"var(--o)":"var(--r)";}
+
+function vSeo(m){
+  const pg=m.p["28d"].sp,qr=m.p["28d"].sq;
+  const tc=pg.reduce((a,r)=>a+num(gv(r,"Clicks")),0);
+  const ti=pg.reduce((a,r)=>a+num(gv(r,"Impressions")),0);
+  const ap=pg.length?pg.reduce((a,r)=>a+num(gv(r,"Position")),0)/pg.length:null;
+  return`<div class="hv" id="v-seo"><div class="sec">— SEO · Analyse & Recommandations · 28 jours</div>
+  <div class="sg">📊 Vue globale</div><div class="kg">
+    ${kcard("Clics organiques",fm(tc),"","")}${kcard("Impressions",fm(ti),"","")}
+    ${kcard("CTR moyen",pt(ti?tc/ti*100:null),"Obj. >3%","")}${kcard("Position moyenne",ap?`${Math.round(ap*10)/10}`:"—","Top 5 = excellent","")}
+  </div>
+  <div class="sg">🎯 Pages · Recommandations</div>
+  ${pg.length?pg.map(r=>{const rec=srec(r);if(!rec)return"";const pos=num(gv(r,"Position")),ctr=num(gv(r,"CTR")),cl=num(gv(r,"Clicks")),im=num(gv(r,"Impressions"));return`<div class="seoc"><div class="seoc-h"><span class="seoc-u">${esc(surl(gv(r,"Page")))}</span><span class="ab ${rec.ac}">${rec.label}</span></div><div class="seoc-m"><span class="seoc-ms">Position <strong style="color:${pos<=3?"var(--g)":pos<=10?"var(--o)":"var(--r)"}">${pos?Math.round(pos*10)/10:"—"}</strong></span><span class="seoc-ms">Clics <strong style="color:var(--accent)">${fm(cl)}</strong></span><span class="seoc-ms">Impr. ${fm(im)}</span><span class="seoc-ms">CTR <strong style="color:${ctr>=3?"var(--g)":ctr>=1?"var(--o)":"var(--r)"}">${pt(ctr)}</strong></span></div><div class="seoc-a">→ ${esc(rec.action)}</div></div>`;}).join(""):`<div class="empty">Pas de données GSC Pages. Vérifier Google Search Console.</div>`}
+  <div class="sg">🔍 Top requêtes · 28 jours</div>
+  ${qr.map(r=>{const pos=num(gv(r,"Position")),ctr=num(gv(r,"CTR"));return`<div class="row"><span class="rn">${esc(gv(r,"Query")||"—")}</span><div class="rm"><span class="rs">Pos. <span style="color:${pos<=3?"var(--g)":pos<=10?"var(--o)":"var(--r)"}">${pos?Math.round(pos*10)/10:"—"}</span></span><span class="rs">Clics <span style="color:var(--accent)">${fm(num(gv(r,"Clicks")))}</span></span><span class="rs">CTR <span style="color:${ctr>=3?"var(--g)":"var(--sec)"}">${pt(ctr)}</span></span></div></div>`;}).join("")||`<div class="empty">Pas de données requêtes.</div>`}
+  </div>`;
+}
+function srec(r){const pos=num(gv(r,"Position")),ctr=num(gv(r,"CTR")),im=num(gv(r,"Impressions"));if(!pos&&!im)return null;if(pos<=3&&ctr>=3)return{label:"OK ✓",ac:"bg",action:"Bonne position et bon CTR. Maintenir le contenu à jour."};if(pos<=5&&ctr<2)return{label:"AMÉLIORER CTR",ac:"bw",action:`Position ${Math.round(pos*10)/10} mais CTR ${Math.round(ctr*10)/10}%. Retravaille le title et la méta description.`};if(pos>=4&&pos<=10&&im>100)return{label:"QUICK WIN ⚡",ac:"bg",action:`Position ${Math.round(pos*10)/10} — proche du top 3. Enrichir le contenu et optimiser H1 + liens internes.`};if(pos>10&&im>50)return{label:"CONTENU",ac:"bw",action:`Position ${Math.round(pos*10)/10} hors top 10. Enrichir le contenu et le maillage interne.`};if(pos>20)return{label:"RETRAVAILLER",ac:"bc",action:`Position ${Math.round(pos*10)/10}. Page peu visible. Revoir le contenu et la stratégie de liens.`};return{label:"SURVEILLER",ac:"bi",action:`Position ${Math.round(pos*10)/10}. Surveiller l'évolution.`};}
+
+function vKlav(m){
+  const rows=m.raw.klav||[];
+  const fl=rows.filter(r=>String(gv(r,"Type")||"").toLowerCase()==="flow").sort((a,b)=>num(gv(b,"Revenue"))-num(gv(a,"Revenue")));
+  const ca=rows.filter(r=>String(gv(r,"Type")||"").toLowerCase()==="campaign").sort((a,b)=>num(gv(b,"Revenue"))-num(gv(a,"Revenue")));
+  const tr=sm(rows,"Revenue"),fr=sm(fl,"Revenue"),cr2=sm(ca,"Revenue"),tre=sm(rows,"Recipients");
+  const wo=rows.reduce((a,r)=>a+num(gv(r,"Recipients"))*num(gv(r,"Open rate")),0);
+  const wc=rows.reduce((a,r)=>a+num(gv(r,"Recipients"))*num(gv(r,"Click rate")),0);
+  const klRow=(r,tp)=>{const rv=num(gv(r,"Revenue")),rc2=num(gv(r,"Recipients")),or=num(gv(r,"Open rate")),clr=num(gv(r,"Click rate")),ur=num(gv(r,"Unsubscribe rate"));return`<div class="klrow"><div class="klrow-h"><span class="klrow-n">${esc(gv(r,"Name")||"—")}</span><span class="klrow-t ${tp==="flow"?"klt-f":"klt-c"}">${tp==="flow"?"Flow":"Campagne"}</span></div><div class="klrow-m"><span class="klrow-ms">Revenue <strong style="color:var(--accent)">${mo(rv)}</strong></span>${rc2?`<span class="klrow-ms">Dest. ${fm(rc2)}</span>`:""}<span class="klrow-ms">Open <span style="color:${or>=20?"var(--g)":"var(--o)"}">${pt(or)}</span></span><span class="klrow-ms">Click <span style="color:${clr>=2?"var(--g)":"var(--sec)"}">${pt(clr)}</span></span>${ur?`<span class="klrow-ms">Unsub <span style="color:${ur>0.5?"var(--r)":"var(--sec)"}">${pt(ur)}</span></span>`:""}</div></div>`;};
+  return`<div class="hv" id="v-klv"><div class="sec">— Klaviyo · Flows & Campagnes · 28 jours</div>
+  <div class="sg">📊 Vue globale</div><div class="kg">
+    ${kcard("Revenue total",mo(tr),"Flows + campagnes","")}${kcard("Flows",mo(fr),"Automatiques","")}
+    ${kcard("Campagnes",mo(cr2),"Manuelles","")}${kcard("Open rate moy.",pt(tre?wo/tre:null),"Obj. >20%","")}
+    ${kcard("Click rate moy.",pt(tre?wc/tre:null),"Obj. >2%","")}${kcard("Destinataires",fm(tre),"Total envois","")}
+  </div>
+  <div class="sg">⚙️ Flows actifs (${fl.length})</div>
+  ${fl.length?fl.map(r=>klRow(r,"flow")).join(""):`<div class="empty">Aucun flow dans les données. Vérifier l'onglet Klaviyo de la Sheet.</div>`}
+  <div class="sg">📣 Campagnes (${ca.length})</div>
+  ${ca.length?ca.map(r=>klRow(r,"campaign")).join(""):`<div class="empty">Aucune campagne Klaviyo dans les données.</div>`}
   </div>`;
 }
 
-function viewMtd(m){
-  const p=m.periods.mtd,o=m.objectives;
-  const dE=Math.max(1,parseDate(m.lastDate).getDate());
-  const dM=new Date(+m.lastDate.slice(0,4),+m.lastDate.slice(5,7),0).getDate();
-  const proj=p.revenue?p.revenue/dE*dM:null;
-  const needed=o.ca&&proj?Math.max(0,o.ca-p.revenue)/Math.max(1,dM-dE):null;
-  return`<div class="hv" id="v-mtd">
-    <div class="sec">— Mois en cours · ${m.lastDate.slice(0,7)} · J${dE}/${dM}</div>
-    <div class="sec-group">💰 Business</div>
-    <div class="kg">
-      ${progCard("CA MTD",money(p.revenue),o.ca?`Obj. ${money(o.ca)}`:"Objectif non renseigné",o.ca?p.revenue/o.ca*100:null,proj?`Projection ${money(proj)}`:"")}
-      ${progCard("Commandes",fmt(p.orders),o.orders?`Obj. ${fmt(o.orders)}`:"Objectif non renseigné",o.orders?p.orders/o.orders*100:null,"")}
-      ${kpiCard("Panier moyen (AOV)",money(p.aov),"","")}
-      ${kpiCard("Conv. Rate",pct(p.convRate),"","")}
-    </div>
-    <div class="sec-group">📈 Publicité</div>
-    <div class="kg">
-      ${progCard("Budget Ads",money(p.costAds),o.budgetAds?`Budget ${money(o.budgetAds)}`:"Budget non renseigné",o.budgetAds?p.costAds/o.budgetAds*100:null,"")}
-      ${kpiCard("ROAS MTD",ratio(p.roas),"","")}
-      ${kpiCard("CPA",money(p.cpa),"","")}
-      ${kpiCard("Rythme requis",needed?money(needed)+"/j":"—",`${Math.max(0,dM-dE)} jours restants`,"")}
-    </div>
-    <div class="sec-group">📧 Email</div>
-    <div class="kg">${kpiCard("Klaviyo MTD",money(p.klaviyo),"Flows + campagnes","")}</div>
-    <div class="sec-group">🛒 Funnel</div>
-    ${funnelBlock(p)}
-  </div>`;
-}
-
-function viewYtd(m){
-  const p=m.periods.ytd,o=m.objectives;
-  const start=new Date(+m.lastDate.slice(0,4),0,1);
-  const elapsed=Math.max(1,Math.ceil((parseDate(m.lastDate)-start)/86400000)+1);
-  const dY=isLeap(+m.lastDate.slice(0,4))?366:365;
-  const proj=p.revenue?p.revenue/elapsed*dY:null;
-  return`<div class="hv" id="v-ytd">
-    <div class="sec">— Année en cours · ${m.lastDate.slice(0,4)} · ${elapsed}j/${dY}</div>
-    <div class="sec-group">💰 Business</div>
-    <div class="kg">
-      ${progCard("CA YTD",money(p.revenue),o.caAnnual?`Obj. ${money(o.caAnnual)}`:"Objectif non renseigné",o.caAnnual?p.revenue/o.caAnnual*100:null,proj?`Projection ${money(proj)}`:"")}
-      ${kpiCard("Commandes YTD",fmt(p.orders),"","")}
-      ${kpiCard("Panier moyen (AOV)",money(p.aov),"","")}
-    </div>
-    <div class="sec-group">📈 Publicité</div>
-    <div class="kg">
-      ${progCard("Budget Ads YTD",money(p.costAds),o.budgetAnnual?`Budget ${money(o.budgetAnnual)}`:"Non renseigné",o.budgetAnnual?p.costAds/o.budgetAnnual*100:null,"")}
-      ${kpiCard("ROAS YTD",ratio(p.roas),"","")}
-      ${kpiCard("CAC YTD",money(p.cpa),"Coût acquisition client","")}
-    </div>
-    <div class="sec-group">📧 Email</div>
-    <div class="kg">${kpiCard("Klaviyo YTD",money(p.klaviyo),p.revenue?pct(p.klaviyo/p.revenue*100)+" du CA total":"","")}</div>
-    <div class="sec-group">🛒 Funnel</div>
-    ${funnelBlock(p)}
-  </div>`;
-}
-
-// ─── ADS VIEW ─────────────────────────────────────────────────────────────────
-function viewAds(m){
-  const p=m.periods["7d"];
-  const camps=Object.values(p.adsCampaigns||{}).sort((a,b)=>b.cost-a.cost);
-  const totalCost=p.costAds||0;
-  const pmax=p.adsByType["PMAX"]||{};
-  const search=p.adsByType["SEARCH"]||{};
-  const pmaxRec=getAdDecision(pmax);
-  const searchRec=getAdDecision(search);
-  const globalRec=getGlobalAdsRec(p);
-
-  return`<div class="hv" id="v-ads">
-    <div class="sec">— Publicité · Décisions · 7 jours glissants</div>
-
-    <div class="decision" style="margin-bottom:12px">
-      <div>
-        <div class="decision-title">Recommandation globale</div>
-        <div class="decision-main">${escHtml(globalRec.text)}</div>
-        <div class="ks" style="margin-top:5px">${escHtml(globalRec.detail)}</div>
-      </div>
-      <span class="badge ${globalRec.cls}">${escHtml(globalRec.label)}</span>
-    </div>
-
-    <div class="sec-group">📊 Vue globale · 7 jours</div>
-    <div class="kg">
-      ${kpiCard("Dépense totale",money(p.costAds),"","")}
-      ${kpiCard("ROAS global",ratio(p.roas),"","")}
-      ${kpiCard("Commandes Ads",fmt(p.orders),"","")}
-      ${kpiCard("CPA moyen",money(p.cpa),"","")}
-    </div>
-
-    <div class="sec-group">⚖️ PMAX vs Search</div>
-    <div class="vs-block">
-      <div class="vs-grid">
-        <div class="vs-side">
-          <div class="vs-name">Performance Max (PMAX)</div>
-          <div class="vs-kpi"><span class="vs-kl">Dépense</span><span class="vs-kv">${money(pmax.cost)}</span></div>
-          <div class="vs-kpi"><span class="vs-kl">ROAS</span><span class="vs-kv" style="color:${(pmax.roas||0)>=3?"var(--green)":(pmax.roas||0)>=2?"var(--orange)":"var(--red)"}">${ratio(pmax.roas)}</span></div>
-          <div class="vs-kpi"><span class="vs-kl">Achats</span><span class="vs-kv">${fmt(pmax.purchases)}</span></div>
-          <div style="margin-top:8px"><span class="ab ${pmaxRec.abCls}">${pmaxRec.label}</span></div>
-        </div>
-        <div class="vs-side">
-          <div class="vs-name">Search</div>
-          <div class="vs-kpi"><span class="vs-kl">Dépense</span><span class="vs-kv">${money(search.cost)}</span></div>
-          <div class="vs-kpi"><span class="vs-kl">ROAS</span><span class="vs-kv" style="color:${(search.roas||0)>=3?"var(--green)":(search.roas||0)>=2?"var(--orange)":"var(--red)"}">${ratio(search.roas)}</span></div>
-          <div class="vs-kpi"><span class="vs-kl">Achats</span><span class="vs-kv">${fmt(search.purchases)}</span></div>
-          <div style="margin-top:8px"><span class="ab ${searchRec.abCls}">${searchRec.label}</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="sec-group">🎯 Décisions par campagne</div>
-    ${camps.length?camps.map(c=>{
-      const rec=getAdDecision(c);
-      const share=totalCost?c.cost/totalCost*100:null;
-      return`<div class="ad-card">
-        <div class="ad-card-header">
-          <span class="ad-decision-badge" style="background:${rec.bg};color:${rec.color}">${rec.label}</span>
-          <span class="ad-card-name">${escHtml(c.name)}</span>
-          <span class="ad-card-type">${escHtml(c.type)}</span>
-        </div>
-        <div class="ad-metrics">
-          <div class="ad-metric"><div class="ad-metric-label">Dépense</div><div class="ad-metric-value">${money(c.cost)}</div></div>
-          <div class="ad-metric"><div class="ad-metric-label">Part budget</div><div class="ad-metric-value">${pct(share)}</div></div>
-          <div class="ad-metric"><div class="ad-metric-label">ROAS</div><div class="ad-metric-value" style="color:${(c.roas||0)>=3?"var(--green)":(c.roas||0)>=2?"var(--orange)":"var(--red)"}">${ratio(c.roas)}</div></div>
-          <div class="ad-metric"><div class="ad-metric-label">Achats</div><div class="ad-metric-value">${fmt(c.purchases)}</div></div>
-          <div class="ad-metric"><div class="ad-metric-label">CPA</div><div class="ad-metric-value">${money(c.cpa)}</div></div>
-        </div>
-        <div class="ad-action">→ ${escHtml(rec.action)}</div>
-      </div>`;
-    }).join(""):`<div class="empty">Aucune donnée campagne sur 7 jours.</div>`}
-
-    <div class="sec-group">🔍 Top requêtes · Search</div>
-    ${topRows(m.raw.searchTerms||[],"Clicks",8).map(r=>`<div class="row"><span class="rn">${escHtml(val(r,"Search term")||val(r,"Query")||"—")}</span><div class="rm"><span class="rs">Clics <span style="color:var(--accent)">${fmt(num(val(r,"Clicks")))}</span></span><span class="rs">Conv. ${fmt(num(val(r,"Conversions")))}</span><span class="rs">Coût ${money(num(val(r,"Cost")))}</span></div></div>`).join("")||`<div class="empty">Pas de données Search Terms disponibles.</div>`}
-  </div>`;
-}
-
-function getAdDecision(c){
-  const roas=c.roas||0, spend=c.cost||0, purchases=c.purchases||0;
-  if(spend<30)return{label:"PEU DE DONNÉES",bg:"rgba(144,139,132,.15)",color:"#908b84",abCls:"bi",action:"Moins de 30€ dépensés sur la période. Attendre plus de données avant de décider."};
-  if(roas>=4&&purchases>=3)return{label:"SCALER ↑",bg:"rgba(76,175,125,.16)",color:"var(--green)",abCls:"bg",action:`ROAS solide à ${ratio(roas)} avec ${fmt(purchases)} achats. Augmenter le budget de 20-30% maximum par semaine.`};
-  if(roas>=3&&purchases>=2)return{label:"MAINTENIR =",bg:"rgba(76,175,125,.10)",color:"var(--green)",abCls:"bg",action:`ROAS correct à ${ratio(roas)}. Garder le budget stable et surveiller 7 jours de plus.`};
-  if(roas>=2)return{label:"ANALYSER ?",bg:"rgba(232,166,76,.18)",color:"var(--orange)",abCls:"bw",action:`ROAS moyen à ${ratio(roas)}. Vérifier les créatifs, les audiences et les pages de destination.`};
-  if(spend>=50&&roas<2)return{label:"COUPER ✕",bg:"rgba(224,92,92,.18)",color:"var(--red)",abCls:"bc",action:`ROAS insuffisant à ${ratio(roas)} pour ${money(spend)} dépensés. Arrêter ou retravailler complètement.`};
-  return{label:"ANALYSER ?",bg:"rgba(232,166,76,.18)",color:"var(--orange)",abCls:"bw",action:"Données insuffisantes ou performances mixtes. Analyser créatifs et ciblage."};
-}
-
-function getGlobalAdsRec(p){
-  const roas=p.roas||0;
-  if(!p.costAds)return{text:"Aucune donnée Ads",detail:"Vérifier la connexion Google Ads.",label:"Données",cls:"warn"};
-  if(roas>=4)return{text:"Scaler le budget",detail:`ROAS global à ${ratio(roas)} sur 7J. Les campagnes sont rentables. Augmenter progressivement.`,label:"Scaler",cls:"good"};
-  if(roas>=3)return{text:"Maintenir le cap",detail:`ROAS à ${ratio(roas)} sur 7J. Performances correctes. Surveiller et optimiser les créatifs.`,label:"Maintenir",cls:"good"};
-  if(roas>=2)return{text:"Analyser et optimiser",detail:`ROAS à ${ratio(roas)} sur 7J. Marge insuffisante pour scaler. Identifier les campagnes qui tirent vers le bas.`,label:"Analyser",cls:"warn"};
-  return{text:"Réduire ou retravailler",detail:`ROAS à ${ratio(roas)} sur 7J. Les campagnes coûtent plus qu'elles ne rapportent. Action urgente requise.`,label:"Critique",cls:"bad"};
-}
-
-// ─── SEO VIEW ─────────────────────────────────────────────────────────────────
-function viewSeo(m){
-  const pages=m.periods["28d"].seoPages;
-  const queries=m.periods["28d"].seoQueries;
-  const totalClicks=pages.reduce((a,r)=>a+num(val(r,"Clicks")),0);
-  const totalImpr=pages.reduce((a,r)=>a+num(val(r,"Impressions")),0);
-  const avgPos=pages.length?pages.reduce((a,r)=>a+num(val(r,"Position")),0)/pages.length:null;
-  const avgCtr=totalImpr?totalClicks/totalImpr*100:null;
-
-  return`<div class="hv" id="v-seo">
-    <div class="sec">— SEO · Analyse & Recommandations · 28 jours</div>
-
-    <div class="sec-group">📊 Vue globale · 28 jours</div>
-    <div class="kg">
-      ${kpiCard("Clics organiques",fmt(totalClicks),"","")}
-      ${kpiCard("Impressions",fmt(totalImpr),"","")}
-      ${kpiCard("CTR moyen",pct(avgCtr),"Obj. >3%","")}
-      ${kpiCard("Position moyenne",avgPos?`${Math.round(avgPos*10)/10}`:"—","Top 5 = excellent","")}
-    </div>
-
-    <div class="sec-group">🎯 Pages · Actions recommandées</div>
-    ${pages.length?pages.map(r=>{
-      const rec=getSeoRec(r);
-      if(!rec)return"";
-      const pos=num(val(r,"Position"));
-      const ctr=num(val(r,"CTR"));
-      const clics=num(val(r,"Clicks"));
-      const impr=num(val(r,"Impressions"));
-      return`<div class="seo-card">
-        <div class="seo-card-header">
-          <span class="seo-card-url">${escHtml(shortUrl(val(r,"Page")))}</span>
-          <span class="ab ${rec.abCls}">${rec.label}</span>
-        </div>
-        <div class="seo-metrics">
-          <span class="seo-metric">Position <strong style="color:${pos<=3?"var(--green)":pos<=10?"var(--orange)":"var(--red)"}">${pos?Math.round(pos*10)/10:"—"}</strong></span>
-          <span class="seo-metric">Clics <strong style="color:var(--accent)">${fmt(clics)}</strong></span>
-          <span class="seo-metric">Impressions ${fmt(impr)}</span>
-          <span class="seo-metric">CTR <strong style="color:${ctr>=3?"var(--green)":ctr>=1?"var(--orange)":"var(--red)"}">${pct(ctr)}</strong></span>
-        </div>
-        <div class="seo-action">→ ${escHtml(rec.action)}</div>
-      </div>`;
-    }).join(""):`<div class="empty">Pas de données GSC Pages disponibles. Vérifier la connexion Google Search Console.</div>`}
-
-    <div class="sec-group">🔍 Top requêtes · 28 jours</div>
-    ${queries.length?queries.map(r=>{
-      const pos=num(val(r,"Position"));
-      const ctr=num(val(r,"CTR"));
-      return`<div class="row">
-        <span class="rn">${escHtml(val(r,"Query")||"—")}</span>
-        <div class="rm">
-          <span class="rs">Pos. <span style="color:${pos<=3?"var(--green)":pos<=10?"var(--orange)":"var(--red)"}">${pos?Math.round(pos*10)/10:"—"}</span></span>
-          <span class="rs">Clics <span style="color:var(--accent)">${fmt(num(val(r,"Clicks")))}</span></span>
-          <span class="rs">CTR <span style="color:${ctr>=3?"var(--green)":"var(--text-sec)"}">${pct(ctr)}</span></span>
-        </div>
-      </div>`;
-    }).join(""):`<div class="empty">Pas de données requêtes disponibles.</div>`}
-  </div>`;
-}
-
-function getSeoRec(r){
-  const pos=num(val(r,"Position"));
-  const ctr=num(val(r,"CTR"));
-  const impr=num(val(r,"Impressions"));
-  if(!pos&&!impr)return null;
-  if(pos<=3&&ctr>=3)return{label:"OK ✓",abCls:"bg",action:"Bonne position et bon CTR. Maintenir le contenu à jour et surveiller."};
-  if(pos<=5&&ctr<2)return{label:"AMÉLIORER CTR",abCls:"bw",action:`Position ${Math.round(pos*10)/10} mais CTR seulement ${Math.round(ctr*10)/10}%. Retravaille le title et la méta description pour donner envie de cliquer.`};
-  if(pos>=4&&pos<=10&&impr>100)return{label:"QUICK WIN ⚡",abCls:"bg",action:`Position ${Math.round(pos*10)/10} — proche du top 3 avec ${fmt(impr)} impressions. Enrichis le contenu, optimise le H1 et ajoute des liens internes.`};
-  if(pos>10&&impr>50)return{label:"CONTENU",abCls:"bw",action:`Position ${Math.round(pos*10)/10} hors top 10. Enrichir le contenu, améliorer le maillage interne et les balises.`};
-  if(pos>20)return{label:"RETRAVAILLER",abCls:"bc",action:`Position ${Math.round(pos*10)/10}. Page peu visible. Revoir entièrement le contenu et la stratégie de liens.`};
-  return{label:"SURVEILLER",abCls:"bi",action:`Position ${Math.round(pos*10)/10}. Surveiller l'évolution sur les prochaines semaines.`};
-}
-
-// ─── LEXIQUE VIEW ─────────────────────────────────────────────────────────────
-function viewLexique(){
-  const terms=[
-    {cat:"💰 Les chiffres business",items:[
-      {term:"CA",short:"Chiffre d'Affaires",def:"L'argent total encaissé sur la période. Si vous vendez 10 masques à 200€, le CA est 2 000€.",ex:"CA hier : 1 498€ → on a encaissé 1 498€ dans la journée."},
-      {term:"Commandes",short:"Nombre de ventes",def:"Le nombre total d'achats effectués sur le site pendant la période.",ex:"7 commandes hier = 7 clients ont acheté."},
-      {term:"AOV",short:"Panier moyen (Average Order Value)",def:"La valeur moyenne d'une commande. CA divisé par le nombre de commandes.",ex:"AOV 214€ = en moyenne, chaque client dépense 214€ par commande."},
-      {term:"Conv. Rate",short:"Taux de conversion",def:"Le pourcentage de visiteurs du site qui finissent par acheter.",ex:"Conv. Rate 1,8% = sur 100 personnes qui visitent le site, 1,8 achètent."},
-      {term:"AOV · Panier moyen",short:"Voir AOV",def:"C'est la même chose qu'AOV, affiché en français.",ex:""}
+function vLex(){
+  const T=[
+    {c:"💰 Les chiffres business",i:[
+      {t:"CA",s:"Chiffre d'Affaires",d:"L'argent total encaissé sur la période.",e:"CA hier 1 498€ = on a encaissé 1 498€ dans la journée."},
+      {t:"Commandes",s:"Nombre de ventes",d:"Le nombre d'achats effectués sur le site.",e:"7 commandes = 7 clients ont acheté."},
+      {t:"AOV · Panier moyen",s:"Average Order Value",d:"La valeur moyenne d'une commande. CA ÷ nombre de commandes.",e:"AOV 214€ = chaque client dépense 214€ en moyenne."},
+      {t:"Conv. Rate",s:"Taux de conversion",d:"Le % de visiteurs qui achètent.",e:"Conv. Rate 1,8% = sur 100 visiteurs, 1,8 achètent."},
+      {t:"Sessions",s:"Visites sur le site",d:"Chaque visite compte comme une session. Un même visiteur qui revient = 2 sessions.",e:"756 sessions = 756 visites hier."},
+      {t:"ATC",s:"Add To Cart · Ajout au panier",d:"Quand un visiteur clique 'Ajouter au panier'. Il n'a pas encore acheté.",e:"43 ATC = 43 personnes ont mis le produit dans leur panier."}
     ]},
-    {cat:"📈 La publicité payante",items:[
-      {term:"Coût Ads",short:"Dépense publicitaire",def:"L'argent dépensé en publicités Google sur la période.",ex:"Coût Ads 320€ = 320€ dépensés en pub aujourd'hui."},
-      {term:"ROAS",short:"Retour sur investissement pub",def:"Pour 1€ dépensé en pub, combien ça rapporte. ROAS 4 = 4€ de ventes pour 1€ de pub.",ex:"ROAS 4,68 = excellent. ROAS en dessous de 2 = problème."},
-      {term:"CPA",short:"Coût par acquisition",def:"Combien coûte en publicité l'obtention d'une commande.",ex:"CPA 52€ = pour chaque commande, on a dépensé 52€ en pub."},
-      {term:"PMAX",short:"Performance Max",def:"Un type de campagne Google Ads automatique qui diffuse des pubs sur tous les supports Google (YouTube, Maps, Shopping, Search).",ex:""},
-      {term:"Search",short:"Campagne Google Search",def:"Publicités qui apparaissent quand quelqu'un tape un mot-clé dans Google.",ex:"Quelqu'un tape 'meilleur masque LED visage' → votre pub apparaît."},
-      {term:"Scaler",short:"Augmenter le budget",def:"Quand une pub marche bien (ROAS élevé), on augmente son budget pour vendre encore plus.",ex:"ROAS 5 → on scale : on passe de 100€/j à 130€/j de budget."},
-      {term:"Cut / Couper",short:"Arrêter une campagne",def:"Quand une pub ne rapporte pas assez, on l'arrête pour éviter de perdre de l'argent.",ex:"ROAS 1,2 → on coupe la campagne."}
+    {c:"📈 La publicité payante",i:[
+      {t:"Dépense Ads",s:"Budget publicitaire dépensé",d:"L'argent dépensé en publicités Google sur la période.",e:"Dépense 320€ = 320€ de pub payés."},
+      {t:"ROAS",s:"Retour sur investissement pub",d:"Pour 1€ dépensé en pub, combien ça rapporte. ROAS 4 = 4€ de ventes pour 1€ de pub.",e:"En dessous de 2 = problème."},
+      {t:"CPA · CAC",s:"Coût par commande · Coût d'acquisition client",d:"Combien coûte en pub l'obtention d'une commande.",e:"CPA 52€ = pour chaque commande, 52€ de pub dépensés."},
+      {t:"PMAX",s:"Performance Max",d:"Campagne Google automatique sur tous les supports : YouTube, Maps, Shopping, Search.",e:""},
+      {t:"Search",s:"Campagne de recherche Google",d:"Pubs qui apparaissent quand quelqu'un tape un mot dans Google.",e:"Quelqu'un tape 'masque LED visage' → la pub Holiaē apparaît."},
+      {t:"Scaler",s:"Augmenter le budget",d:"Quand une pub marche bien (ROAS élevé), on augmente son budget pour vendre encore plus.",e:"ROAS 5 → on scale : on passe de 100€/j à 130€/j."},
+      {t:"Couper",s:"Arrêter une campagne",d:"Quand une pub ne rapporte pas assez, on l'arrête pour ne pas perdre d'argent.",e:"ROAS 1,2 → on coupe."}
     ]},
-    {cat:"📧 L'email marketing",items:[
-      {term:"Klaviyo",short:"Logiciel d'envoi d'emails",def:"Le logiciel utilisé pour envoyer des emails automatiques aux clients (ex: email après abandon panier, email de bienvenue).",ex:"Klaviyo Revenue 312€ = 312€ de ventes générées par les emails."},
-      {term:"Flow",short:"Séquence d'emails automatique",def:"Une série d'emails qui s'envoient automatiquement selon les actions du client.",ex:"Flow 'abandon panier' : si quelqu'un ajoute au panier sans acheter, il reçoit un email de rappel."},
-      {term:"Open Rate",short:"Taux d'ouverture",def:"Le pourcentage de personnes qui ont ouvert l'email reçu.",ex:"Open Rate 28% = sur 100 personnes qui ont reçu l'email, 28 l'ont ouvert."},
-      {term:"Click Rate",short:"Taux de clic",def:"Le pourcentage de personnes qui ont cliqué sur un lien dans l'email.",ex:"Click Rate 3% = sur 100 personnes qui ont ouvert l'email, 3 ont cliqué."}
+    {c:"📧 L'email marketing",i:[
+      {t:"Klaviyo",s:"Logiciel d'emails automatiques",d:"Le logiciel qui envoie des emails aux clients selon leurs actions.",e:"Klaviyo Revenue 312€ = 312€ de ventes générées par les emails."},
+      {t:"Flow",s:"Séquence d'emails automatique",d:"Série d'emails qui s'envoient automatiquement selon les actions du client.",e:"Flow 'abandon panier' : si quelqu'un ajoute au panier sans acheter, il reçoit un email de rappel."},
+      {t:"Open Rate",s:"Taux d'ouverture",d:"Le % de personnes qui ont ouvert l'email.",e:"Open Rate 28% = sur 100 emails envoyés, 28 ont été ouverts."},
+      {t:"Click Rate",s:"Taux de clic",d:"Le % de personnes qui ont cliqué dans l'email.",e:"Click Rate 3% = sur 100 ouvertures, 3 ont cliqué."},
+      {t:"Unsub Rate",s:"Taux de désabonnement",d:"Le % de personnes qui se sont désinscrites après un email.",e:"Au-dessus de 0,5% = attention à revoir le ciblage ou la fréquence."}
     ]},
-    {cat:"🛒 Le parcours d'achat (Funnel)",items:[
-      {term:"Sessions",short:"Visites sur le site",def:"Chaque fois qu'une personne visite le site, ça compte comme une session. Un même visiteur qui revient = 2 sessions.",ex:"756 sessions = 756 visites sur le site hier."},
-      {term:"PDP",short:"Page produit (Product Detail Page)",def:"La page qui décrit le produit Holiaē avec ses photos, son prix, ses bénéfices.",ex:"234 vues PDP = 234 personnes ont regardé la page du masque."},
-      {term:"ATC",short:"Ajout au panier (Add To Cart)",def:"Quand un visiteur clique sur 'Ajouter au panier'. Il n'a pas encore acheté.",ex:"43 ATC = 43 personnes ont mis le produit dans leur panier."},
-      {term:"Checkout",short:"Page de paiement",def:"L'étape où le client entre ses coordonnées et sa carte bleue pour finaliser l'achat.",ex:"18 checkouts = 18 personnes ont commencé à renseigner leur paiement."},
-      {term:"Paiement initié",short:"Paiement en cours",def:"Le client a commencé à entrer ses informations de paiement mais n'a pas encore validé.",ex:""},
-      {term:"Funnel",short:"Entonnoir de vente",def:"Le chemin qu'un visiteur parcourt depuis la visite jusqu'à l'achat. Chaque étape perd des gens : c'est normal, mais on cherche à en perdre le moins possible.",ex:"100 visiteurs → 30 voient le produit → 5 ajoutent au panier → 2 achètent."}
+    {c:"🛒 Le parcours d'achat (Funnel)",i:[
+      {t:"PDP",s:"Page produit (Product Detail Page)",d:"La page qui décrit le masque Holiaē avec photos, prix et bénéfices.",e:"234 vues PDP = 234 personnes ont regardé la page du masque."},
+      {t:"Checkout",s:"Page de paiement",d:"L'étape où le client entre ses coordonnées et sa carte bleue.",e:"18 checkouts = 18 personnes ont commencé à payer."},
+      {t:"Funnel",s:"Entonnoir de vente",d:"Le chemin depuis la visite jusqu'à l'achat. Chaque étape perd des visiteurs — c'est normal.",e:"100 visiteurs → 30 voient le produit → 5 ajoutent au panier → 2 achètent."}
     ]},
-    {cat:"📅 Les périodes de temps",items:[
-      {term:"Hier / J-1",short:"La journée d'hier",def:"Les données de la journée précédente (votre Sheet se met à jour à 8h chaque matin).",ex:""},
-      {term:"J-2",short:"Avant-hier",def:"La journée d'avant-hier, utilisée pour comparer avec hier.",ex:""},
-      {term:"7J",short:"7 derniers jours",def:"Les 7 dernières journées, comparées aux 7 jours qui précèdent.",ex:""},
-      {term:"MTD",short:"Mois en cours (Month To Date)",def:"Du 1er du mois jusqu'à aujourd'hui. Permet de voir où on en est par rapport à l'objectif du mois.",ex:"MTD au 26 avril = données du 1er au 26 avril."},
-      {term:"28J",short:"28 jours glissants",def:"Les 28 derniers jours, comparés aux 28 jours qui précèdent. Différent du MTD car ça ne repart pas du 1er du mois.",ex:""},
-      {term:"3M",short:"3 mois glissants",def:"Les 90 derniers jours. Utile pour voir les tendances de fond.",ex:""},
-      {term:"YTD",short:"Année en cours (Year To Date)",def:"Du 1er janvier jusqu'à aujourd'hui. Permet de voir l'avancement sur l'objectif annuel.",ex:"YTD au 26 avril 2025 = données du 1er janvier au 26 avril 2025."}
+    {c:"📅 Les périodes",i:[
+      {t:"Hier · J-1",s:"La journée d'hier",d:"Données de la veille. La Sheet se met à jour à 8h chaque matin.",e:""},
+      {t:"J-2",s:"Avant-hier",d:"La journée d'avant-hier, pour comparer avec hier.",e:""},
+      {t:"MTD",s:"Mois en cours (Month To Date)",d:"Du 1er du mois jusqu'à aujourd'hui. Permet de voir l'avancement vers l'objectif mensuel.",e:"MTD au 26 avril = données du 1er au 26 avril."},
+      {t:"28J",s:"28 jours glissants",d:"Les 28 derniers jours comparés aux 28 précédents. Différent du MTD car ça ne repart pas du 1er.",e:""},
+      {t:"YTD",s:"Année en cours (Year To Date)",d:"Du 1er janvier jusqu'à aujourd'hui.",e:"YTD au 26 avril = données du 1er janvier au 26 avril."}
     ]},
-    {cat:"🔍 Le référencement naturel (SEO)",items:[
-      {term:"SEO",short:"Référencement naturel",def:"Le fait d'apparaître dans Google sans payer. Quand quelqu'un tape 'masque LED visage' et que Holiaē apparaît, c'est du SEO.",ex:""},
-      {term:"Position SEO",short:"Rang dans Google",def:"À quelle place apparaît la page dans les résultats Google. Position 1 = premier résultat. Position 20 = invisible.",ex:"Position 3,2 sur 'meilleur masque LED' = on apparaît en 3ème position en moyenne."},
-      {term:"Impressions",short:"Nombre d'affichages",def:"Combien de fois la page est apparue dans les résultats Google (même si personne n'a cliqué).",ex:""},
-      {term:"CTR",short:"Taux de clic SEO (Click Through Rate)",def:"Le pourcentage de personnes qui ont cliqué sur notre résultat Google par rapport à ceux qui l'ont vu.",ex:"CTR 4% = sur 100 personnes qui ont vu notre lien dans Google, 4 ont cliqué."},
-      {term:"GSC",short:"Google Search Console",def:"L'outil gratuit de Google qui montre comment le site apparaît dans les recherches (positions, clics, requêtes).",ex:""},
-      {term:"Quick Win",short:"Gain rapide en SEO",def:"Une page déjà bien positionnée (4ème-10ème place) qui peut facilement passer dans le top 3 avec quelques améliorations.",ex:"Page en position 6 avec beaucoup d'impressions → Quick Win → optimiser le titre."},
-      {term:"KPI",short:"Indicateur clé de performance",def:"Un chiffre important qu'on surveille pour savoir si le business se porte bien.",ex:"CA, ROAS, Conv. Rate sont des KPIs."},
-      {term:"CAC",short:"Coût d'acquisition client",def:"Combien on dépense en marketing au total pour obtenir un nouveau client.",ex:"CAC 56€ = chaque nouveau client nous coûte 56€ en pub pour l'acquérir."}
+    {c:"🔍 Le SEO (référencement naturel)",i:[
+      {t:"SEO",s:"Référencement naturel",d:"Apparaître dans Google sans payer. Quand quelqu'un cherche 'masque LED visage' et que Holiaē apparaît.",e:""},
+      {t:"Position SEO",s:"Rang dans Google",d:"À quelle place apparaît la page. Position 1 = premier résultat. Position 20 = presque invisible.",e:"Position 3 sur 'meilleur masque LED' = on est 3ème."},
+      {t:"CTR",s:"Taux de clic SEO",d:"Le % de personnes qui ont cliqué sur notre lien parmi ceux qui l'ont vu dans Google.",e:"CTR 4% = sur 100 affichages, 4 personnes ont cliqué."},
+      {t:"Impressions",s:"Nombre d'affichages",d:"Combien de fois la page est apparue dans les résultats Google.",e:""},
+      {t:"Quick Win",s:"Gain rapide en SEO",d:"Page déjà en position 4-10 qui peut facilement passer dans le top 3 avec quelques améliorations.",e:""},
+      {t:"GSC",s:"Google Search Console",d:"L'outil gratuit de Google qui montre les positions, clics et requêtes du site.",e:""}
+    ]},
+    {c:"📐 Indicateurs de pilotage",i:[
+      {t:"KPI",s:"Indicateur clé de performance",d:"Un chiffre important qu'on surveille pour savoir si le business se porte bien.",e:"CA, ROAS, Conv. Rate sont des KPIs."},
+      {t:"Projection",s:"Estimation de fin de période",d:"Si le rythme actuel continue, où on finira à la fin du mois ou de l'année.",e:"Projection 37 800€ = au rythme actuel, on finira le mois à 37 800€."},
+      {t:"Rythme requis",s:"Ce qu'il faut encaisser par jour",d:"La somme à faire chaque jour pour atteindre l'objectif du mois, étant donné ce qui est déjà fait.",e:"Rythme requis 800€/j = il faut 800€ par jour sur les jours restants pour atteindre l'objectif."}
     ]}
   ];
-  return`<div class="hv" id="v-lex">
-    <div class="sec">— Lexique · Tous les termes expliqués simplement</div>
-    ${terms.map(cat=>`
-      <div class="lex-cat">
-        <div class="sec-group">${escHtml(cat.cat)}</div>
-        ${cat.items.map(item=>`<div class="lex-item">
-          <div class="lex-term">${escHtml(item.term)}</div>
-          <div class="lex-short">${escHtml(item.short)}</div>
-          <div class="lex-def">${escHtml(item.def)}</div>
-          ${item.ex?`<div class="lex-ex">Exemple : ${escHtml(item.ex)}</div>`:""}
-        </div>`).join("")}
-      </div>`).join("")}
-  </div>`;
+  const all=T.flatMap(cat=>cat.i.map(it=>({...it,search:(it.t+" "+it.s+" "+it.d+" "+it.e).toLowerCase()})));
+  const html=all.map(it=>`<div class="lex-i" data-s="${esc(it.search)}"><div class="lex-t">${esc(it.t)}</div><div class="lex-sh">${esc(it.s)}</div><div class="lex-d">${esc(it.d)}</div>${it.e?`<div class="lex-e">Exemple : ${esc(it.e)}</div>`:""}</div>`).join("");
+  return`<div class="hv" id="v-lex"><div class="sec">— Lexique · ${all.length} termes expliqués</div><input class="lex-s" type="search" placeholder="Chercher un terme… (ex: ROAS, panier, flow, conversion…)" oninput="fl(this.value)"><div id="li">${html}</div><div id="le" class="empty" style="display:none">Aucun terme trouvé.</div></div>`;
 }
 
-// ─── UI COMPONENTS ────────────────────────────────────────────────────────────
-function kpiSections(p,ref){
+// ── UI COMPONENTS ─────────────────────────────────────────────────────────────
+function secs(p,ref){
   return`
-    <div class="sec-group">💰 Business</div>
-    <div class="kg">
-      ${kpiCard("CA",money(p.revenue),ref?`Réf. ${money(ref.revenue)}`:"",delta(p.revenue,ref?.revenue,true))}
-      ${kpiCard("Commandes",fmt(p.orders),ref?`Réf. ${fmt(ref.orders)}`:"",delta(p.orders,ref?.orders,true))}
-      ${kpiCard("Panier moyen (AOV)",money(p.aov),ref?`Réf. ${money(ref.aov)}`:"",delta(p.aov,ref?.aov,true))}
-    </div>
-    <div class="sec-group">📈 Acquisition</div>
-    <div class="kg">
-      ${kpiCard("Sessions",fmt(p.sessions),ref?`Réf. ${fmt(ref.sessions)}`:"",delta(p.sessions,ref?.sessions,true))}
-      ${kpiCard("Conv. Rate",pct(p.convRate),ref?`Réf. ${pct(ref.convRate)}`:"",delta(p.convRate,ref?.convRate,true,"pt"))}
-      ${kpiCard("CPA",money(p.cpa),ref?`Réf. ${money(ref.cpa)}`:"",delta(p.cpa,ref?.cpa,false))}
-      ${kpiCard("ROAS",ratio(p.roas),ref?`Réf. ${ratio(ref.roas)}`:"",delta(p.roas,ref?.roas,true))}
-      ${kpiCard("Dépense Ads",money(p.costAds),ref?`Réf. ${money(ref.costAds)}`:"",delta(p.costAds,ref?.costAds,false))}
-    </div>
-    <div class="sec-group">📧 Email · Klaviyo</div>
-    <div class="kg">
-      ${kpiCard("Klaviyo Revenue",money(p.klaviyo),ref?`Réf. ${money(ref.klaviyo)}`:"",delta(p.klaviyo,ref?.klaviyo,true))}
-    </div>
-    <div class="sec-group">🛒 Funnel · Taux de passage</div>
-    ${funnelBlock(p,ref)}
-  `;
+  <div class="sg">💰 Business</div><div class="kg">
+    ${kcard("CA",mo(p.rev),ref?`Réf. ${mo(ref.rev)}`:"",dl(p.rev,ref?.rev,true))}
+    ${kcard("Commandes",fm(p.ord),ref?`Réf. ${fm(ref.ord)}`:"",dl(p.ord,ref?.ord,true))}
+    ${kcard("Panier moyen (AOV)",mo(p.aov),ref?`Réf. ${mo(ref.aov)}`:"",dl(p.aov,ref?.aov,true))}
+    ${kcard("Sessions",fm(p.sess),ref?`Réf. ${fm(ref.sess)}`:"",dl(p.sess,ref?.sess,true))}
+    ${kcard("Conv. Rate",pt(p.cr),ref?`Réf. ${pt(ref.cr)}`:"",dl(p.cr,ref?.cr,true,"pt"))}
+    ${kcard("Add to Cart",fm(p.atc),ref?`Réf. ${fm(ref.atc)}`:"",dl(p.atc,ref?.atc,true))}
+  </div>
+  <div class="sg">📈 Publicité</div><div class="kg">
+    ${kcard("Dépense Ads",mo(p.cost),ref?`Réf. ${mo(ref.cost)}`:"",dl(p.cost,ref?.cost,false))}
+    ${kcard("ROAS",rt(p.roas),ref?`Réf. ${rt(ref.roas)}`:"",dl(p.roas,ref?.roas,true))}
+    ${kcard("CPA",mo(p.cpa),ref?`Réf. ${mo(ref.cpa)}`:"",dl(p.cpa,ref?.cpa,false))}
+  </div>
+  <div class="sg">📧 Email · Klaviyo</div><div class="kg">
+    ${kcard("Klaviyo Revenue",mo(p.klav),ref?`Réf. ${mo(ref.klav)}`:"",dl(p.klav,ref?.klav,true))}
+  </div>
+  <div class="sg">🛒 Funnel · Taux de passage</div>${funnel(p)}
+  <div class="sg">🎯 Campagnes Ads</div>${camps(p)}`;
 }
 
-function kpiCard(label,value,ref,dh){
-  return`<div class="kc"><div class="kl">${label}</div><div class="kv">${value}</div><div class="kv2">${ref||""}</div><div class="kd">${dh||""}</div></div>`;
+function kcard(l,val,ref,dh){return`<div class="kc"><div class="kl">${l}</div><div class="kv">${val}</div><div class="kv2">${ref||""}</div><div class="kd">${dh||""}</div></div>`;}
+function pc(l,val,ref,prog,sub){const w=prog==null?0:Math.max(0,Math.min(100,prog));const cls=prog==null?"gold":prog<70?"bad":prog<90?"warn":"gold";return`<div class="kc"><div class="kl">${l}</div><div class="kv">${val}</div><div class="kd N">${ref}</div>${prog==null?"":`<div class="pb"><div class="pf ${cls}" style="width:${w}%"></div></div><div class="ks">${pt(prog)} · ${sub}</div>`}</div>`;}
+
+function funnel(p){
+  const st=[["Sessions",p.sess,52,""],["Vues PDP",p.pdp,38,p.sess&&p.pdp?pt(p.pdp/p.sess*100)+" ses.":""],["ATC",p.atc,24,p.pdp&&p.atc?pt(p.atc/p.pdp*100)+" PDP":""],["Checkout",p.chk,14,p.atc&&p.chk?pt(p.chk/p.atc*100)+" ATC":""],["Commandes",p.ord,8,p.chk&&p.ord?pt(p.ord/p.chk*100)+" chk":""]];
+  if(!st.some(s=>s[1]))return`<div class="empty">Funnel indisponible : données Shopify non remontées.</div>`;
+  return`<div class="funnel">${st.map(s=>`<div class="fstep"><div class="fl">${s[0]}</div><div class="fv">${fm(s[1])}</div><div class="fs">${s[3]}</div><div class="fb" style="height:${s[2]}px"></div></div>`).join("")}</div>`;
 }
 
-function progCard(label,value,ref,progress,sub){
-  const w=progress==null?0:Math.max(0,Math.min(100,progress));
-  const cls=progress==null?"gold":progress<70?"bad":progress<90?"warn":"gold";
-  return`<div class="kc"><div class="kl">${label}</div><div class="kv">${value}</div><div class="kd n">${ref}</div>${progress==null?"":`<div class="pb"><div class="pf ${cls}" style="width:${w}%"></div></div><div class="ks">${pct(progress)} · ${sub}</div>`}</div>`;
+function camps(p){
+  const cl=Object.values(p.camps||{}).sort((a,b)=>b.cost-a.cost);
+  if(!cl.length)return`<div class="empty">Aucune donnée campagne sur cette période.</div>`;
+  return cl.map(c=>`<div class="row"><span class="rn">${esc(c.name)}</span><div class="rm"><span class="rs">${esc(c.type)}</span><span class="rs">Ventes <span style="color:var(--accent)">${fm(c.pur)}</span></span><span class="rs">ROAS <span style="color:${rc(c.roas)}">${rt(c.roas)}</span></span><span class="rs">Dépense ${mo(c.cost)}</span></div></div>`).join("");
 }
 
-function funnelBlock(p){
-  const steps=[
-    ["Sessions",p.sessions,52,""],
-    ["Vues PDP",p.pdp,38,p.sessions&&p.pdp?pct(p.pdp/p.sessions*100)+" ses.":""],
-    ["ATC",p.atc,24,p.pdp&&p.atc?pct(p.atc/p.pdp*100)+" PDP":""],
-    ["Checkout",p.checkout,14,p.atc&&p.checkout?pct(p.checkout/p.atc*100)+" ATC":""],
-    ["Commandes",p.orders,8,p.checkout&&p.orders?pct(p.orders/p.checkout*100)+" chk":""]
-  ];
-  if(!steps.some(s=>s[1]))return`<div class="empty">Funnel indisponible : données Shopify (Sessions / PDP / ATC / Checkout) non remontées.</div>`;
-  return`<div class="funnel">${steps.map(s=>`<div class="fstep"><div class="fl">${s[0]}</div><div class="fv">${fmt(s[1])}</div><div class="fs">${s[3]}</div><div class="fb" style="height:${s[2]}px"></div></div>`).join("")}</div>`;
-}
+function seoR(p){return`<div class="sg">🔍 Top pages SEO</div>${p.sp.map(r=>`<div class="row"><span class="rn">${esc(surl(gv(r,"Page")))}</span><div class="rm"><span class="rs">Pos. <span style="color:var(--accent)">${rt(num(gv(r,"Position")))}</span></span><span class="rs">Clics ${fm(num(gv(r,"Clicks")))}</span><span class="rs">CTR ${pt(num(gv(r,"CTR")))}</span></div></div>`).join("")||`<div class="empty">Pas de données SEO.</div>`}`;}
+function chR(p){const tot=Object.values(p.chs).reduce((a,b)=>a+b,0);return`<div class="sg">🌐 Trafic par canal</div>${Object.entries(p.chs).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n,s])=>`<div class="row"><span class="rn">${esc(n)}</span><div class="rm"><span class="rs">${fm(s)} sessions</span><span class="rs">${pt(tot?s/tot*100:null)}</span></div></div>`).join("")||`<div class="empty">Aucune donnée canal.</div>`}`;}
 
-function seoRows(p){
-  return`<div class="sec-group">🔍 Top pages SEO</div>${p.seoPages.map(r=>`<div class="row"><span class="rn">${escHtml(shortUrl(val(r,"Page")))}</span><div class="rm"><span class="rs">Pos. <span style="color:var(--accent)">${ratio(num(val(r,"Position")))}</span></span><span class="rs">Clics ${fmt(num(val(r,"Clicks")))}</span><span class="rs">CTR ${pct(num(val(r,"CTR")))}</span></div></div>`).join("")||`<div class="empty">Pas de données SEO.</div>`}`;
-}
-
-function channelRows(p){
-  const total=Object.values(p.channels).reduce((a,b)=>a+b,0);
-  return`<div class="sec-group">🌐 Trafic par canal</div>${Object.entries(p.channels).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n,s])=>`<div class="row"><span class="rn">${escHtml(n)}</span><div class="rm"><span class="rs">${fmt(s)} sessions</span><span class="rs">${pct(total?s/total*100:null)}</span></div></div>`).join("")||`<div class="empty">Aucune donnée canal.</div>`}`;
-}
-
-function viewAlerts(m){
-  return`<div class="hv" id="v-alrt">
-    <div class="sec">— Alertes actives</div>
-    ${m.alerts.length?m.alerts.map(a=>`<div class="al"><div class="ad ${a.level}"></div><div style="flex:1"><div class="at">${a.title}</div><div class="as">${a.body}</div></div><span class="ab ${a.level==="c"?"bc":a.level==="w"?"bw":"bi"}">${a.label}</span></div>`).join(""):`<div class="empty" style="text-align:center;font-size:14px">Tout est dans les clous ✦</div>`}
-  </div>`;
-}
-
-// ─── ALERTS ───────────────────────────────────────────────────────────────────
-function buildAlerts(p,o){
-  const a=[];
-  const d1=p.d1,s7=p["7d"],p7=p.prev7d,mtd=p.mtd;
-  const avg7Orders=s7.orders?s7.orders/7:null;
-  const avg7Rev=s7.revenue?s7.revenue/7:null;
-  if(!d1.sessions&&!d1.orders)a.push({level:"c",label:"Data",title:"Données Shopify manquantes",body:"Sessions et commandes à zéro sur J-1. Vérifier la connexion API Shopify."});
-  if(avg7Orders&&d1.orders<avg7Orders*.7)a.push({level:"c",label:"Critique",title:"Commandes en chute",body:`Hier ${fmt(d1.orders)} commandes vs moyenne 7J ${fmt(avg7Orders)}/j (−${pct((1-d1.orders/avg7Orders)*100)}).`});
-  if(avg7Rev&&d1.revenue<avg7Rev*.7)a.push({level:"c",label:"Critique",title:"CA en chute",body:`Hier ${money(d1.revenue)} vs moyenne 7J ${money(avg7Rev)}/j.`});
-  if(d1.roas&&s7.roas&&d1.roas<s7.roas*.65)a.push({level:"c",label:"Ads",title:"ROAS en chute",body:`ROAS hier ${ratio(d1.roas)} vs moyenne 7J ${ratio(s7.roas)}.`});
-  if(s7.pdpToAtc!=null&&s7.pdpToAtc<1)a.push({level:"c",label:"CRO",title:"PDP → ATC trop faible",body:`Taux d'ajout panier 7J : ${pct(s7.pdpToAtc)}. Objectif : 1,5%+. Retravailler la page produit.`});
-  if(o.ca){
-    const dE=Math.max(1,new Date().getDate()-1);
-    const dM=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate();
-    const proj=mtd.revenue?mtd.revenue/dE*dM:null;
-    if(proj&&proj<o.ca*.85)a.push({level:"c",label:"MTD",title:"Projection MTD insuffisante",body:`Projection fin de mois ${money(proj)} vs objectif ${money(o.ca)} → écart ${money(o.ca-proj)}.`});
-  }
-  if(s7.convRate&&p7.convRate&&s7.convRate<p7.convRate*.85)a.push({level:"w",label:"Warning",title:"Taux de conversion en baisse",body:`Conv. rate 7J ${pct(s7.convRate)} vs ${pct(p7.convRate)} semaine précédente.`});
-  if(avg7Orders&&d1.orders<avg7Orders*.85&&d1.orders>=avg7Orders*.7)a.push({level:"w",label:"Warning",title:"Commandes en légère baisse",body:`Hier ${fmt(d1.orders)} vs moyenne 7J ${fmt(avg7Orders)}/j.`});
-  if(s7.atcToCheckout!=null&&s7.atcToCheckout<50)a.push({level:"w",label:"Panier",title:"ATC → Checkout faible",body:`${pct(s7.atcToCheckout)} des ajouts panier arrivent au checkout. Vérifier friction panier et livraison.`});
-  if(s7.checkoutToOrders!=null&&s7.checkoutToOrders<30)a.push({level:"w",label:"Checkout",title:"Checkout → Commandes faible",body:`${pct(s7.checkoutToOrders)} des checkouts aboutissent à une commande. Vérifier moyens de paiement.`});
-  if(o.budgetAds){
-    const dE=Math.max(1,new Date().getDate()-1);
-    const dM=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate();
-    const normal=o.budgetAds*(dE/dM);
-    if(mtd.costAds>normal*1.2)a.push({level:"w",label:"Budget",title:"Budget Ads consommé trop vite",body:`Dépense MTD ${money(mtd.costAds)} vs rythme attendu ${money(normal)}.`});
-    if(mtd.costAds&&mtd.costAds<normal*.7)a.push({level:"i",label:"Budget",title:"Budget Ads sous-consommé",body:`Dépense MTD ${money(mtd.costAds)} vs rythme attendu ${money(normal)}.`});
-  }
-  const srch=s7.adsByType["SEARCH"]||{},pmx=s7.adsByType["PMAX"]||{};
-  if(srch.roas&&pmx.roas&&pmx.roas<srch.roas*.6)a.push({level:"w",label:"Ads",title:"Search surperforme PMAX",body:`Search ROAS ${ratio(srch.roas)} vs PMAX ${ratio(pmx.roas)}. Envisager rééquilibrage budget.`});
-  if(s7.pdpToAtc!=null&&s7.pdpToAtc>=1.5&&s7.pdpToAtc<2)a.push({level:"i",label:"Info",title:"PDP → ATC dans les clous",body:`Taux ajout panier 7J : ${pct(s7.pdpToAtc)}. Continue à renforcer la preuve sociale.`});
-  if(o.ca){
-    const dE=Math.max(1,new Date().getDate()-1);
-    const dM=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate();
-    const proj=mtd.revenue?mtd.revenue/dE*dM:null;
-    if(proj&&proj>=o.ca*.85&&proj<o.ca*.95)a.push({level:"i",label:"Info",title:"Projection MTD légèrement en retard",body:`Projection ${money(proj)} vs objectif ${money(o.ca)} (${pct(proj/o.ca*100)}).`});
-  }
+// ── ALERTS ────────────────────────────────────────────────────────────────────
+function alerts(p,o){
+  const a=[],d1=p.d1,s7=p["7d"],p7=p.p7d,mtd=p.mtd;
+  const a7O=s7.ord?s7.ord/7:null,a7R=s7.rev?s7.rev/7:null;
+  if(!d1.sess&&!d1.ord)a.push({lv:"c",label:"Data",title:"Données Shopify manquantes",body:"Sessions et commandes à zéro sur J-1. Vérifier la connexion API Shopify."});
+  if(a7O&&d1.ord<a7O*.7)a.push({lv:"c",label:"Critique",title:"Commandes en chute",body:`Hier ${fm(d1.ord)} vs moyenne 7J ${fm(a7O)}/j (−${pt((1-d1.ord/a7O)*100)}).`});
+  if(a7R&&d1.rev<a7R*.7)a.push({lv:"c",label:"Critique",title:"CA en chute",body:`Hier ${mo(d1.rev)} vs moyenne 7J ${mo(a7R)}/j.`});
+  if(d1.roas&&s7.roas&&d1.roas<s7.roas*.65)a.push({lv:"c",label:"Ads",title:"ROAS en chute",body:`ROAS hier ${rt(d1.roas)} vs moyenne 7J ${rt(s7.roas)}.`});
+  if(s7.p2a!=null&&s7.p2a<1)a.push({lv:"c",label:"CRO",title:"PDP → ATC trop faible",body:`Taux ajout panier 7J : ${pt(s7.p2a)}. Objectif 1,5%+. Retravailler la page produit.`});
+  if(o.ca){const dE=Math.max(1,new Date().getDate()-1),dM=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate(),proj=mtd.rev?mtd.rev/dE*dM:null;if(proj&&proj<o.ca*.85)a.push({lv:"c",label:"MTD",title:"Projection MTD insuffisante",body:`Projection ${mo(proj)} vs objectif ${mo(o.ca)} → écart ${mo(o.ca-proj)}.`});else if(proj&&proj<o.ca*.95)a.push({lv:"i",label:"Info",title:"Projection MTD légèrement en retard",body:`Projection ${mo(proj)} (${pt(proj/o.ca*100)} de l'objectif).`});}
+  if(s7.cr&&p7.cr&&s7.cr<p7.cr*.85)a.push({lv:"w",label:"Warning",title:"Taux de conversion en baisse",body:`Conv. rate 7J ${pt(s7.cr)} vs ${pt(p7.cr)} semaine précédente.`});
+  if(a7O&&d1.ord<a7O*.85&&d1.ord>=a7O*.7)a.push({lv:"w",label:"Warning",title:"Commandes en légère baisse",body:`Hier ${fm(d1.ord)} vs moyenne 7J ${fm(a7O)}/j.`});
+  if(s7.a2c!=null&&s7.a2c<50)a.push({lv:"w",label:"Panier",title:"ATC → Checkout faible",body:`${pt(s7.a2c)} des ajouts panier arrivent au checkout.`});
+  if(s7.c2o!=null&&s7.c2o<30)a.push({lv:"w",label:"Checkout",title:"Checkout → Commandes faible",body:`${pt(s7.c2o)} des checkouts aboutissent à une commande.`});
+  if(o.bAds){const dE=Math.max(1,new Date().getDate()-1),dM=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate(),norm=o.bAds*(dE/dM);if(mtd.cost>norm*1.2)a.push({lv:"w",label:"Budget",title:"Budget Ads trop rapide",body:`Dépense MTD ${mo(mtd.cost)} vs rythme attendu ${mo(norm)}.`});if(mtd.cost&&mtd.cost<norm*.7)a.push({lv:"i",label:"Budget",title:"Budget Ads sous-consommé",body:`Dépense MTD ${mo(mtd.cost)} vs rythme attendu ${mo(norm)}.`});}
+  const sr=s7.byType["SEARCH"]||{},pm=s7.byType["PMAX"]||{};
+  if(sr.roas&&pm.roas&&pm.roas<sr.roas*.6)a.push({lv:"w",label:"Ads",title:"Search surperforme PMAX",body:`Search ROAS ${rt(sr.roas)} vs PMAX ${rt(pm.roas)}. Envisager rééquilibrage.`});
   return a.slice(0,12);
 }
+function dqual(d1){const m=[];if(!d1.sess)m.push("sessions");if(!d1.ord)m.push("commandes");if(!d1.cost)m.push("Ads");if(!d1.klav)m.push("Klaviyo");if(!m.length)return{level:"ok",label:"Data OK"};if(m.length<=2)return{level:"warn",label:"Data partielle : "+m.join(", ")};return{level:"bad",label:"Data à vérifier"};}
+function gdec(p,o,dq){const s7=p["7d"],p7=p.p7d,d1=p.d1;if(dq.level==="bad")return{text:"Priorité data",detail:"Trop de sources vides. Vérifier les syncs."};if(s7.p2a!=null&&s7.p2a<1)return{text:"Priorité page produit",detail:`PDP → ATC à ${pt(s7.p2a)} sur 7J. La page ne convertit pas assez.`};if(s7.a2c!=null&&s7.a2c<50)return{text:"Priorité panier",detail:`ATC → Checkout à ${pt(s7.a2c)}. Friction entre panier et checkout.`};if(s7.c2o!=null&&s7.c2o<30)return{text:"Priorité checkout",detail:`Checkout → Commandes à ${pt(s7.c2o)}. Le paiement ou la réassurance bloque.`};if(d1.roas&&s7.roas&&d1.roas<s7.roas*.65)return{text:"Priorité publicité",detail:`ROAS hier ${rt(d1.roas)} vs moyenne 7J ${rt(s7.roas)}.`};if(s7.cr&&p7.cr&&s7.cr<p7.cr*.85)return{text:"Priorité conversion",detail:`Conv. rate en baisse : ${pt(s7.cr)} vs ${pt(p7.cr)}.`};return{text:"Tout roule ✦",detail:"Surveiller PDP → ATC et équilibre PMAX / Search."};}
 
-function getDataQuality(d1){
-  const miss=[];
-  if(!d1.sessions)miss.push("sessions");
-  if(!d1.orders)miss.push("commandes");
-  if(!d1.costAds)miss.push("Ads");
-  if(!d1.klaviyo)miss.push("Klaviyo");
-  if(!miss.length)return{level:"ok",label:"Data OK"};
-  if(miss.length<=2)return{level:"warn",label:"Data partielle : "+miss.join(", ")};
-  return{level:"bad",label:"Data à vérifier"};
-}
-
-function getDecision(p,o,dq){
-  const d1=p.d1,s7=p["7d"],p7=p.prev7d;
-  if(dq.level==="bad")return{text:"Priorité data",detail:"Trop de sources vides. Vérifier les syncs avant décision business."};
-  if(s7.pdpToAtc!=null&&s7.pdpToAtc<1)return{text:"Priorité page produit",detail:`PDP → ATC à ${pct(s7.pdpToAtc)} sur 7J. La page produit ne convertit pas assez en ajouts panier.`};
-  if(s7.atcToCheckout!=null&&s7.atcToCheckout<50)return{text:"Priorité panier",detail:`ATC → Checkout à ${pct(s7.atcToCheckout)}. Friction entre le panier et le checkout.`};
-  if(s7.checkoutToOrders!=null&&s7.checkoutToOrders<30)return{text:"Priorité checkout",detail:`Checkout → Commandes à ${pct(s7.checkoutToOrders)}. Le paiement ou la réassurance bloque.`};
-  if(d1.roas&&s7.roas&&d1.roas<s7.roas*.65)return{text:"Priorité publicité",detail:`ROAS hier ${ratio(d1.roas)} vs moyenne 7J ${ratio(s7.roas)}. Vérifier les campagnes.`};
-  if(s7.convRate&&p7.convRate&&s7.convRate<p7.convRate*.85)return{text:"Priorité conversion",detail:`Conv. rate en baisse : ${pct(s7.convRate)} vs ${pct(p7.convRate)} semaine précédente.`};
-  return{text:"Tout roule ✦",detail:"Surveiller PDP → ATC et équilibre budget PMAX / Search."};
-}
-
-// ─── UTILITIES ────────────────────────────────────────────────────────────────
-function between(rows,s,e){return rows.filter(r=>isIso(val(r,"Date"))&&val(r,"Date")>=s&&val(r,"Date")<=e)}
-function topRows(rows,field,limit){return[...rows].sort((a,b)=>num(val(b,field))-num(val(a,field))).slice(0,limit)}
-function val(row,name){return row?.[name]??""}
-function sum(rows,field){return rows.reduce((a,r)=>a+num(val(r,field)),0)}
-function num(v){if(v==null||v==="")return 0;const n=Number(String(v).replace(/\s/g,"").replace(",","."));return Number.isFinite(n)?n:0}
-function safeDiv(a,b){return b?a/b:null}
-function money(v){return v?EUR.format(v):"—"}
-function fmt(v){return v?NF.format(Math.round(v)):"—"}
-function ratio(v){return v?NF.format(Math.round(v*100)/100):"—"}
-function pct(v){return v==null||!Number.isFinite(v)?"—":`${NF.format(Math.round(v*10)/10)}%`}
-function delta(cur,old,posUp=true,unit=""){
-  if(cur==null||old==null||!old)return`<span class="n">—</span>`;
-  const raw=unit==="pt"?cur-old:(cur-old)/Math.abs(old)*100;
-  const good=posUp?raw>=0:raw<=0;
-  const arrow=raw>=0?"▲":"▼";
-  return`<span class="${good?"g":"r"}">${arrow} ${unit==="pt"?`${Math.round(raw*10)/10}pt`:pct(Math.abs(raw))}</span>`;
-}
-function normType(t){
-  const s=String(t||"").toUpperCase();
-  if(s.includes("PERFORMANCE_MAX")||s.includes("PMAX"))return"PMAX";
-  if(s.includes("SEARCH"))return"SEARCH";
-  if(s.includes("BRAND"))return"BRAND";
-  return s||"OTHER";
-}
-function parseDate(s){const[y,mo,d]=String(s).slice(0,10).split("-").map(Number);return new Date(y,mo-1,d)}
-function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
-function iso(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
-function monthStart(d){return`${d.slice(0,7)}-01`}
-function isIso(s){return/^\d{4}-\d{2}-\d{2}$/.test(String(s||""))}
-function isLeap(y){return y%4===0&&(y%100!==0||y%400===0)}
-function fmtDateLabel(d){return isIso(d)?new Date(`${d}T12:00:00`).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"}):"—"}
-function shortUrl(url){try{const u=new URL(String(url));return u.pathname.replace(/^\/|\/$/g,"")||u.hostname;}catch{return String(url||"");}}
-function escHtml(s){return String(s??"").replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function fl(q){const s=q.toLowerCase().trim(),it=document.querySelectorAll("#li .lex-i");let c=0;it.forEach(e=>{const show=!s||e.dataset.s.includes(s);e.style.display=show?"":"none";if(show)c++;});document.getElementById("le").style.display=c===0?"":"none";}
+function bt(rows,s,e){return rows.filter(r=>isIso(gv(r,"Date"))&&gv(r,"Date")>=s&&gv(r,"Date")<=e);}
+function topR(rows,f,l){return[...rows].sort((a,b)=>num(gv(b,f))-num(gv(a,f))).slice(0,l);}
+function gv(row,n){return row?.[n]??"";}
+function sm(rows,f){return rows.reduce((a,r)=>a+num(gv(r,f)),0);}
+function num(x){if(x==null||x==="")return 0;const v=Number(String(x).replace(/\s/g,"").replace(",","."));return Number.isFinite(v)?v:0;}
+function dv(a,b){return b?a/b:null;}
+function mo(x){return x?EU.format(x):"—";}
+function fm(x){return x?NF.format(Math.round(x)):"—";}
+function rt(x){return x?NF.format(Math.round(x*100)/100):"—";}
+function pt(x){return x==null||!Number.isFinite(x)?"—":`${NF.format(Math.round(x*10)/10)}%`;}
+function dl(cur,old,pu=true,u=""){if(cur==null||old==null||!old)return`<span class="N">—</span>`;const raw=u==="pt"?cur-old:(cur-old)/Math.abs(old)*100;const g=pu?raw>=0:raw<=0;return`<span class="${g?"G":"R"}">${raw>=0?"▲":"▼"} ${u==="pt"?`${Math.round(raw*10)/10}pt`:pt(Math.abs(raw))}</span>`;}
+function nt(t){const s=String(t||"").toUpperCase();if(s.includes("PERFORMANCE_MAX")||s.includes("PMAX"))return"PMAX";if(s.includes("SEARCH"))return"SEARCH";if(s.includes("BRAND"))return"BRAND";return s||"OTHER";}
+function pd(s){const[y,m,d]=String(s).slice(0,10).split("-").map(Number);return new Date(y,m-1,d);}
+function add(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x;}
+function iso(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;}
+function monthStart(d){return`${d.slice(0,7)}-01`;}
+function isIso(s){return/^\d{4}-\d{2}-\d{2}$/.test(String(s||""));}
+function leap(y){return y%4===0&&(y%100!==0||y%400===0);}
+function fd(d){return isIso(d)?new Date(`${d}T12:00:00`).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"}):"—";}
+function surl(url){try{const u=new URL(String(url));return u.pathname.replace(/^\/|\/$/g,"")||u.hostname;}catch{return String(url||"");}}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
 </script>
 </body>
 </html>
