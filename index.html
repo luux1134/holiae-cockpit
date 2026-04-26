@@ -118,7 +118,7 @@
 const API_KEY  = "AIzaSyADK3alDzNTsEkbKGVDbrdHYBj0esGF0KU";
 const SHEET_ID = "17j732Xnp48sOWR_ignS3pgc5eKL4OPCJwUJWKH5Euv4";
 const SHEETS   = {shopify:"Shopify_Daily",ga4:"GA4_Channel",ads:"GoogleAds_Campaigns",st:"GoogleAds_SearchTerms",klav:"Klaviyo",klavD:"Klaviyo_Daily",gscP:"GSC_Pages",gscQ:"GSC_Queries",obj:"Objectifs"};
-const CKEY = "holiae-v6", TTL = 36e5;
+const CKEY = "holiae-v7", TTL = 36e5;
 const app = document.getElementById("app");
 const NF = new Intl.NumberFormat("fr-FR");
 const EU = new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR",maximumFractionDigits:0});
@@ -139,7 +139,7 @@ async function load(){
   return d;
 }
 async function fsheet(nm){
-  const u=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(nm)}!A:Z?key=${API_KEY}`;
+  const u=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(nm)}!A:Z?valueRenderOption=UNFORMATTED_VALUE&key=${API_KEY}`;
   const r=await fetch(u);
   if(!r.ok){if(r.status===400||r.status===404)return[];throw new Error(`${nm}:${r.status}`);}
   return r2o((await r.json()).values||[]);
