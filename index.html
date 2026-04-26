@@ -242,6 +242,9 @@
         cpa: safeDiv(costAds, orders),
         klaviyoRevenue,
         pdp, atc, checkout, payment: null,
+        pdpToAtc: pdp ? atc / pdp * 100 : null,
+        atcToCheckout: atc ? checkout / atc * 100 : null,
+        checkoutToOrders: checkout ? orders / checkout * 100 : null,
         adsByType: adsTypes(ads),
         channels: channels(ga4),
         seoQueries: topRows(raw.gscQueries || [], "Clicks", 5),
@@ -309,6 +312,9 @@
           ${progressCard("Budget Ads", money(p.costAds), obj.budgetAds ? `Budget ${money(obj.budgetAds)}` : "Budget non renseigné", obj.budgetAds ? p.costAds / obj.budgetAds * 100 : null, "")}
           ${kpiCard("ROAS MTD", ratio(p.roas), "", "")}
           ${kpiCard("Klaviyo MTD", money(p.klaviyoRevenue), "", "")}
+          ${kpiCard("PDP → ATC", pct(p.pdpToAtc), "Objectif 1,5%+", "")}
+          ${kpiCard("ATC → Checkout", pct(p.atcToCheckout), "Objectif 55%+", "")}
+          ${kpiCard("Checkout → Orders", pct(p.checkoutToOrders), "Objectif 35%+", "")}
           ${kpiCard("Rythme requis", needed ? money(needed)+"/j" : "—", `${Math.max(0, daysMonth-daysElapsed)} jours restants`, "")}
         </div>
         ${funnelBlock(p)}
@@ -331,6 +337,9 @@
           ${kpiCard("ROAS YTD", ratio(p.roas), "", "")}
           ${kpiCard("CAC YTD", money(p.cpa), "", "")}
           ${kpiCard("Klaviyo YTD", money(p.klaviyoRevenue), p.revenue ? `${pct(p.klaviyoRevenue / p.revenue * 100)} du CA` : "", "")}
+          ${kpiCard("PDP → ATC", pct(p.pdpToAtc), "Objectif 1,5%+", "")}
+          ${kpiCard("ATC → Checkout", pct(p.atcToCheckout), "Objectif 55%+", "")}
+          ${kpiCard("Checkout → Orders", pct(p.checkoutToOrders), "Objectif 35%+", "")}
         </div>
       </div>`;
     }
@@ -342,6 +351,9 @@
         ${kpiCard("CA", money(p.revenue), ref ? `Réf. ${money(ref.revenue)}` : "", delta(p.revenue, ref?.revenue, true))}
         ${kpiCard("AOV", money(p.aov), ref ? `Réf. ${money(ref.aov)}` : "", delta(p.aov, ref?.aov, true))}
         ${kpiCard("Conv. Rate", pct(p.convRate), ref ? `Réf. ${pct(ref.convRate)}` : "", delta(p.convRate, ref?.convRate, true, "pt"))}
+        ${kpiCard("PDP → ATC", pct(p.pdpToAtc), ref ? `Réf. ${pct(ref.pdpToAtc)}` : "Objectif 1,5%+", delta(p.pdpToAtc, ref?.pdpToAtc, true, "pt"))}
+        ${kpiCard("ATC → Checkout", pct(p.atcToCheckout), ref ? `Réf. ${pct(ref.atcToCheckout)}` : "Objectif 55%+", delta(p.atcToCheckout, ref?.atcToCheckout, true, "pt"))}
+        ${kpiCard("Checkout → Orders", pct(p.checkoutToOrders), ref ? `Réf. ${pct(ref.checkoutToOrders)}` : "Objectif 35%+", delta(p.checkoutToOrders, ref?.checkoutToOrders, true, "pt"))}
         ${kpiCard("CPA", money(p.cpa), ref ? `Réf. ${money(ref.cpa)}` : "", delta(p.cpa, ref?.cpa, false))}
         ${kpiCard("ROAS", ratio(p.roas), ref ? `Réf. ${ratio(ref.roas)}` : "", delta(p.roas, ref?.roas, true))}
         ${kpiCard("Coût Ads", money(p.costAds), ref ? `Réf. ${money(ref.costAds)}` : "", delta(p.costAds, ref?.costAds, false))}
