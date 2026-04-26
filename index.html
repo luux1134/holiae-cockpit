@@ -245,8 +245,8 @@ function gobj(rows,date){const m=date.slice(0,7),r=rows.find(x=>gv(x,"Mois")===m
 
 // ── VIEWS ─────────────────────────────────────────────────────────────────────
 function vAlerts(m){return`<div class="hv on" id="v-alrt"><div class="sec">— Alertes · Ta todo du matin</div>${m.alerts.length?m.alerts.map(a=>`<div class="al"><div class="dot ${a.lv}"></div><div style="flex:1"><div class="at">${a.title}</div><div class="as">${a.body}</div></div><span class="ab ${a.lv==="c"?"bc":a.lv==="w"?"bw":"bi"}">${a.label}</span></div>`).join(""):`<div class="empty" style="text-align:center;padding:24px;font-size:14px">Tout est dans les clous ✦<br><span style="font-size:11px">Aucune alerte active.</span></div>`}</div>`;}
-function vHier(m){return`<div class="hv" id="v-hier"><div class="sec">— Hier · ${fd(m.ld)} vs ${fd(m.d2)}</div>${secs(m.p.d1,m.p.d2)}</div>`;}
-function vPer(m,id,title,key,rk,extra=false){const p=m.p[key],ref=m.p[rk];return`<div class="hv" id="v-${id}"><div class="sec">— ${title}</div>${secs(p,ref)}${extra?seoR(p)+chR(p):""}</div>`;}
+function vHier(m){return`<div class="hv" id="v-hier"><div class="sec">— Hier · ${fd(m.ld)} vs ${fd(m.d2)}</div>${objBar(m)}${secs(m.p.d1,m.p.d2,m)}</div>`;}
+function vPer(m,id,title,key,rk,extra=false){const p=m.p[key],ref=m.p[rk];const withCh=["7d","28d"].includes(key);return`<div class="hv" id="v-${id}"><div class="sec">— ${title}</div>${objBar(m)}${secs(p,ref,m)}${withCh?chR(p):""}${extra?seoR(p)+chR(p):""}</div>`;}
 
 function vMtd(m){
   const p=m.p.mtd,o=m.ob;
@@ -267,7 +267,9 @@ function vMtd(m){
   </div>
   <div class="sg">📧 Email · Klaviyo</div><div class="kg">${kcard("Klaviyo MTD",mo(p.klav),"Flows + campagnes","")}</div>
   <div class="sg">🛒 Funnel</div>${funnel(p)}
-  <div class="sg">🎯 Campagnes Ads</div>${camps(p)}</div>`;
+  <div class="sg">🎯 Campagnes Ads</div>${camps(p)}
+  <div class="sg">🌐 Trafic par canal</div>${chR(p)}
+  <div class="sg">📧 CRM · Top performers</div>${klavTop(m)}</div>`;
 }
 
 function vYtd(m){
@@ -337,10 +339,12 @@ function rc(r){return(r||0)>=3?"var(--g)":(r||0)>=2?"var(--o)":"var(--r)";}
 
 function vSeo(m){
   const pg=m.p["28d"].sp,qr=m.p["28d"].sq;
+  const sr=seoGlobalRec(pg,qr);
   const tc=pg.reduce((a,r)=>a+num(gv(r,"Clicks")),0);
   const ti=pg.reduce((a,r)=>a+num(gv(r,"Impressions")),0);
   const ap=pg.length?pg.reduce((a,r)=>a+num(gv(r,"Position")),0)/pg.length:null;
   return`<div class="hv" id="v-seo"><div class="sec">— SEO · Analyse & Recommandations · 28 jours</div>
+  <div class="dblk"><div><div class="dtit">Recommandation globale SEO</div><div class="dmain">${esc(sr.text)}</div><div class="ks" style="margin-top:5px">${esc(sr.detail)}</div></div><span class="badge ${sr.cls}">${esc(sr.label)}</span></div>
   <div class="sg">📊 Vue globale</div><div class="kg">
     ${kcard("Clics organiques",fm(tc),"","")}${kcard("Impressions",fm(ti),"","")}
     ${kcard("CTR moyen",pt(ti?tc/ti*100:null),"Obj. >3%","")}${kcard("Position moyenne",ap?`${Math.round(ap*10)/10}`:"—","Top 5 = excellent","")}
@@ -361,7 +365,9 @@ function vKlav(m){
   const wo=rows.reduce((a,r)=>a+num(gv(r,"Recipients"))*num(gv(r,"Open rate")),0);
   const wc=rows.reduce((a,r)=>a+num(gv(r,"Recipients"))*num(gv(r,"Click rate")),0);
   const klRow=(r,tp)=>{const rv=num(gv(r,"Revenue")),rc2=num(gv(r,"Recipients")),or=num(gv(r,"Open rate")),clr=num(gv(r,"Click rate")),ur=num(gv(r,"Unsubscribe rate"));return`<div class="klrow"><div class="klrow-h"><span class="klrow-n">${esc(gv(r,"Name")||"—")}</span><span class="klrow-t ${tp==="flow"?"klt-f":"klt-c"}">${tp==="flow"?"Flow":"Campagne"}</span></div><div class="klrow-m"><span class="klrow-ms">Revenue <strong style="color:var(--accent)">${mo(rv)}</strong></span>${rc2?`<span class="klrow-ms">Dest. ${fm(rc2)}</span>`:""}<span class="klrow-ms">Open <span style="color:${or>=20?"var(--g)":"var(--o)"}">${pt(or)}</span></span><span class="klrow-ms">Click <span style="color:${clr>=2?"var(--g)":"var(--sec)"}">${pt(clr)}</span></span>${ur?`<span class="klrow-ms">Unsub <span style="color:${ur>0.5?"var(--r)":"var(--sec)"}">${pt(ur)}</span></span>`:""}</div></div>`;};
-  return`<div class="hv" id="v-klv"><div class="sec">— Klaviyo · Flows & Campagnes · 28 jours</div>
+  const cr3=crmGlobalRec(m);
+  return`<div class="hv" id="v-klv"><div class="sec">— CRM · Flows & Campagnes · 28 jours</div>
+  <div class="dblk"><div><div class="dtit">Recommandation globale CRM</div><div class="dmain">${esc(cr3.text)}</div><div class="ks" style="margin-top:5px">${esc(cr3.detail)}</div></div><span class="badge ${cr3.cls}">${esc(cr3.label)}</span></div>
   <div class="sg">📊 Vue globale</div><div class="kg">
     ${kcard("Revenue total",mo(tr),"Flows + campagnes","")}${kcard("Flows",mo(fr),"Automatiques","")}
     ${kcard("Campagnes",mo(cr2),"Manuelles","")}${kcard("Open rate moy.",pt(tre?wo/tre:null),"Obj. >20%","")}
@@ -432,7 +438,7 @@ function vLex(){
 }
 
 // ── UI COMPONENTS ─────────────────────────────────────────────────────────────
-function secs(p,ref){
+function secs(p,ref,m){
   return`
   <div class="sg">💰 Business</div><div class="kg">
     ${kcard("CA",mo(p.rev),ref?`Réf. ${mo(ref.rev)}`:"",dl(p.rev,ref?.rev,true))}
@@ -451,7 +457,8 @@ function secs(p,ref){
     ${kcard("Klaviyo Revenue",mo(p.klav),ref?`Réf. ${mo(ref.klav)}`:"",dl(p.klav,ref?.klav,true))}
   </div>
   <div class="sg">🛒 Funnel · Taux de passage</div>${funnel(p)}
-  <div class="sg">🎯 Campagnes Ads</div>${camps(p)}`;
+  <div class="sg">🎯 Campagnes Ads</div>${camps(p)}
+  ${m?"<div class='sg'>📧 CRM · Top performers</div>"+klavTop(m):""}`;
 }
 
 function kcard(l,val,ref,dh){return`<div class="kc"><div class="kl">${l}</div><div class="kv">${val}</div><div class="kv2">${ref||""}</div><div class="kd">${dh||""}</div></div>`;}
@@ -471,6 +478,78 @@ function camps(p){
 
 function seoR(p){return`<div class="sg">🔍 Top pages SEO</div>${p.sp.map(r=>`<div class="row"><span class="rn">${esc(surl(gv(r,"Page")))}</span><div class="rm"><span class="rs">Pos. <span style="color:var(--accent)">${rt(num(gv(r,"Position")))}</span></span><span class="rs">Clics ${fm(num(gv(r,"Clicks")))}</span><span class="rs">CTR ${pt(num(gv(r,"CTR")))}</span></div></div>`).join("")||`<div class="empty">Pas de données SEO.</div>`}`;}
 function chR(p){const tot=Object.values(p.chs).reduce((a,b)=>a+b,0);return`<div class="sg">🌐 Trafic par canal</div>${Object.entries(p.chs).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n,s])=>`<div class="row"><span class="rn">${esc(n)}</span><div class="rm"><span class="rs">${fm(s)} sessions</span><span class="rs">${pt(tot?s/tot*100:null)}</span></div></div>`).join("")||`<div class="empty">Aucune donnée canal.</div>`}`;}
+
+
+// ── OBJ BAR ───────────────────────────────────────────────────────────────────
+function objBar(m){
+  const o=m.ob,p=m.p.mtd;
+  if(!o.ca&&!o.ord&&!o.bAds)return"";
+  const dE=Math.max(1,new Date().getDate()-1),dM=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate();
+  const proj=p.rev?p.rev/dE*dM:null;
+  return`<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+    ${o.ca?miniPg("CA Mois",mo(p.rev),mo(o.ca),o.ca?p.rev/o.ca*100:null,proj?`Proj. ${mo(proj)}`:""):""}
+    ${o.ord?miniPg("Commandes",fm(p.ord),fm(o.ord),o.ord?p.ord/o.ord*100:null,""):""}
+    ${o.bAds?miniPg("Budget Ads",mo(p.cost),mo(o.bAds),o.bAds?p.cost/o.bAds*100:null,""):""}
+  </div>`;
+}
+function miniPg(l,val,obj,pv,sub){
+  const w=pv==null?0:Math.max(0,Math.min(100,pv));
+  const cls=pv==null?"gold":pv<70?"bad":pv<90?"warn":"gold";
+  return`<div style="flex:1;min-width:130px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:11px 13px">
+    <div style="font-size:8px;color:var(--sec);letter-spacing:.2em;text-transform:uppercase;margin-bottom:5px">${l}</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:19px;font-style:italic;color:var(--accent);margin-bottom:2px">${val}</div>
+    <div style="font-size:9px;color:var(--sec);margin-bottom:5px">Obj. ${obj}</div>
+    <div class="pb"><div class="pf ${cls}" style="width:${w}%"></div></div>
+    ${sub?`<div style="font-size:9px;color:var(--sec);margin-top:3px">${sub}</div>`:""}
+  </div>`;
+}
+
+function klavTop(m){
+  const rows=m.raw.klav||[];
+  const top=rows.filter(r=>num(gv(r,"Revenue"))>0).sort((a,b)=>num(gv(b,"Revenue"))-num(gv(a,"Revenue"))).slice(0,4);
+  if(!top.length)return`<div class="empty">Aucun revenu CRM sur la période.</div>`;
+  return top.map(r=>{
+    const tp=String(gv(r,"Type")||"").toLowerCase();
+    const or=num(gv(r,"Open rate")),cr=num(gv(r,"Click rate"));
+    return`<div class="row"><span class="rn">${esc(gv(r,"Name")||"—")}</span><div class="rm">
+      <span class="rs"><span class="klrow-t ${tp==="flow"?"klt-f":"klt-c"}" style="padding:1px 6px;border-radius:3px;font-size:8px">${tp==="flow"?"Flow":"Camp."}</span></span>
+      <span class="rs">Revenue <span style="color:var(--accent)">${mo(num(gv(r,"Revenue")))}</span></span>
+      ${or?`<span class="rs">Open ${pt(or)}</span>`:""}
+      ${cr?`<span class="rs">Click ${pt(cr)}</span>`:""}
+    </div></div>`;
+  }).join("");
+}
+
+function seoGlobalRec(pages,queries){
+  if(!pages.length)return{text:"Données GSC insuffisantes",detail:"Connecter Google Search Console pour voir les recommandations.",label:"Données",cls:"warn"};
+  const avgPos=pages.reduce((a,r)=>a+num(gv(r,"Position")),0)/pages.length;
+  const tc=pages.reduce((a,r)=>a+num(gv(r,"Clicks")),0);
+  const ti=pages.reduce((a,r)=>a+num(gv(r,"Impressions")),0);
+  const avgCtr=ti?tc/ti*100:0;
+  const qWins=pages.filter(r=>num(gv(r,"Position"))>=4&&num(gv(r,"Position"))<=10&&num(gv(r,"Impressions"))>100).length;
+  if(avgPos<=4&&avgCtr>=3)return{text:"SEO en bonne santé",detail:`Position moyenne ${Math.round(avgPos*10)/10} · CTR ${Math.round(avgCtr*10)/10}%. Maintenir la cadence éditoriale.`,label:"Bon",cls:"good"};
+  if(qWins>=2)return{text:`${qWins} Quick Wins à saisir`,detail:`${qWins} pages en position 4-10 avec du volume. Enrichir le contenu pour passer en top 3.`,label:"Action",cls:"warn"};
+  if(avgPos<=7)return{text:"Améliorer le CTR",detail:`Position moyenne ${Math.round(avgPos*10)/10} mais CTR ${Math.round(avgCtr*10)/10}%. Retravaille les titles et méta descriptions.`,label:"CTR",cls:"warn"};
+  return{text:"Travail de fond requis",detail:`Position moyenne ${Math.round(avgPos*10)/10}. Investir dans le contenu et le maillage interne.`,label:"Contenu",cls:"bad"};
+}
+
+function crmGlobalRec(m){
+  const rows=m.raw.klav||[];
+  if(!rows.length)return{text:"Données CRM insuffisantes",detail:"Connecter Klaviyo pour voir les recommandations.",label:"Données",cls:"warn"};
+  const totalRev=sm(rows,"Revenue");
+  const totalRec=sm(rows,"Recipients");
+  const wOpen=rows.reduce((a,r)=>a+num(gv(r,"Recipients"))*num(gv(r,"Open rate")),0);
+  const avgOpen=totalRec?wOpen/totalRec:0;
+  const wUnsub=rows.reduce((a,r)=>a+num(gv(r,"Recipients"))*num(gv(r,"Unsubscribe rate")),0);
+  const avgUnsub=totalRec?wUnsub/totalRec:0;
+  const flows=rows.filter(r=>String(gv(r,"Type")||"").toLowerCase()==="flow");
+  const flowRev=sm(flows,"Revenue");
+  const flowShare=totalRev?flowRev/totalRev*100:0;
+  if(avgUnsub>0.5)return{text:"Attention aux désinscriptions",detail:`Taux de désinscription moyen ${Math.round(avgUnsub*10)/10}%. Revoir la fréquence et le ciblage des campagnes.`,label:"Urgence",cls:"bad"};
+  if(flowShare<30&&totalRev>0)return{text:"Activer plus de flows",detail:`Les flows ne représentent que ${Math.round(flowShare)}% du CA CRM. Mettre en place abandon panier, post-achat, win-back.`,label:"Flows",cls:"warn"};
+  if(avgOpen>=20&&totalRev>0)return{text:"CRM performant",detail:`Open rate ${Math.round(avgOpen*10)/10}% · Revenue ${mo(totalRev)}. Augmenter la fréquence des campagnes.`,label:"Bon",cls:"good"};
+  return{text:"Améliorer l'engagement",detail:`Open rate ${Math.round(avgOpen*10)/10}%. Tester de nouveaux objets d'email et segmenter la liste.`,label:"Engagement",cls:"warn"};
+}
 
 // ── ALERTS ────────────────────────────────────────────────────────────────────
 function alerts(p,o){
