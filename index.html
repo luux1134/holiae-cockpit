@@ -131,8 +131,12 @@
 const API_KEY  = "AIzaSyADK3alDzNTsEkbKGVDbrdHYBj0esGF0KU";
 const SHEET_ID = "17j732Xnp48sOWR_ignS3pgc5eKL4OPCJwUJWKH5Euv4";
 const SHEETS   = {shopify:"Shopify_Daily",ga4:"GA4_Channel",ads:"GoogleAds_Campaigns",st:"GoogleAds_SearchTerms",klav:"Klaviyo",klavD:"Klaviyo_Daily",klavA:"Klaviyo_Attribution_Daily",gscP:"GSC_Pages",gscQ:"GSC_Queries",gscPP:"GSC_Pages_Previous",gscQP:"GSC_Queries_Previous",obj:"Objectifs"};
-const CKEY = "holiae-v15", TTL = 36e5;
+const CKEY = "holiae-v16", TTL = 36e5;
 const PRODUCT_COGS = 82;
+const SHIPPING_COST = 11;
+const VAT_RATE = 0.20;
+const PAYMENT_RATE = 0.015;
+const PAYMENT_FIXED = 0.25;
 const app = document.getElementById("app");
 const NF = new Intl.NumberFormat("fr-FR");
 const EU = new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR",maximumFractionDigits:0});
@@ -175,7 +179,7 @@ function render(raw,off=false){
   app.innerHTML=`<div class="shell">
   <div class="hdr">
     <div class="logo">Holiaē ✦ Cockpit</div>
-    <div class="stamp">${off?"Hors ligne · cache":"Màj · 08h00"}<br><span>${fd(m.ld)}</span></div>
+    <div class="stamp">${off?"Hors ligne · cache":"Màj · 07h00"}<br><span>${fd(m.ld)}</span></div>
   </div>
   <div class="tabs">
     ${tb("alrt","⚠ Alertes ("+m.alerts.length+")",true,"ta")}
@@ -241,6 +245,7 @@ function model(raw){
     mtd:rng(raw,ld.slice(0,7)+"-01",ld),pmtd:rng(raw,pmtd.s,pmtd.e),ytd:rng(raw,ld.slice(0,4)+"-01-01",ld)
   };
   p.seoDrops=seoPageDrops(raw.gscPP||[],raw.gscP||[]);
+  p.seoGains=seoPageGains(raw.gscPP||[],raw.gscP||[]);
   const ob=gobj(raw.obj||[],ld);
   const al=alerts(p,ob);
   const dq=dqual(p.d1);
@@ -296,9 +301,27 @@ function seoPageDrops(previousRows,currentRows){
     return{page,pos,prevPos,ctr,prevCtr,clicks,prevClicks,impr,posDelta,ctrDrop,clickDrop,level,label,action};
   }).filter(Boolean).sort((a,b)=>(b.posDelta-a.posDelta)||(b.ctrDrop-a.ctrDrop)||(b.clickDrop-a.clickDrop)).slice(0,8);
 }
+function seoPageGains(previousRows,currentRows){
+  const rows=(previousRows||[]).filter(r=>gv(r,"Date range")&&gv(r,"Page"));
+  if(!rows.length||!(currentRows||[]).length)return[];
+  const prev={};
+  rows.forEach(r=>prev[String(gv(r,"Page"))]=r);
+  return currentRows.map(r=>{
+    const page=String(gv(r,"Page")),old=prev[page];
+    if(!old)return null;
+    const pos=num(gv(r,"Position")),prevPos=num(gv(old,"Position")),ctr=ctrv(r),prevCtr=ctrv(old),clicks=num(gv(r,"Clicks")),prevClicks=num(gv(old,"Clicks")),impr=num(gv(r,"Impressions"));
+    const posGain=pos&&prevPos?prevPos-pos:0;
+    const ctrGain=prevCtr?(ctr-prevCtr)/prevCtr*100:0;
+    const clickGain=prevClicks?(clicks-prevClicks)/prevClicks*100:0;
+    if(posGain<2&&ctrGain<30&&clickGain<30)return null;
+    const label=posGain>=2?"POSITION +"+rt(posGain):ctrGain>=30?"CTR EN HAUSSE":"CLICS EN HAUSSE";
+    const action=posGain>=2||clickGain>=30?"Renforcer la page gagnante : liens internes depuis pages fortes, mise a jour preuve/FAQ, et protection du title qui marche.":"CTR en hausse : conserver l'angle title/meta et l'etendre aux pages proches.";
+    return{page,pos,prevPos,ctr,prevCtr,clicks,prevClicks,impr,posGain,ctrGain,clickGain,label,action};
+  }).filter(Boolean).sort((a,b)=>(b.clickGain-a.clickGain)||(b.posGain-a.posGain)||(b.ctrGain-a.ctrGain)).slice(0,5);
+}
 
 // ── VIEWS ─────────────────────────────────────────────────────────────────────
-function vAlerts(m){const list=m.alerts.filter(a=>a.label!=="Rythme"),detail=list.filter(a=>!isOpp(a));return`<div class="hv on" id="v-alrt"><div class="sec">— Alertes · Ta todo du matin</div>${rhythmHero(m)}<div class="sg">Calendrier ventes · mois</div><div id="sales-calendar">${salesCalendar(m)}</div>${warRoom(m,list)}<div class="sg">Alertes à traiter</div>${detail.length?detail.map(a=>`<div class="al"><div class="dot ${a.lv}"></div><div style="flex:1"><div class="at">${a.title}</div><div class="as">${a.body}</div>${a.action?`<div class="act">Action suggérée : ${esc(a.action)}</div>`:""}</div><span class="ab ${a.lv==="c"?"bc":a.lv==="w"?"bw":"bi"}">${a.label}</span></div>`).join(""):`<div class="empty" style="text-align:center;padding:24px;font-size:14px">Aucune alerte négative active ✦<br><span style="font-size:11px">Regarde seulement les opportunités ci-dessus.</span></div>`}</div>`;}
+function vAlerts(m){const list=m.alerts.filter(a=>a.label!=="Rythme"),detail=list.filter(a=>!isOpp(a));return`<div class="hv on" id="v-alrt"><div class="sec">— Alertes · Ta todo du matin</div>${rhythmHero(m)}${incidentMode(m)}<div class="sg">Calendrier ventes · mois</div><div id="sales-calendar">${salesCalendar(m)}</div>${warRoom(m,list)}${decisionJournal()}<div class="sg">Alertes à traiter</div>${detail.length?detail.map(a=>`<div class="al"><div class="dot ${a.lv}"></div><div style="flex:1"><div class="at">${a.title}</div><div class="as">${a.body}</div>${a.action?`<div class="act">Action suggérée : ${esc(a.action)}</div>`:""}</div><span class="ab ${a.lv==="c"?"bc":a.lv==="w"?"bw":"bi"}">${a.label}</span></div>`).join(""):`<div class="empty" style="text-align:center;padding:24px;font-size:14px">Aucune alerte négative active ✦<br><span style="font-size:11px">Regarde seulement les opportunités ci-dessus.</span></div>`}</div>`;}
 function vHier(m){return`<div class="hv" id="v-hier"><div class="sec">— Hier · ${fd(m.ld)} vs ${fd(m.d2)}</div>${secs(m.p.d1,m.p.d2,m,"d1","Hier")}</div>`;}
 function vPer(m,id,title,key,rk,extra=false){const p=m.p[key],ref=m.p[rk];return`<div class="hv" id="v-${id}"><div class="sec">— ${title}</div>${secs(p,ref,m,key,title)}</div>`;}
 
@@ -385,6 +408,30 @@ function warRoom(m,list){
   <div class="sg">Opportunités à exploiter${opps.length?` · ${opps.length}/3`:""}</div>${opps.length?opps.map(item).join(""):`<div class="empty">Aucune opportunité forte détectée aujourd'hui.</div>`}`;
 }
 
+function incidentMode(m){
+  const d=m.p.d1,s=m.p["7d"];
+  const active=(d.ord===0&&(s.ord>=1||d.sess>=100||d.cost>=20))||(d.rev===0&&d.cost>=30);
+  if(!active)return"";
+  const checks=[
+    ["Paiement","Faire un achat test mobile jusqu'au paiement, sans attendre les rapports."],
+    ["Checkout","Verifier frais, livraison, code promo, moyens de paiement et message d'erreur."],
+    ["Shopify","Verifier stock, produit actif, prix, variantes et absence d'app bloquante."],
+    ["Ads","Verifier que les campagnes depensent sur les bons termes et pas seulement trafic froid."],
+    ["Tracking","Comparer Shopify vs GA4/Ads : si Shopify voit les ventes mais pas Ads, probleme tracking."]
+  ];
+  return`<div class="sg">Mode incident</div><div class="adc" style="border-color:rgba(224,92,92,.35);background:rgba(224,92,92,.08)"><div class="adc-h"><span class="adc-b" style="background:rgba(224,92,92,.18);color:var(--r)">CHECKLIST</span><span class="adc-n">0 vente ou 0 CA avec du signal trafic / Ads</span></div>${checks.map(x=>`<div class="row" style="background:transparent"><span class="rn">${x[0]}<br><span class="rs">${x[1]}</span></span></div>`).join("")}</div>`;
+}
+
+function decisionJournal(){
+  const items=readDecisions().slice(0,5);
+  return`<div class="sg">Journal des dÃ©cisions</div><div class="adc"><div class="adc-h"><span class="adc-n">Une dÃ©cision, une raison, une revue Ã  J+7</span><span class="adc-t">local</span></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><input id="dec-input" class="lex-s" style="margin:0;flex:1;min-width:220px" placeholder="Ex: baisser Search de 20% car CPA trop haut"><button class="cal-b" style="width:auto;padding:0 12px" onclick="addDecision()">Ajouter</button></div><div id="dec-list">${items.length?items.map(decisionRow).join(""):`<div class="empty" style="margin:0">Aucune dÃ©cision notÃ©e. Quand tu changes budget, offre, SEO ou CRM, note-le ici pour relire le rÃ©sultat dans 7 jours.</div>`}</div></div>`;
+}
+function decisionRow(x){return`<div class="row"><span class="rn">${esc(x.text)}<br><span class="rs">${esc(x.date)} Â· revue ${esc(x.review)}</span></span><button class="cal-b" onclick="delDecision('${x.id}')">Ã—</button></div>`;}
+function readDecisions(){try{return JSON.parse(localStorage.getItem("holiae-decisions")||"[]");}catch{return[];}}
+function writeDecisions(x){localStorage.setItem("holiae-decisions",JSON.stringify(x));}
+function addDecision(){const el=document.getElementById("dec-input");if(!el||!el.value.trim())return;const now=new Date(),rev=add(now,7);const x={id:String(Date.now()),date:iso(now),review:iso(rev),text:el.value.trim()};writeDecisions([x,...readDecisions()].slice(0,20));const list=document.getElementById("dec-list");if(list)list.innerHTML=readDecisions().slice(0,5).map(decisionRow).join("");el.value="";}
+function delDecision(id){writeDecisions(readDecisions().filter(x=>x.id!==id));const list=document.getElementById("dec-list");if(list)list.innerHTML=readDecisions().slice(0,5).map(decisionRow).join("")||`<div class="empty" style="margin:0">Aucune dÃ©cision notÃ©e.</div>`;}
+
 function isOpp(a){return /bonne nouvelle|seo/i.test(a.label||"");}
 
 function bigMove(m,list){
@@ -394,7 +441,7 @@ function bigMove(m,list){
   const critical=list.find(a=>a.lv==="c");
   if(has("aucune commande"))return{label:"Urgent",cls:"bad",title:"Vérifier le tunnel d'achat avant tout",action:"Priorité absolue : paiement, checkout, stock, tracking Shopify et campagnes actives. Ne pas optimiser les pubs tant que l'achat peut être cassé."};
   if(has("commandes en chute"))return{label:"Ventes",cls:"bad",title:"Retrouver le volume de commandes",action:"Priorité : comprendre pourquoi les commandes décrochent. Lire trafic par canal puis campagnes Ads ; si le trafic est stable, passer au tunnel PDP -> panier -> checkout."};
-  if(byLabel("profit"))return{label:"Profit",cls:"bad",title:"Protéger la contribution avant de scaler",action:"Le CA ne suffit pas. Réduire le spend faible ou augmenter l'AOV tant que la marge après coût produit et Ads n'est pas saine."};
+  if(byLabel("profit"))return{label:"Profit",cls:"bad",title:"Protéger la contribution avant de scaler",action:"Le CA ne suffit pas. Réduire le spend faible ou augmenter l'AOV tant que la marge nette après TVA, produit, livraison, paiement et Ads n'est pas saine."};
   if(byLabel("cac"))return{label:"Cash",cls:"bad",title:"Stopper la dérive d'acquisition",action:"Couper ou réduire les campagnes/requêtes qui dépensent sans vente. Objectif du jour : ramener le CPA sous la moyenne 7J."};
   if(has("pdp → atc"))return{label:"CRO",cls:"bad",title:"Réparer la page produit",action:"Travailler le premier écran mobile : promesse, preuve, offre, CTA. C'est le meilleur levier si le trafic arrive mais n'ajoute pas au panier."};
   if(has("atc → checkout"))return{label:"Panier",cls:"warn",title:"Réduire la friction panier",action:"Vérifier frais, livraison, codes promo et réassurance. Le problème est après l'ajout panier."};
@@ -410,21 +457,23 @@ function bigMove(m,list){
 function vAds(m){
   const p=m.p["7d"],cl=Object.values(p.camps||{}).sort((a,b)=>b.cost-a.cost);
   const gr=grec(p,m);
+  const contrib=contribution(p),target=targetCpaFromAov(p.aov);
   return`<div class="hv" id="v-ads"><div class="sec">— Publicité · Décisions · 7 jours glissants</div>
   <div class="dblk"><div><div class="dtit">Recommandation globale</div><div class="dmain">${esc(gr.text)}</div><div class="ks" style="margin-top:5px">${esc(gr.detail)}</div></div><span class="badge ${gr.cls}">${esc(gr.label)}</span></div>
   <div class="sg">📊 Vue globale · 7 jours</div><div class="kg">
     ${kcard("Dépense totale",mo(p.cost),"","")}${kcard("ROAS global",rt(p.roas),"","")}
-    ${kcard("Ventes Ads",fm(p.ord),"","")}${kcard("CPA moyen",mo(p.cpa),"","")}
+    ${kcard("Ventes Ads",fm(p.ord),"","")}${kcard("CPA moyen",mo(p.cpa),target?`CAC cible ${mo(target)}`:"","")}
+    ${kcard("Contribution Ads",mo(contrib&&contrib.value),contrib?`Marge nette ${pt(contrib.rate)}`:"TVA + produit + livraison + paiement + Ads","")}${kcard("Frais estimÃ©s",mo(contrib?contrib.vat+contrib.cogs+contrib.shipping+contrib.payment:0),"TVA, produit, livraison, paiement","")}
   </div>
   <div class="sg">🎯 Décisions par campagne</div>
-  ${cl.length?cl.map(c=>{const r=arec(c);return`<div class="adc"><div class="adc-h"><span class="adc-b" style="background:${r.bg};color:${r.color}">${r.label}</span><span class="adc-n">${esc(c.name)}</span><span class="adc-t">${esc(c.type)}</span></div><div class="adc-m"><div><div class="adc-ml">Dépense</div><div class="adc-mv">${mo(c.cost)}</div></div><div><div class="adc-ml">Ventes</div><div class="adc-mv">${fm(c.pur)}</div></div><div><div class="adc-ml">ROAS</div><div class="adc-mv" style="color:${rc(c.roas)}">${rt(c.roas)}</div></div><div><div class="adc-ml">CPA</div><div class="adc-mv">${mo(c.cpa)}</div></div></div><div class="adc-a">→ ${esc(r.action)}</div></div>`;}).join(""):`<div class="empty">Aucune donnée campagne sur 7 jours.</div>`}
+  ${cl.length?cl.map(c=>{const r=arec(c,p.aov);return`<div class="adc"><div class="adc-h"><span class="adc-b" style="background:${r.bg};color:${r.color}">${r.label}</span><span class="adc-n">${esc(c.name)}</span><span class="adc-t">${esc(c.type)}</span></div><div class="adc-m"><div><div class="adc-ml">Dépense</div><div class="adc-mv">${mo(c.cost)}</div></div><div><div class="adc-ml">Ventes</div><div class="adc-mv">${fm(c.pur)}</div></div><div><div class="adc-ml">ROAS</div><div class="adc-mv" style="color:${rc(c.roas)}">${rt(c.roas)}</div></div><div><div class="adc-ml">CPA</div><div class="adc-mv">${mo(c.cpa)}</div></div></div><div class="adc-a">→ ${esc(r.action)}</div></div>`;}).join(""):`<div class="empty">Aucune donnée campagne sur 7 jours.</div>`}
   <div class="sg">🔍 Top requêtes Search</div>
-  ${topSearchTerms(m.raw.st||[],8).map(r=>{const tr=termRec(r);return`<div class="row"><span class="rn">${esc(r.term)}<br><span class="rs">${esc(tr)}</span></span><div class="rm"><span class="rs">Clics <span style="color:var(--accent)">${fm(r.clicks)}</span></span><span class="rs">CTR ${pt(r.ctr)}</span><span class="rs">Conv. ${fm(r.pur)}</span><span class="rs">ROAS ${rt(r.roas)}</span><span class="rs">Coût ${mo(r.cost)}</span></div></div>`;}).join("")||`<div class="empty">Données Search Terms indisponibles.</div>`}
+  ${topSearchTerms(m.raw.st||[],8).map(r=>{const tr=termRec(r,p.aov);return`<div class="row"><span class="rn">${esc(r.term)}<br><span class="rs">${esc(tr)}</span></span><div class="rm"><span class="rs">Clics <span style="color:var(--accent)">${fm(r.clicks)}</span></span><span class="rs">CTR ${pt(r.ctr)}</span><span class="rs">Conv. ${fm(r.pur)}</span><span class="rs">ROAS ${rt(r.roas)}</span><span class="rs">Coût ${mo(r.cost)}</span></div></div>`;}).join("")||`<div class="empty">Données Search Terms indisponibles.</div>`}
   </div>`;
 }
 
-function arec(c){
-  const roas=c.roas||0,spend=c.cost||0,pur=c.pur||0,cpa=c.cpa||0,clicks=c.clk||0,cvr=clicks?pur/clicks*100:null,target=targetCpaFromAov(c.rev&&c.pur?c.rev/c.pur:null);
+function arec(c,periodAov){
+  const roas=c.roas||0,spend=c.cost||0,pur=c.pur||0,cpa=c.cpa||0,clicks=c.clk||0,cvr=clicks?pur/clicks*100:null,target=targetCpaFromAov(c.rev&&c.pur?c.rev/c.pur:periodAov);
   if(spend<30)return{label:"OBSERVER",bg:"rgba(144,139,132,.15)",color:"#908b84",ac:"bi",action:"Pas assez de signal. Attendre 50-80 EUR de spend ou 2 ventes avant de toucher au budget."};
   if(target&&cpa>target*1.25&&pur>=2)return{label:"CPA HAUT",bg:"rgba(224,92,92,.18)",color:"var(--r)",ac:"bc",action:`CPA ${mo(cpa)} au-dessus du CPA cible estimé ${mo(target)}. Réduire avant de scaler, même si le ROAS semble correct.`};
   if(pur===1&&roas>=3)return{label:"SIGNAL FRAGILE",bg:"rgba(232,166,76,.18)",color:"var(--o)",ac:"bw",action:"Une seule vente rentable. Ne pas scaler encore : attendre 2-3 ventes ou plus de spend pour confirmer."};
@@ -435,12 +484,13 @@ function arec(c){
   if(pur>0&&roas<3)return{label:"OPTIMISER",bg:"rgba(232,166,76,.18)",color:"var(--o)",ac:"bw",action:`Des ventes existent, mais marge faible. Améliorer annonce/page, regarder le taux clic->vente (${pt(cvr)}).`};
   return{label:"ATTENDRE",bg:"rgba(232,166,76,.18)",color:"var(--o)",ac:"bw",action:"Pas assez de signal exploitable. Attendre environ 50 EUR de spend ou 2 ventes, puis décider."};
 }
-function grec(p,m){const r=p.roas||0,cpa=p.cpa||0,contrib=contribution(p),pace=budgetPace(m),target=targetCpaFromAov(p.aov);if(!p.cost)return{text:"Aucune donnée Ads",detail:"Sync Google Ads vide. Relancer la source avant de prendre une décision.",label:"Données",cls:"warn"};if(contrib&&contrib.rate<35)return{text:"Ne pas scaler",detail:`Contribution 7J ${pt(contrib.rate)} après coût produit et Ads. Optimiser CPA/AOV avant d'ajouter du budget.`,label:"Profit",cls:"bad"};if(target&&cpa>target*1.25&&p.ord>=2)return{text:"CPA trop haut",detail:`CPA ${mo(cpa)} vs CPA cible estimé ${mo(target)}. Réduire les poches chères même si le ROAS paraît acceptable.`,label:"CPA",cls:"bad"};if(pace&&pace>120&&r>=3)return{text:"Rentable mais budget trop rapide",detail:`ROAS ${rt(r)}, mais budget MTD à ${pt(pace)} du rythme. Ne pas scaler avant retour au pace.`,label:"Pace",cls:"warn"};if(r>=4&&p.ord>=3)return{text:"Scaler prudemment",detail:`ROAS ${rt(r)} sur ${mo(p.cost)}. Augmenter uniquement les campagnes gagnantes de 15-20%, pas le compte entier. CPA actuel ${mo(cpa)}.`,label:"Scaler",cls:"good"};if(r>=3)return{text:"Garder et nettoyer",detail:`ROAS ${rt(r)}. Garder le budget stable, exclure les requêtes faibles et pousser les termes qui convertissent.`,label:"Maintenir",cls:"good"};if(r>=2)return{text:"Optimiser avant de scaler",detail:`ROAS ${rt(r)}. Trop juste pour augmenter. Couper les campagnes/termes sans vente et retravailler l'annonce ou la landing.`,label:"Optimiser",cls:"warn"};return{text:"Protéger le cash",detail:`ROAS ${rt(r)} pour ${mo(p.cost)} dépensés. Réduire ou couper les poches non rentables avant de remettre du budget.`,label:"Critique",cls:"bad"};}
+function grec(p,m){const r=p.roas||0,cpa=p.cpa||0,contrib=contribution(p),pace=budgetPace(m),target=targetCpaFromAov(p.aov);if(!p.cost)return{text:"Aucune donnée Ads",detail:"Sync Google Ads vide. Relancer la source avant de prendre une décision.",label:"Données",cls:"warn"};if(contrib&&contrib.rate<35)return{text:"Ne pas scaler",detail:`Contribution 7J ${pt(contrib.rate)} après TVA, produit, livraison, paiement et Ads. Optimiser CPA/AOV avant d'ajouter du budget.`,label:"Profit",cls:"bad"};if(target&&cpa>target*1.25&&p.ord>=2)return{text:"CPA trop haut",detail:`CPA ${mo(cpa)} vs CPA cible estimé ${mo(target)}. Réduire les poches chères même si le ROAS paraît acceptable.`,label:"CPA",cls:"bad"};if(pace&&pace>120&&r>=3)return{text:"Rentable mais budget trop rapide",detail:`ROAS ${rt(r)}, mais budget MTD à ${pt(pace)} du rythme. Ne pas scaler avant retour au pace.`,label:"Pace",cls:"warn"};if(r>=4&&p.ord>=3)return{text:"Scaler prudemment",detail:`ROAS ${rt(r)} sur ${mo(p.cost)}. Augmenter uniquement les campagnes gagnantes de 15-20%, pas le compte entier. CPA actuel ${mo(cpa)}.`,label:"Scaler",cls:"good"};if(r>=3)return{text:"Garder et nettoyer",detail:`ROAS ${rt(r)}. Garder le budget stable, exclure les requêtes faibles et pousser les termes qui convertissent.`,label:"Maintenir",cls:"good"};if(r>=2)return{text:"Optimiser avant de scaler",detail:`ROAS ${rt(r)}. Trop juste pour augmenter. Couper les campagnes/termes sans vente et retravailler l'annonce ou la landing.`,label:"Optimiser",cls:"warn"};return{text:"Protéger le cash",detail:`ROAS ${rt(r)} pour ${mo(p.cost)} dépensés. Réduire ou couper les poches non rentables avant de remettre du budget.`,label:"Critique",cls:"bad"};}
 function rc(r){return(r||0)>=3?"var(--g)":(r||0)>=2?"var(--o)":"var(--r)";}
 
 function vSeo(m){
   const pg=m.p["28d"].sp,qr=m.p["28d"].sq;
   const drops=m.p.seoDrops||[];
+  const gains=m.p.seoGains||[];
   const sr=seoGlobalRec(pg,qr);
   const tc=pg.reduce((a,r)=>a+num(gv(r,"Clicks")),0);
   const ti=pg.reduce((a,r)=>a+num(gv(r,"Impressions")),0);
@@ -450,6 +500,7 @@ function vSeo(m){
   <div class="sg">📊 Vue globale</div><div class="kg">
     ${kcard("Clics organiques",fm(tc),"","")}${kcard("Impressions",fm(ti),"","")}
     ${kcard("CTR moyen",pt(ti?tc/ti*100:null),"Obj. >3%","")}${kcard("Position moyenne",ap?`${Math.round(ap*10)/10}`:"—","Top 5 = excellent","")}
+    ${kcard("Pages en baisse",fm(drops.length),drops.length?"A traiter":"Aucune baisse forte","")}${kcard("Pages gagnantes",fm(gains.length),gains.length?"A renforcer":"Pas de signal fort","")}
   </div>
   <div class="sg">🎯 Pages · Recommandations</div>
   ${pg.length?pg.map(r=>{const rec=srec(r);if(!rec)return"";const pos=num(gv(r,"Position")),ctr=ctrv(r),cl=num(gv(r,"Clicks")),im=num(gv(r,"Impressions"));return`<div class="seoc"><div class="seoc-h"><span class="seoc-u">${esc(surl(gv(r,"Page")))}</span><span class="ab ${rec.ac}">${rec.label}</span></div><div class="seoc-m"><span class="seoc-ms">Position <strong style="color:${pos<=3?"var(--g)":pos<=10?"var(--o)":"var(--r)"}">${pos?Math.round(pos*10)/10:"—"}</strong></span><span class="seoc-ms">Clics <strong style="color:var(--accent)">${fm(cl)}</strong></span><span class="seoc-ms">Impr. ${fm(im)}</span><span class="seoc-ms">CTR <strong style="color:${ctr>=3?"var(--g)":ctr>=1?"var(--o)":"var(--r)"}">${pt(ctr)}</strong></span></div><div class="seoc-a">→ ${esc(rec.action)}</div></div>`;}).join(""):`<div class="empty">Pas de données GSC Pages. Vérifier Google Search Console.</div>`}
@@ -479,6 +530,8 @@ function vKlav(m){
     ${kcard("Campagnes",mo(cr2),"Manuelles","")}${kcard("Open rate moy.",pt(tre?wo/tre:null),"Obj. >20%","")}
     ${kcard("Click rate moy.",pt(tre?wc/tre:null),"Obj. >2%","")}${kcard("Destinataires",fm(tre),"Total envois","")}
   </div>
+  <div class="sg">Revenue CRM attribuÃ© Â· actions</div>
+  ${crmRevenueActions(p).map(x=>`<div class="row"><span class="rn">${esc(x.name)}<br><span class="rs">${esc(x.action)}</span></span><div class="rm"><span class="rs">${esc(x.type)}</span><span class="rs">CA <span style="color:var(--accent)">${mo(x.revenue)}</span></span><span class="rs">Cmd ${fm(x.orders)}</span></div></div>`).join("")||`<div class="empty">Pas encore assez de donnÃ©es d'attribution CRM daily.</div>`}
   <div class="sg">⚙️ Flows actifs (${fl.length})</div>
   ${fl.length?fl.map(r=>klRow(r,"flow")).join(""):`<div class="empty">Aucun flow dans les données. Vérifier l'onglet Klaviyo de la Sheet.</div>`}
   <div class="sg">📣 Campagnes (${ca.length})</div>
@@ -696,16 +749,18 @@ function klavTop(m,p){
 
 function rhythmHero(m){
   const o=m.ob,p=m.p.mtd;
-  if(!o.ca)return"";
+  if(!o.ca&&!o.ord)return"";
   const dE=Math.max(1,pd(m.ld).getDate());
   const dM=new Date(+m.ld.slice(0,4),+m.ld.slice(5,7),0).getDate();
   const daysLeft=Math.max(1,dM-dE);
   const current=p.rev/Math.max(1,dE);
-  const need=Math.max(0,o.ca-p.rev)/daysLeft;
-  const ok=need===0;
+  const need=o.ca?Math.max(0,o.ca-p.rev)/daysLeft:null;
+  const orderNeed=o.ord?Math.max(0,o.ord-p.ord)/daysLeft:null;
+  const ok=o.ca?need===0:o.ord&&orderNeed===0;
+  const progress=o.ca?p.rev/o.ca*100:o.ord?p.ord/o.ord*100:null;
   return`<div class="dblk" style="border-color:${ok?"rgba(76,175,125,.35)":"rgba(244,216,168,.45)"};background:${ok?"rgba(76,175,125,.10)":"rgba(244,216,168,.10)"}">
-    <div><div class="dtit">Indicateur principal · objectif mensuel</div><div class="dmain">${ok?"Objectif mensuel atteint":`Il faut ${mo(need)}/jour pour atteindre l'objectif`}</div><div class="ks" style="margin-top:6px">CA MTD ${mo(p.rev)} · Objectif ${mo(o.ca)} · ${daysLeft} jours restants · Rythme actuel ${mo(current)}/j</div></div>
-    <span class="badge ${ok?"good":"warn"}">${pt(o.ca?p.rev/o.ca*100:null)}</span>
+    <div><div class="dtit">Indicateur principal · objectif mensuel</div><div class="dmain">${ok?"Objectif mensuel atteint":o.ca?`Il faut ${mo(need)}/jour pour atteindre l'objectif`:`Il faut ${fm1(orderNeed)} commande(s)/jour`}</div><div class="ks" style="margin-top:6px">${o.ca?`CA MTD ${mo(p.rev)} · Objectif ${mo(o.ca)} · Rythme actuel ${mo(current)}/j`:""}${o.ca&&o.ord?"<br>":""}${o.ord?`Commandes MTD ${fm(p.ord)} / ${fm(o.ord)} · Besoin ${fm1(orderNeed)} commande(s)/jour`:""} · ${daysLeft} jours restants</div></div>
+    <span class="badge ${ok?"good":"warn"}">${pt(progress)}</span>
   </div>`;
 }
 
@@ -752,6 +807,19 @@ function crmItemRec(r,tp){
   if(tp==="campaign"&&rec>=100&&!rv)return"Action : campagne sans CA. Ne pas dupliquer telle quelle, changer angle ou segment.";
   return"Action : garder en observation, pas assez de signal pour décider proprement.";
 }
+function crmRevenueActions(p){
+  return (p.klavItems||[]).slice(0,6).map(x=>{
+    const rpo=x.orders?x.revenue/x.orders:null;
+    let action;
+    if(x.type.toLowerCase()==="flow"&&x.revenue>0&&x.orders>=2)action="Flow vendeur : proteger la sequence, puis tester une seule amelioration objet/CTA.";
+    else if(x.type.toLowerCase()==="flow"&&x.revenue>0)action="Signal positif mais fragile : attendre plus de commandes avant de modifier fort.";
+    else if(x.type.toLowerCase()==="campaign"&&x.revenue>0&&x.orders>=2)action="Angle campagne vendeur : recycler l'angle sur un segment proche ou en relance.";
+    else if(x.revenue>0)action="Vente attribuee, mais faible volume : noter l'angle et surveiller la recurrence.";
+    else action="Pas d'action forte.";
+    if(rpo&&rpo<300)action+=" AOV CRM faible : verifier remise, bundle ou segment.";
+    return{...x,action};
+  });
+}
 
 // ── ALERTS ────────────────────────────────────────────────────────────────────
 function alerts(p,o){
@@ -780,9 +848,9 @@ function alerts(p,o){
   if(s7.aov&&p["28d"].aov&&s7.aov<p["28d"].aov*.9)a.push({lv:"w",label:"AOV",title:"Panier moyen en baisse",body:`AOV 7J ${mo(s7.aov)} vs moyenne 28J ${mo(p["28d"].aov)}.`,action:"Vérifier promos, bundles et mix produit. Si les commandes tiennent mais le CA baisse, le problème est le panier."});
   if(d1.aov&&s7.aov&&d1.aov<s7.aov*.8)a.push({lv:"w",label:"AOV",title:"AOV hier très bas",body:`AOV hier ${mo(d1.aov)} vs moyenne 7J ${mo(s7.aov)}.`,action:"Regarder les commandes d'hier : remises, petit panier, bundle absent ou produit moins cher."});
   const contrib7=contribution(s7),contribM=contribution(mtd);
-  if(contrib7&&contrib7.rate<25)a.push({lv:"c",label:"Profit",title:"Contribution 7J trop faible",body:`Marge après coût produit et Ads : ${pt(contrib7.rate)} · contribution ${mo(contrib7.value)}.`,action:"Ne pas scaler. Réduire les dépenses faibles ou remonter l'AOV avant d'ajouter du budget."});
-  else if(contrib7&&contrib7.rate<35)a.push({lv:"w",label:"Profit",title:"Contribution 7J à surveiller",body:`Marge après coût produit et Ads : ${pt(contrib7.rate)}.`,action:"Optimiser CPA ou panier moyen. Le CA est utile seulement si la contribution reste saine."});
-  if(contribM&&contribM.rate>45)a.push({lv:"i",label:"Bonne nouvelle",title:"Contribution mensuelle saine",body:`Contribution MTD ${pt(contribM.rate)} après coût produit (${mo(PRODUCT_COGS)}/unité) et Ads.`,action:"Tu peux pousser les leviers rentables, mais uniquement si le CPA reste stable."});
+  if(contrib7&&contrib7.rate<25)a.push({lv:"c",label:"Profit",title:"Contribution 7J trop faible",body:`Marge après TVA, produit, livraison, paiement et Ads : ${pt(contrib7.rate)} · contribution ${mo(contrib7.value)}.`,action:"Ne pas scaler. Réduire les dépenses faibles ou remonter l'AOV avant d'ajouter du budget."});
+  else if(contrib7&&contrib7.rate<35)a.push({lv:"w",label:"Profit",title:"Contribution 7J à surveiller",body:`Marge après TVA, produit, livraison, paiement et Ads : ${pt(contrib7.rate)}.`,action:"Optimiser CPA ou panier moyen. Le CA est utile seulement si la contribution reste saine."});
+  if(contribM&&contribM.rate>45)a.push({lv:"i",label:"Bonne nouvelle",title:"Contribution mensuelle saine",body:`Contribution MTD ${pt(contribM.rate)} après TVA, produit (${mo(PRODUCT_COGS)}/unité), livraison, paiement et Ads.`,action:"Tu peux pousser les leviers rentables, mais uniquement si le CPA reste stable."});
   if(d1.ord===0&&a7O&&a7O>=1)a.push({lv:"c",label:"No order",title:"Aucune commande hier",body:`Moyenne 7J ${fm(a7O)} commande(s)/jour, mais 0 hier.`,action:"Vérifier immédiatement paiement, checkout, stock, tracking Shopify et campagnes actives."});
   if(o.bAds&&mtd.cost===0)a.push({lv:"c",label:"Ads",title:"Aucune dépense Ads détectée",body:`Budget mensuel renseigné (${mo(o.bAds)}) mais dépense MTD à zéro.`,action:"Vérifier que les campagnes Google Ads sont actives et que le script Ads écrit bien dans la Sheet."});
   if(s7.pdp&&p7.pdp&&s7.pdp<p7.pdp*.6)a.push({lv:"w",label:"Trafic PDP",title:"Vues PDP en forte baisse",body:`Vues PDP 7J ${fm(s7.pdp)} vs ${fm(p7.pdp)} semaine précédente.`,action:"Le problème est en amont de la page produit : vérifier Ads, SEO, liens directs et tracking view_item."});
@@ -820,8 +888,10 @@ function topSearchTerms(rows,l){
   });
   return Object.values(out).map(x=>({...x,ctr:x.impr?x.clicks/x.impr*100:null,roas:dv(x.value,x.cost),cpa:dv(x.cost,x.pur)})).sort((a,b)=>b.clicks-a.clicks||b.cost-a.cost).slice(0,l);
 }
-function termRec(r){
+function termRec(r,periodAov){
   const intent=termIntent(r.term);
+  const target=targetCpaFromAov(periodAov);
+  if(target&&r.pur>=2&&r.cpa>target*1.25)return`${intent} · CPA ${mo(r.cpa)} > cible ${mo(target)} : reduire enchere ou isoler avant de remettre du budget.`;
   if(r.pur===1&&r.roas>=3)return`${intent} · 1 vente rentable : garder, mais attendre confirmation avant d'isoler ou scaler.`;
   if(r.pur>0&&r.roas>=3)return`${intent} · Rentable : isoler en exact ou groupe dédié, et monter doucement si le volume suit.`;
   if(r.pur>0)return"Convertit mais marge faible : garder, puis améliorer annonce/page avant de scaler.";
@@ -832,8 +902,27 @@ function termRec(r){
   return"Peu de données : aucune décision forte.";
 }
 function termIntent(t){const s=String(t||"").toLowerCase();if(/holia|holiae|holiaē/.test(s))return"Marque";if(/vs|versus|compar|meilleur|avis|review|alternative/.test(s))return"Comparatif";if(/acheter|prix|promo|code|boutique|masque led|anti age|rides/.test(s))return"Transactionnel";return"Informationnel";}
-function contribution(p){if(!p||!p.rev||!p.ord)return null;const cogs=p.ord*PRODUCT_COGS,ads=p.cost||0,value=p.rev-cogs-ads;return{value,rate:p.rev?value/p.rev*100:null,cogs,ads};}
-function targetCpaFromAov(aov){return aov?aov*.65-PRODUCT_COGS:null;}
+function grossMarginParts(p){
+  if(!p||!p.rev||!p.ord)return null;
+  const vat=p.rev-(p.rev/(1+VAT_RATE));
+  const cogs=p.ord*PRODUCT_COGS;
+  const shipping=p.ord*SHIPPING_COST;
+  const payment=p.rev*PAYMENT_RATE+p.ord*PAYMENT_FIXED;
+  return{vat,cogs,shipping,payment};
+}
+function contribution(p){
+  const parts=grossMarginParts(p);
+  if(!parts)return null;
+  const ads=p.cost||0,value=p.rev-parts.vat-parts.cogs-parts.shipping-parts.payment-ads;
+  return{value,rate:p.rev?value/p.rev*100:null,ads,...parts};
+}
+function targetCpaFromAov(aov){
+  if(!aov)return null;
+  const vat=aov-(aov/(1+VAT_RATE));
+  const payment=aov*PAYMENT_RATE+PAYMENT_FIXED;
+  const targetProfit=aov*0.30;
+  return Math.max(0,aov-vat-PRODUCT_COGS-SHIPPING_COST-payment-targetProfit);
+}
 function budgetPace(m){if(!m||!m.ob.bAds)return null;const dE=Math.max(1,pd(m.ld).getDate()),dM=new Date(+m.ld.slice(0,4),+m.ld.slice(5,7),0).getDate(),expected=m.ob.bAds*dE/dM;return expected?m.p.mtd.cost/expected*100:null;}
 function gv(row,n){return row?.[n]??"";}
 function sm(rows,f){return rows.reduce((a,r)=>a+num(gv(r,f)),0);}
