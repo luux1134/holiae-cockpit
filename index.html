@@ -179,7 +179,7 @@ function render(raw,off=false){
   </div>
   <div class="tabs">
     ${tb("alrt","⚠ Alertes ("+m.alerts.length+")",true,"ta")}
-    ${tbh("hier","Hier",h.hier)}${tbh("j7","7 jours",h.j7)}${tbh("mtd","Mois",h.mtd)}
+    ${tbh("hier","Hier",h.hier)}${tbh("mtd",monthLabel(m.ld),h.mtd)}${tbh("j7","7 jours",h.j7)}
     ${tbh("j28","28 jours",h.j28)}${tbh("m3","3 mois",h.m3)}${tbh("ytd","Année",h.ytd)}
     ${tbh("ads","Ads 7J",h.ads)}${tbh("seo","SEO 28J",h.seo)}${tbh("klv","CRM 28J",h.klv)}${tb("lex","Lexique")}
   </div>
@@ -232,12 +232,13 @@ function model(raw){
   const dates=cdates(raw);
   const ld=dates.at(-1)||iso(add(new Date(),-1));
   const d2=iso(add(pd(ld),-1));
+  const pmtd=prevMonthSamePeriod(ld);
   const p={
     d1:rng(raw,ld,ld),d2:rng(raw,d2,d2),
     "7d":rng(raw,iso(add(pd(ld),-6)),ld),p7d:rng(raw,iso(add(pd(ld),-13)),iso(add(pd(ld),-7))),
     "28d":rng(raw,iso(add(pd(ld),-27)),ld),p28d:rng(raw,iso(add(pd(ld),-55)),iso(add(pd(ld),-28))),
     "90d":rng(raw,iso(add(pd(ld),-89)),ld),p90d:rng(raw,iso(add(pd(ld),-179)),iso(add(pd(ld),-90))),
-    mtd:rng(raw,ld.slice(0,7)+"-01",ld),ytd:rng(raw,ld.slice(0,4)+"-01-01",ld)
+    mtd:rng(raw,ld.slice(0,7)+"-01",ld),pmtd:rng(raw,pmtd.s,pmtd.e),ytd:rng(raw,ld.slice(0,4)+"-01-01",ld)
   };
   const ob=gobj(raw.obj||[],ld);
   const al=alerts(p,ob);
@@ -282,21 +283,24 @@ function vHier(m){return`<div class="hv" id="v-hier"><div class="sec">— Hier �
 function vPer(m,id,title,key,rk,extra=false){const p=m.p[key],ref=m.p[rk];return`<div class="hv" id="v-${id}"><div class="sec">— ${title}</div>${secs(p,ref,m,key,title)}</div>`;}
 
 function vMtd(m){
-  const p=m.p.mtd,o=m.ob;
+  const p=m.p.mtd,pm=m.p.pmtd||{},o=m.ob;
   const dE=Math.max(1,pd(m.ld).getDate());
   const dM=new Date(+m.ld.slice(0,4),+m.ld.slice(5,7),0).getDate();
   const proj=p.rev?p.rev/dE*dM:null;
   const need=o.ca&&proj?Math.max(0,o.ca-p.rev)/Math.max(1,dM-dE):null;
   return`<div class="hv" id="v-mtd"><div class="sec">— Mois en cours · ${m.ld.slice(0,7)} · J${dE}/${dM}</div>
   <div class="sg">💰 Business</div><div class="kg">
-    ${pc("CA MTD",mo(p.rev),o.ca?`Obj. ${mo(o.ca)}`:"Objectif non renseigné",o.ca?p.rev/o.ca*100:null,proj?`Proj. ${mo(proj)}`:"")}
-    ${pc("Commandes",fm(p.ord),o.ord?`Obj. ${fm(o.ord)}`:"Objectif non renseigné",o.ord?p.ord/o.ord*100:null,"")}
-    ${kcard("Panier moyen (AOV)",mo(p.aov),"","")}${kcard("Sessions",fm(p.sess),"","")}
-    ${kcard("Conv. Rate",pt(p.cr),"","")}${kcard("Add to Cart",fm(p.atc),"","")}
+    ${pc("CA MTD",mo(p.rev),o.ca?`Obj. ${mo(o.ca)}`:"Objectif non renseigné",o.ca?p.rev/o.ca*100:null,`${proj?`Proj. ${mo(proj)}`:""}${pm.rev?` · M-1 ${mo(pm.rev)} ${dl(p.rev,pm.rev,true)}`:""}`)}
+    ${pc("Commandes",fm(p.ord),o.ord?`Obj. ${fm(o.ord)}`:"Objectif non renseigné",o.ord?p.ord/o.ord*100:null,pm.ord?`M-1 ${fm(pm.ord)} ${dl(p.ord,pm.ord,true)}`:"")}
+    ${kcard("Panier moyen (AOV)",mo(p.aov),pm.aov?`M-1 ${mo(pm.aov)}`:"",dl(p.aov,pm.aov,true))}
+    ${kcard("Sessions",fm(p.sess),pm.sess?`M-1 ${fm(pm.sess)}`:"",dl(p.sess,pm.sess,true))}
+    ${kcard("Conv. Rate",pt(p.cr),pm.cr?`M-1 ${pt(pm.cr)}`:"",dl(p.cr,pm.cr,true,"pt"))}
+    ${kcard("Add to Cart",fm(p.atc),pm.atc?`M-1 ${fm(pm.atc)}`:"",dl(p.atc,pm.atc,true))}
   </div>
   <div class="sg">📈 Publicité</div><div class="kg">
-    ${pc("Budget Ads",mo(p.cost),o.bAds?`Budget ${mo(o.bAds)}`:"Budget non renseigné",o.bAds?p.cost/o.bAds*100:null,"")}
-    ${kcard("ROAS MTD",rt(p.roas),"","")}${kcard("CPA",mo(p.cpa),"","")}
+    ${pc("Budget Ads",mo(p.cost),o.bAds?`Budget ${mo(o.bAds)}`:"Budget non renseigné",o.bAds?p.cost/o.bAds*100:null,pm.cost?`M-1 ${mo(pm.cost)} ${dl(p.cost,pm.cost,false)}`:"")}
+    ${kcard("ROAS MTD",rt(p.roas),pm.roas?`M-1 ${rt(pm.roas)}`:"",dl(p.roas,pm.roas,true))}
+    ${kcard("CPA",mo(p.cpa),pm.cpa?`M-1 ${mo(pm.cpa)}`:"",dl(p.cpa,pm.cpa,false))}
   </div>
   ${klavSummary(p,"Mois en cours")}
   <div class="sg">🛒 Funnel</div>${funnel(p)}
@@ -353,14 +357,12 @@ function moveCal(n){
 }
 
 function warRoom(m,list){
-  const risks=list.filter(a=>a.lv==="c"||a.lv==="w").slice(0,3);
   const opps=list.filter(a=>/bonne nouvelle|seo/i.test(a.label||"")).slice(0,3);
   const move=bigMove(m,list);
   const item=a=>`<div class="row"><span class="rn">${esc(a.title)}<br><span class="rs">${esc(a.action||a.body||"")}</span></span><span class="ab ${a.lv==="c"?"bc":a.lv==="w"?"bw":"bi"}">${esc(a.label)}</span></div>`;
   return`<div class="sg">Priorités du jour · war-room</div>
   <div class="dblk"><div><div class="dtit">Biggest leverage move today</div><div class="dmain">${esc(move.title)}</div><div class="ks" style="margin-top:6px">${esc(move.action)}</div></div><span class="badge ${move.cls}">${esc(move.label)}</span></div>
-  <div class="sg">3 risques</div>${risks.length?risks.map(item).join(""):`<div class="empty">Aucun risque majeur détecté.</div>`}
-  <div class="sg">3 opportunités</div>${opps.length?opps.map(item).join(""):`<div class="empty">Aucune opportunité forte détectée aujourd'hui.</div>`}`;
+  <div class="sg">Opportunités à exploiter</div>${opps.length?opps.map(item).join(""):`<div class="empty">Aucune opportunité forte détectée aujourd'hui.</div>`}`;
 }
 
 function bigMove(m,list){
@@ -369,6 +371,7 @@ function bigMove(m,list){
   const p=m.p;
   const critical=list.find(a=>a.lv==="c");
   if(has("aucune commande"))return{label:"Urgent",cls:"bad",title:"Vérifier le tunnel d'achat avant tout",action:"Priorité absolue : paiement, checkout, stock, tracking Shopify et campagnes actives. Ne pas optimiser les pubs tant que l'achat peut être cassé."};
+  if(has("commandes en chute"))return{label:"Ventes",cls:"bad",title:"Retrouver le volume de commandes",action:"Priorité : comprendre pourquoi les commandes décrochent. Lire trafic par canal puis campagnes Ads ; si le trafic est stable, passer au tunnel PDP -> panier -> checkout."};
   if(byLabel("profit"))return{label:"Profit",cls:"bad",title:"Protéger la contribution avant de scaler",action:"Le CA ne suffit pas. Réduire le spend faible ou augmenter l'AOV tant que la marge après coût produit et Ads n'est pas saine."};
   if(byLabel("cac"))return{label:"Cash",cls:"bad",title:"Stopper la dérive d'acquisition",action:"Couper ou réduire les campagnes/requêtes qui dépensent sans vente. Objectif du jour : ramener le CPA sous la moyenne 7J."};
   if(has("pdp → atc"))return{label:"CRO",cls:"bad",title:"Réparer la page produit",action:"Travailler le premier écran mobile : promesse, preuve, offre, CTA. C'est le meilleur levier si le trafic arrive mais n'ajoute pas au panier."};
@@ -723,7 +726,7 @@ function crmItemRec(r,tp){
 function alerts(p,o){
   const a=[],d1=p.d1,s7=p["7d"],p7=p.p7d,mtd=p.mtd;
   const a7O=s7.ord?s7.ord/7:null,a7R=s7.rev?s7.rev/7:null;
-  if(a7O&&d1.ord>a7O*1.3)a.push({lv:"i",label:"Bonne nouvelle",title:"Commandes hier au-dessus du rythme",body:`Hier ${fm(d1.ord)} commande(s) vs moyenne 7J ${fm(a7O)}/j.`,action:"Identifier le levier gagnant d'hier : campagne, canal, offre ou CRM. S'il est sain, le prolonger aujourd'hui."});
+  if(a7O>=1&&d1.ord>a7O*1.3)a.push({lv:"i",label:"Bonne nouvelle",title:"Commandes hier au-dessus du rythme",body:`Hier ${fm(d1.ord)} commande(s) vs moyenne 7J ${fm1(a7O)}/j.`,action:"Identifier le levier gagnant d'hier : campagne, canal, offre ou CRM. S'il est sain, le prolonger aujourd'hui."});
   if(a7R&&d1.rev>a7R*1.3)a.push({lv:"i",label:"Bonne nouvelle",title:"CA hier en forte hausse",body:`Hier ${mo(d1.rev)} vs moyenne 7J ${mo(a7R)}/j.`,action:"Regarder si la hausse vient du volume ou de l'AOV. Répliquer le levier sans augmenter le budget à l'aveugle."});
   if(d1.aov&&s7.aov&&d1.aov>s7.aov*1.2)a.push({lv:"i",label:"Bonne nouvelle",title:"Panier moyen très fort hier",body:`AOV hier ${mo(d1.aov)} vs moyenne 7J ${mo(s7.aov)}.`,action:"Comprendre ce qui a tiré l'AOV : bundle, remise, produit, source trafic. En faire une mécanique réutilisable."});
   if(d1.roas&&s7.roas&&d1.roas>s7.roas*1.3&&d1.roas>=3)a.push({lv:"i",label:"Bonne nouvelle",title:"ROAS hier très supérieur au rythme",body:`ROAS hier ${rt(d1.roas)} vs moyenne 7J ${rt(s7.roas)}.`,action:"Chercher la campagne ou requête gagnante. Si le CPA reste propre, augmenter doucement plutôt que tout scaler."});
@@ -732,15 +735,15 @@ function alerts(p,o){
   if(o.ca){const dE0=Math.max(1,new Date().getDate()-1),dM0=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate(),proj0=mtd.rev?mtd.rev/dE0*dM0:null;if(proj0&&proj0>o.ca*1.15)a.push({lv:"i",label:"Bonne nouvelle",title:"Projection mensuelle en avance",body:`Projection ${mo(proj0)} vs objectif ${mo(o.ca)}.`,action:"Tu as de l'avance. Décider si on accélère prudemment les leviers rentables ou si on protège la marge."});}
   if(o.ord&&mtd.ord){const dE0=Math.max(1,new Date().getDate()-1),dM0=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate(),projOrd=mtd.ord/dE0*dM0;if(projOrd>o.ord*1.15)a.push({lv:"i",label:"Bonne nouvelle",title:"Objectif commandes en avance",body:`Projection ${fm(projOrd)} commandes vs objectif ${fm(o.ord)}.`,action:"Vérifier que le CPA et la marge restent propres. Si oui, pousser le levier qui apporte les commandes."});}
   if(!d1.sess&&!d1.ord)a.push({lv:"c",label:"Data",title:"Données Shopify manquantes",body:"Sessions et commandes à zéro sur J-1. Vérifier la connexion API Shopify.",action:"Relancer le sync Shopify/GA4 avant d'analyser. Si Shopify est OK mais GA4 vide, vérifier uniquement GA4."});
-  if(a7O&&d1.ord<a7O*.7)a.push({lv:"c",label:"Critique",title:"Commandes en chute",body:`Hier ${fm(d1.ord)} vs moyenne 7J ${fm(a7O)}/j (−${pt((1-d1.ord/a7O)*100)}).`,action:"Regarder d'abord trafic par canal et campagnes Ads hier. Si trafic stable, inspecter PDP, panier et checkout."});
-  if(a7R&&d1.rev<a7R*.7)a.push({lv:"c",label:"Critique",title:"CA en chute",body:`Hier ${mo(d1.rev)} vs moyenne 7J ${mo(a7R)}/j.`,action:"Identifier si le problème vient du volume de commandes ou du panier moyen. Adapter offre/bundle si AOV baisse."});
+  if(a7O>=1&&d1.ord<a7O*.7)a.push({lv:"c",label:"Critique",title:"Commandes en chute",body:`Hier ${fm(d1.ord)} vs moyenne 7J ${fm1(a7O)}/j (−${pt((1-d1.ord/a7O)*100)}).`,action:"Regarder d'abord trafic par canal et campagnes Ads hier. Si trafic stable, inspecter PDP, panier et checkout."});
+  if(a7R&&d1.rev<a7R*.7)a.push({lv:"c",label:"Critique",title:"CA en chute",body:`Hier ${mo0(d1.rev)} vs moyenne 7J ${mo(a7R)}/j.`,action:"Identifier si le problème vient du volume de commandes ou du panier moyen. Adapter offre/bundle si AOV baisse."});
   if(d1.roas&&s7.roas&&d1.roas<s7.roas*.65)a.push({lv:"c",label:"Ads",title:"ROAS en chute",body:`ROAS hier ${rt(d1.roas)} vs moyenne 7J ${rt(s7.roas)}.`,action:"Ne pas augmenter le budget. Couper les requêtes/campagnes qui ont dépensé hier sans achat."});
   if(s7.p2a!=null&&s7.p2a<1)a.push({lv:"c",label:"CRO",title:"PDP → ATC trop faible",body:`Taux ajout panier 7J : ${pt(s7.p2a)}. Objectif 1,5%+. Retravailler la page produit.`,action:"Priorité PDP : bénéfice au-dessus de la ligne de flottaison, preuve client, offre claire, CTA visible mobile."});
-  if(o.ca){const dE=Math.max(1,new Date().getDate()-1),dM=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate(),proj=mtd.rev?mtd.rev/dE*dM:null;if(proj&&proj<o.ca*.85)a.push({lv:"c",label:"MTD",title:"Projection MTD insuffisante",body:`Projection ${mo(proj)} vs objectif ${mo(o.ca)} → écart ${mo(o.ca-proj)}.`});else if(proj&&proj<o.ca*.95)a.push({lv:"i",label:"Info",title:"Projection MTD légèrement en retard",body:`Projection ${mo(proj)} (${pt(proj/o.ca*100)} de l'objectif).`});
+  if(o.ca){const dE=Math.max(1,new Date().getDate()-1),dM=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate(),proj=mtd.rev?mtd.rev/dE*dM:null;if(proj&&proj<o.ca*.85)a.push({lv:"c",label:"MTD",title:"Projection MTD insuffisante",body:`Projection ${mo(proj)} vs objectif ${mo(o.ca)} → écart ${mo(o.ca-proj)}.`,action:"Revenir à l'objectif commandes : identifier le levier capable de générer le plus vite des ventes rentables cette semaine."});else if(proj&&proj<o.ca*.95)a.push({lv:"i",label:"Info",title:"Projection MTD légèrement en retard",body:`Projection ${mo(proj)} (${pt(proj/o.ca*100)} de l'objectif).`,action:"Petit retard : pousser le meilleur levier rentable sans casser la marge."});
   // Rythme requis
   if(o.ca&&mtd.rev!=null){const daysLeft=Math.max(1,dM-dE);const need=Math.max(0,o.ca-mtd.rev)/daysLeft;if(need>0)a.push({lv:"i",label:"Rythme",title:`Il faut ${mo(need)}/jour pour atteindre l'objectif`,body:`CA MTD ${mo(mtd.rev)} · Objectif ${mo(o.ca)} · ${daysLeft} jours restants · Rythme actuel ${mo(mtd.rev/Math.max(1,dE))}/j.`});else a.push({lv:"i",label:"Rythme",title:"Objectif mensuel déjà atteint ✦",body:`CA MTD ${mo(mtd.rev)} dépasse l'objectif ${mo(o.ca)}.`});}}
   if(s7.cr&&p7.cr&&s7.cr<p7.cr*.85)a.push({lv:"w",label:"Warning",title:"Taux de conversion en baisse",body:`Conv. rate 7J ${pt(s7.cr)} vs ${pt(p7.cr)} semaine précédente.`,action:"Comparer mobile vs desktop et Ads vs organique. Si la baisse est partout, regarder offre/PDP plutôt que ciblage."});
-  if(a7O&&d1.ord<a7O*.85&&d1.ord>=a7O*.7)a.push({lv:"w",label:"Warning",title:"Commandes en légère baisse",body:`Hier ${fm(d1.ord)} vs moyenne 7J ${fm(a7O)}/j.`,action:"Surveiller demain. Si 2 jours de suite, passer en mode diagnostic trafic -> PDP -> checkout."});
+  if(a7O>=1&&d1.ord<a7O*.85&&d1.ord>=a7O*.7)a.push({lv:"w",label:"Warning",title:"Commandes en légère baisse",body:`Hier ${fm(d1.ord)} vs moyenne 7J ${fm1(a7O)}/j.`,action:"Surveiller demain. Si 2 jours de suite, passer en mode diagnostic trafic -> PDP -> checkout."});
   if(d1.cpa&&s7.cpa&&d1.cpa>s7.cpa*1.3)a.push({lv:"c",label:"CAC",title:"CAC en forte hausse",body:`CPA hier ${mo(d1.cpa)} vs moyenne 7J ${mo(s7.cpa)}.`,action:"Geler les hausses de budget. Couper les campagnes/requêtes sans vente et vérifier si le coût par clic a dérivé."});
   if(s7.sess&&p7.sess&&s7.cr&&p7.cr&&s7.sess>p7.sess*1.15&&s7.cr<p7.cr*.75)a.push({lv:"w",label:"Qualité trafic",title:"Trafic en hausse mais conversion en baisse",body:`Sessions 7J en hausse, mais conversion ${pt(s7.cr)} vs ${pt(p7.cr)} avant.`,action:"Trafic probablement moins qualifié. Regarder les canaux/campagnes qui ont amené le volume et couper les audiences froides faibles."});
   if(s7.aov&&p["28d"].aov&&s7.aov<p["28d"].aov*.9)a.push({lv:"w",label:"AOV",title:"Panier moyen en baisse",body:`AOV 7J ${mo(s7.aov)} vs moyenne 28J ${mo(p["28d"].aov)}.`,action:"Vérifier promos, bundles et mix produit. Si les commandes tiennent mais le CA baisse, le problème est le panier."});
@@ -800,7 +803,9 @@ function num(x){if(x==null||x==="")return 0;const v=Number(String(x).replace(/\s
 function ctrv(r){const v=num(gv(r,"CTR"));return v&&v<=1?v*100:v;}
 function dv(a,b){return b?a/b:null;}
 function mo(x){return x?EU.format(x):"—";}
+function mo0(x){return EU.format(Number(x||0));}
 function fm(x){return x?NF.format(Math.round(x)):"—";}
+function fm1(x){return x==null||!Number.isFinite(x)?"—":NF.format(Math.round(x*10)/10);}
 function rt(x){return x?NF.format(Math.round(x*100)/100):"—";}
 function pt(x){return x==null||!Number.isFinite(x)?"—":`${NF.format(Math.round(x*10)/10)}%`;}
 function dl(cur,old,pu=true,u=""){if(cur==null||old==null||!old)return`<span class="N">—</span>`;const raw=u==="pt"?cur-old:(cur-old)/Math.abs(old)*100;const g=pu?raw>=0:raw<=0;return`<span class="${g?"G":"R"}">${raw>=0?"▲":"▼"} ${u==="pt"?`${Math.round(raw*10)/10}pt`:pt(Math.abs(raw))}</span>`;}
@@ -824,7 +829,9 @@ function iso(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0
 function monthStart(d){return`${d.slice(0,7)}-01`;}
 function isIso(s){return/^\d{4}-\d{2}-\d{2}$/.test(String(s||""));}
 function leap(y){return y%4===0&&(y%100!==0||y%400===0);}
+function prevMonthSamePeriod(d){const x=pd(d),endDay=Math.min(x.getDate(),new Date(x.getFullYear(),x.getMonth(),0).getDate()),s=new Date(x.getFullYear(),x.getMonth()-1,1),e=new Date(x.getFullYear(),x.getMonth()-1,endDay);return{s:iso(s),e:iso(e)};}
 function fd(d){return isIso(d)?new Date(`${d}T12:00:00`).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"}):"—";}
+function monthLabel(d){return isIso(d)?pd(d).toLocaleDateString("fr-FR",{month:"long"}):"Mois";}
 function surl(url){try{const u=new URL(String(url));return u.pathname.replace(/^\/|\/$/g,"")||u.hostname;}catch{return String(url||"");}}
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
 </script>
