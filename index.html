@@ -107,10 +107,17 @@
     .sale-dot{width:5px;height:5px;border-radius:50%;background:var(--g);flex-shrink:0}
     .sale-more{font-size:8px;color:var(--g);line-height:1}
     .act{font-size:10px;color:var(--accent);line-height:1.45;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)}
-    .advice{background:linear-gradient(180deg,rgba(244,216,168,.08),rgba(38,33,30,0));border:1px solid rgba(244,216,168,.22);border-radius:8px;padding:15px 16px;margin-bottom:12px}
+    .advice{background:linear-gradient(180deg,rgba(244,216,168,.08),rgba(38,33,30,0));border:1px solid rgba(244,216,168,.22);border-radius:8px;padding:15px 16px;margin-bottom:12px;overflow:hidden}
     .advice-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
     .advice-t{font-size:10px;color:var(--accent);letter-spacing:.16em;text-transform:uppercase}
     .advice-d{font-size:9px;color:var(--sec);letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+    .advice-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+    .advice-v{font-size:9px;letter-spacing:.12em;text-transform:uppercase;border-radius:4px;padding:4px 10px;font-weight:700;white-space:nowrap}
+    .advice-v.fix{background:rgba(224,92,92,.18);color:var(--r)}.advice-v.investigate{background:rgba(232,166,76,.18);color:var(--o)}
+    .advice-v.hold{background:rgba(244,216,168,.15);color:var(--accent)}.advice-v.scale{background:rgba(76,175,125,.16);color:var(--g)}
+    .advice-c{font-size:9px;letter-spacing:.12em;text-transform:uppercase;border-radius:4px;padding:4px 10px;font-weight:700;white-space:nowrap;background:rgba(144,139,132,.15);color:var(--sec)}
+    .advice-c.high{background:rgba(76,175,125,.16);color:var(--g)}.advice-c.medium{background:rgba(232,166,76,.18);color:var(--o)}.advice-c.low{background:rgba(224,92,92,.18);color:var(--r)}
+    .advice-pr{font-size:13px;color:var(--txt);line-height:1.45;font-weight:500;min-width:0;word-break:break-word}
     .advice-p{font-size:12px;color:var(--txt);line-height:1.7;margin:0 0 9px}
     .advice-p:last-child{margin-bottom:0}
     .lex-s{width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--txt);font-family:"Plus Jakarta Sans",sans-serif;margin-bottom:16px;outline:none}
@@ -144,7 +151,7 @@
 const API_KEY  = "AIzaSyADK3alDzNTsEkbKGVDbrdHYBj0esGF0KU";
 const SHEET_ID = "17j732Xnp48sOWR_ignS3pgc5eKL4OPCJwUJWKH5Euv4";
 const SHEETS   = {shopify:"Shopify_Daily",ga4:"GA4_Channel",ads:"GoogleAds_Campaigns",st:"GoogleAds_SearchTerms",klav:"Klaviyo",klavD:"Klaviyo_Daily",klavA:"Klaviyo_Attribution_Daily",gscP:"GSC_Pages",gscQ:"GSC_Queries",gscPP:"GSC_Pages_Previous",gscQP:"GSC_Queries_Previous",obj:"Objectifs",advice:"ARIS_Advice"};
-const CKEY = "holiae-v20", TTL = 36e5;
+const CKEY = "holiae-v22", TTL = 36e5;
 const PRODUCT_COGS = 82;
 const SHIPPING_COST = 11;
 const VAT_RATE = 0.20;
@@ -339,14 +346,19 @@ function seoPageGains(previousRows,currentRows){
 
 // ── VIEWS ─────────────────────────────────────────────────────────────────────
 function arisAdvice(m){
-  const rows=(m.raw.advice||[]).filter(r=>gv(r,"Advice"));
+  const rows=(m.raw.advice||[]).filter(r=>gv(r,"Advice")||gv(r,"Verdict")||gv(r,"Priority"));
   if(!rows.length)return"";
   const latest=rows.sort((a,b)=>String(gv(b,"Date")).localeCompare(String(gv(a,"Date"))))[0];
   const date=gv(latest,"Date")||m.ld;
+  const verdict=String(gv(latest,"Verdict")||"").trim().toUpperCase();
+  const confidence=String(gv(latest,"Confidence")||"").trim();
+  const priority=String(gv(latest,"Priority")||"").trim();
   const text=String(gv(latest,"Advice")||"").trim();
-  if(!text)return"";
+  if(!text&&!verdict&&!priority)return"";
   const parts=text.split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean);
-  return`<div class="sg">ARIS Advice du jour</div><div class="advice"><div class="advice-h"><div class="advice-t">Analyse data driven</div><div class="advice-d">${fd(String(date).slice(0,10))}</div></div>${parts.map(p=>`<p class="advice-p">${esc(p)}</p>`).join("")}</div>`;
+  const vClass=verdict==="SCALE"?"scale":verdict==="HOLD"?"hold":verdict==="INVESTIGATE"?"investigate":"fix";
+  const cClass=confidence.toLowerCase();
+  return`<div class="sg">ARIS Advice du jour</div><div class="advice"><div class="advice-h"><div class="advice-t">Décision data driven</div><div class="advice-d">${fd(String(date).slice(0,10))}</div></div>${verdict||confidence||priority?`<div class="advice-top">${verdict?`<span class="advice-v ${vClass}">${esc(verdict)}</span>`:""}${confidence?`<span class="advice-c ${esc(cClass)}">${esc(confidence)}</span>`:""}${priority?`<div class="advice-pr">${esc(priority)}</div>`:""}</div>`:""}${parts.map(p=>`<p class="advice-p">${esc(p)}</p>`).join("")}</div>`;
 }
 function vAlerts(m){const list=m.alerts.filter(a=>a.label!=="Rythme"),detail=list.filter(a=>!isOpp(a));return`<div class="hv on" id="v-alrt"><div class="sec">— Alertes · Ta todo du matin</div>${rhythmHero(m)}<div class="sg">Calendrier ventes · mois</div><div id="sales-calendar">${salesCalendar(m)}</div>${warRoom(m,list)}<div class="sg">Alertes à traiter</div>${detail.length?detail.map(a=>`<div class="al"><div class="dot ${a.lv}"></div><div style="flex:1;min-width:0"><div class="at">${a.title}</div><div class="as">${a.body}</div>${a.action?`<div class="act">Action suggérée : ${esc(a.action)}</div>`:""}</div><span class="ab ${a.lv==="c"?"bc":a.lv==="w"?"bw":"bi"}">${a.label}</span></div>`).join(""):`<div class="empty" style="text-align:center;padding:24px;font-size:14px">Aucune alerte négative active ✦<br><span style="font-size:11px">Regarde seulement les opportunités ci-dessus.</span></div>`}</div>`;}
 function vArisInsight(m){
