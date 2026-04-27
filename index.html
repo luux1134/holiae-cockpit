@@ -278,7 +278,7 @@ function klavItems(rows){
 }
 
 // ── VIEWS ─────────────────────────────────────────────────────────────────────
-function vAlerts(m){const list=m.alerts.filter(a=>a.label!=="Rythme");return`<div class="hv on" id="v-alrt"><div class="sec">— Alertes · Ta todo du matin</div>${rhythmHero(m)}<div class="sg">Calendrier ventes · mois</div><div id="sales-calendar">${salesCalendar(m)}</div>${warRoom(m,list)}${list.length?list.map(a=>`<div class="al"><div class="dot ${a.lv}"></div><div style="flex:1"><div class="at">${a.title}</div><div class="as">${a.body}</div>${a.action?`<div class="act">Action suggérée : ${esc(a.action)}</div>`:""}</div><span class="ab ${a.lv==="c"?"bc":a.lv==="w"?"bw":"bi"}">${a.label}</span></div>`).join(""):`<div class="empty" style="text-align:center;padding:24px;font-size:14px">Tout est dans les clous ✦<br><span style="font-size:11px">Aucune alerte active.</span></div>`}</div>`;}
+function vAlerts(m){const list=m.alerts.filter(a=>a.label!=="Rythme"),detail=list.filter(a=>!isOpp(a));return`<div class="hv on" id="v-alrt"><div class="sec">— Alertes · Ta todo du matin</div>${rhythmHero(m)}<div class="sg">Calendrier ventes · mois</div><div id="sales-calendar">${salesCalendar(m)}</div>${warRoom(m,list)}<div class="sg">Alertes à traiter</div>${detail.length?detail.map(a=>`<div class="al"><div class="dot ${a.lv}"></div><div style="flex:1"><div class="at">${a.title}</div><div class="as">${a.body}</div>${a.action?`<div class="act">Action suggérée : ${esc(a.action)}</div>`:""}</div><span class="ab ${a.lv==="c"?"bc":a.lv==="w"?"bw":"bi"}">${a.label}</span></div>`).join(""):`<div class="empty" style="text-align:center;padding:24px;font-size:14px">Aucune alerte négative active ✦<br><span style="font-size:11px">Regarde seulement les opportunités ci-dessus.</span></div>`}</div>`;}
 function vHier(m){return`<div class="hv" id="v-hier"><div class="sec">— Hier · ${fd(m.ld)} vs ${fd(m.d2)}</div>${secs(m.p.d1,m.p.d2,m,"d1","Hier")}</div>`;}
 function vPer(m,id,title,key,rk,extra=false){const p=m.p[key],ref=m.p[rk];return`<div class="hv" id="v-${id}"><div class="sec">— ${title}</div>${secs(p,ref,m,key,title)}</div>`;}
 
@@ -357,13 +357,15 @@ function moveCal(n){
 }
 
 function warRoom(m,list){
-  const opps=list.filter(a=>/bonne nouvelle|seo/i.test(a.label||"")).slice(0,3);
+  const opps=list.filter(isOpp).slice(0,3);
   const move=bigMove(m,list);
   const item=a=>`<div class="row"><span class="rn">${esc(a.title)}<br><span class="rs">${esc(a.action||a.body||"")}</span></span><span class="ab ${a.lv==="c"?"bc":a.lv==="w"?"bw":"bi"}">${esc(a.label)}</span></div>`;
   return`<div class="sg">Priorités du jour · war-room</div>
   <div class="dblk"><div><div class="dtit">Biggest leverage move today</div><div class="dmain">${esc(move.title)}</div><div class="ks" style="margin-top:6px">${esc(move.action)}</div></div><span class="badge ${move.cls}">${esc(move.label)}</span></div>
-  <div class="sg">Opportunités à exploiter</div>${opps.length?opps.map(item).join(""):`<div class="empty">Aucune opportunité forte détectée aujourd'hui.</div>`}`;
+  <div class="sg">Opportunités à exploiter${opps.length?` · ${opps.length}/3`:""}</div>${opps.length?opps.map(item).join(""):`<div class="empty">Aucune opportunité forte détectée aujourd'hui.</div>`}`;
 }
+
+function isOpp(a){return /bonne nouvelle|seo/i.test(a.label||"");}
 
 function bigMove(m,list){
   const has=t=>list.find(a=>String(a.title||"").toLowerCase().includes(t));
