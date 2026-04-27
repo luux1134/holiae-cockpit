@@ -144,7 +144,7 @@
 const API_KEY  = "AIzaSyADK3alDzNTsEkbKGVDbrdHYBj0esGF0KU";
 const SHEET_ID = "17j732Xnp48sOWR_ignS3pgc5eKL4OPCJwUJWKH5Euv4";
 const SHEETS   = {shopify:"Shopify_Daily",ga4:"GA4_Channel",ads:"GoogleAds_Campaigns",st:"GoogleAds_SearchTerms",klav:"Klaviyo",klavD:"Klaviyo_Daily",klavA:"Klaviyo_Attribution_Daily",gscP:"GSC_Pages",gscQ:"GSC_Queries",gscPP:"GSC_Pages_Previous",gscQP:"GSC_Queries_Previous",obj:"Objectifs",advice:"ARIS_Advice"};
-const CKEY = "holiae-v19", TTL = 36e5;
+const CKEY = "holiae-v20", TTL = 36e5;
 const PRODUCT_COGS = 82;
 const SHIPPING_COST = 11;
 const VAT_RATE = 0.20;
@@ -342,7 +342,7 @@ function arisAdvice(m){
   const date=gv(latest,"Date")||m.ld;
   const text=String(gv(latest,"Advice")||"").trim();
   if(!text)return"";
-  const parts=text.split(/\n\s*\n|(?<=\.)\s+(?=(Verdict|Priorité|Pourquoi|Action|À éviter|Risque|Opportunité|Si tu veux))/).map(x=>x.trim()).filter(Boolean);
+  const parts=text.split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean);
   return`<div class="sg">ARIS Advice du jour</div><div class="advice"><div class="advice-h"><div class="advice-t">Analyse data driven</div><div class="advice-d">${fd(String(date).slice(0,10))}</div></div>${parts.map(p=>`<p class="advice-p">${esc(p)}</p>`).join("")}</div>`;
 }
 function vAlerts(m){const list=m.alerts.filter(a=>a.label!=="Rythme"),detail=list.filter(a=>!isOpp(a));return`<div class="hv on" id="v-alrt"><div class="sec">— Alertes · Ta todo du matin</div>${rhythmHero(m)}<div class="sg">Calendrier ventes · mois</div><div id="sales-calendar">${salesCalendar(m)}</div>${warRoom(m,list)}<div class="sg">Alertes à traiter</div>${detail.length?detail.map(a=>`<div class="al"><div class="dot ${a.lv}"></div><div style="flex:1;min-width:0"><div class="at">${a.title}</div><div class="as">${a.body}</div>${a.action?`<div class="act">Action suggérée : ${esc(a.action)}</div>`:""}</div><span class="ab ${a.lv==="c"?"bc":a.lv==="w"?"bw":"bi"}">${a.label}</span></div>`).join(""):`<div class="empty" style="text-align:center;padding:24px;font-size:14px">Aucune alerte négative active ✦<br><span style="font-size:11px">Regarde seulement les opportunités ci-dessus.</span></div>`}</div>`;}
