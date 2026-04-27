@@ -28,6 +28,7 @@
     .ht:hover{color:var(--txt);background:var(--card2)}
     .ht.on{color:#1f1a17;background:var(--accent)}
     .ht.ta{color:var(--r)}.ht.ta.on{background:#c0392b;color:var(--txt)}
+    .ht.ai{color:#65b8ff}.ht.ai.on{background:#65b8ff;color:#1f1a17}
     .hv{display:none}.hv.on{display:block}
     .sec{font-size:9px;color:var(--sec);letter-spacing:.2em;text-transform:uppercase;margin:20px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border)}
     .sg{font-size:10px;color:var(--sec);letter-spacing:.15em;text-transform:uppercase;margin:16px 0 8px;display:flex;align-items:center;gap:8px}
@@ -106,6 +107,12 @@
     .sale-dot{width:5px;height:5px;border-radius:50%;background:var(--g);flex-shrink:0}
     .sale-more{font-size:8px;color:var(--g);line-height:1}
     .act{font-size:10px;color:var(--accent);line-height:1.45;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)}
+    .advice{background:linear-gradient(180deg,rgba(244,216,168,.08),rgba(38,33,30,0));border:1px solid rgba(244,216,168,.22);border-radius:8px;padding:15px 16px;margin-bottom:12px}
+    .advice-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
+    .advice-t{font-size:10px;color:var(--accent);letter-spacing:.16em;text-transform:uppercase}
+    .advice-d{font-size:9px;color:var(--sec);letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+    .advice-p{font-size:12px;color:var(--txt);line-height:1.7;margin:0 0 9px}
+    .advice-p:last-child{margin-bottom:0}
     .lex-s{width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--txt);font-family:"Plus Jakarta Sans",sans-serif;margin-bottom:16px;outline:none}
     .lex-s:focus{border-color:var(--accent)}.lex-s::placeholder{color:var(--sec)}
     .lex-i{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:8px}
@@ -126,6 +133,7 @@
       .rm{width:100%;justify-content:flex-start;gap:7px}.vsg{grid-template-columns:1fr}.adc-m{gap:10px}
       .adc-h,.klrow-h,.seoc-h{align-items:flex-start}
       .adc-n,.klrow-n{white-space:normal;overflow:visible;text-overflow:clip;word-break:break-word}
+      .advice-h{flex-direction:column;align-items:flex-start}.advice-d{white-space:normal}.advice-p{font-size:11px}
       .ab{margin-left:0}
     }
   </style>
@@ -135,8 +143,8 @@
 <script>
 const API_KEY  = "AIzaSyADK3alDzNTsEkbKGVDbrdHYBj0esGF0KU";
 const SHEET_ID = "17j732Xnp48sOWR_ignS3pgc5eKL4OPCJwUJWKH5Euv4";
-const SHEETS   = {shopify:"Shopify_Daily",ga4:"GA4_Channel",ads:"GoogleAds_Campaigns",st:"GoogleAds_SearchTerms",klav:"Klaviyo",klavD:"Klaviyo_Daily",klavA:"Klaviyo_Attribution_Daily",gscP:"GSC_Pages",gscQ:"GSC_Queries",gscPP:"GSC_Pages_Previous",gscQP:"GSC_Queries_Previous",obj:"Objectifs"};
-const CKEY = "holiae-v17", TTL = 36e5;
+const SHEETS   = {shopify:"Shopify_Daily",ga4:"GA4_Channel",ads:"GoogleAds_Campaigns",st:"GoogleAds_SearchTerms",klav:"Klaviyo",klavD:"Klaviyo_Daily",klavA:"Klaviyo_Attribution_Daily",gscP:"GSC_Pages",gscQ:"GSC_Queries",gscPP:"GSC_Pages_Previous",gscQP:"GSC_Queries_Previous",obj:"Objectifs",advice:"ARIS_Advice"};
+const CKEY = "holiae-v19", TTL = 36e5;
 const PRODUCT_COGS = 82;
 const SHIPPING_COST = 11;
 const VAT_RATE = 0.20;
@@ -188,11 +196,12 @@ function render(raw,off=false){
   </div>
   <div class="tabs">
     ${tb("alrt","⚠ Alertes ("+m.alerts.length+")",true,"ta")}
+    ${tb("aris","🔵 ARIS Insight",false,"ai")}
     ${tbh("hier","Hier",h.hier)}${tbh("mtd",monthLabel(m.ld),h.mtd)}${tbh("j7","7 jours",h.j7)}
     ${tbh("j28","28 jours",h.j28)}${tbh("m3","3 mois",h.m3)}${tbh("ytd","Année",h.ytd)}
     ${tbh("ads","Ads 7J",h.ads)}${tbh("seo","SEO 28J",h.seo)}${tbh("klv","CRM 28J",h.klv)}${tb("lex","Lexique")}
   </div>
-  ${vAlerts(m)}${vHier(m)}${vPer(m,"j7","7 jours glissants","7d","p7d")}
+  ${vAlerts(m)}${vArisInsight(m)}${vHier(m)}${vPer(m,"j7","7 jours glissants","7d","p7d")}
   ${vMtd(m)}${vPer(m,"j28","28 jours glissants","28d","p28d")}
   ${vPer(m,"m3","3 mois glissants","90d","p90d",true)}
   ${vYtd(m)}${vAds(m)}${vSeo(m)}${vKlav(m)}${vLex()}
@@ -326,7 +335,21 @@ function seoPageGains(previousRows,currentRows){
 }
 
 // ── VIEWS ─────────────────────────────────────────────────────────────────────
+function arisAdvice(m){
+  const rows=(m.raw.advice||[]).filter(r=>gv(r,"Advice"));
+  if(!rows.length)return"";
+  const latest=rows.sort((a,b)=>String(gv(b,"Date")).localeCompare(String(gv(a,"Date"))))[0];
+  const date=gv(latest,"Date")||m.ld;
+  const text=String(gv(latest,"Advice")||"").trim();
+  if(!text)return"";
+  const parts=text.split(/\n\s*\n|(?<=\.)\s+(?=(Verdict|Priorité|Pourquoi|Action|À éviter|Risque|Opportunité|Si tu veux))/).map(x=>x.trim()).filter(Boolean);
+  return`<div class="sg">ARIS Advice du jour</div><div class="advice"><div class="advice-h"><div class="advice-t">Analyse data driven</div><div class="advice-d">${fd(String(date).slice(0,10))}</div></div>${parts.map(p=>`<p class="advice-p">${esc(p)}</p>`).join("")}</div>`;
+}
 function vAlerts(m){const list=m.alerts.filter(a=>a.label!=="Rythme"),detail=list.filter(a=>!isOpp(a));return`<div class="hv on" id="v-alrt"><div class="sec">— Alertes · Ta todo du matin</div>${rhythmHero(m)}<div class="sg">Calendrier ventes · mois</div><div id="sales-calendar">${salesCalendar(m)}</div>${warRoom(m,list)}<div class="sg">Alertes à traiter</div>${detail.length?detail.map(a=>`<div class="al"><div class="dot ${a.lv}"></div><div style="flex:1;min-width:0"><div class="at">${a.title}</div><div class="as">${a.body}</div>${a.action?`<div class="act">Action suggérée : ${esc(a.action)}</div>`:""}</div><span class="ab ${a.lv==="c"?"bc":a.lv==="w"?"bw":"bi"}">${a.label}</span></div>`).join(""):`<div class="empty" style="text-align:center;padding:24px;font-size:14px">Aucune alerte négative active ✦<br><span style="font-size:11px">Regarde seulement les opportunités ci-dessus.</span></div>`}</div>`;}
+function vArisInsight(m){
+  const content=arisAdvice(m);
+  return`<div class="hv" id="v-aris"><div class="sec">— ARIS Insight · analyse du jour</div>${content||`<div class="empty">Aucune analyse ARIS disponible pour l'instant.<br>Elle apparaîtra ici quand l'automatisation aura rempli l'onglet ARIS_Advice.</div>`}</div>`;
+}
 function vHier(m){return`<div class="hv" id="v-hier"><div class="sec">— Hier · ${fd(m.ld)} vs ${fd(m.d2)}</div>${secs(m.p.d1,m.p.d2,m,"d1","Hier")}</div>`;}
 function vPer(m,id,title,key,rk,extra=false){const p=m.p[key],ref=m.p[rk];return`<div class="hv" id="v-${id}"><div class="sec">— ${title}</div>${secs(p,ref,m,key,title)}</div>`;}
 
