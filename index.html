@@ -130,8 +130,8 @@
 <script>
 const API_KEY  = "AIzaSyADK3alDzNTsEkbKGVDbrdHYBj0esGF0KU";
 const SHEET_ID = "17j732Xnp48sOWR_ignS3pgc5eKL4OPCJwUJWKH5Euv4";
-const SHEETS   = {shopify:"Shopify_Daily",ga4:"GA4_Channel",ads:"GoogleAds_Campaigns",st:"GoogleAds_SearchTerms",klav:"Klaviyo",klavD:"Klaviyo_Daily",klavA:"Klaviyo_Attribution_Daily",gscP:"GSC_Pages",gscQ:"GSC_Queries",obj:"Objectifs"};
-const CKEY = "holiae-v13", TTL = 36e5;
+const SHEETS   = {shopify:"Shopify_Daily",ga4:"GA4_Channel",ads:"GoogleAds_Campaigns",st:"GoogleAds_SearchTerms",klav:"Klaviyo",klavD:"Klaviyo_Daily",klavA:"Klaviyo_Attribution_Daily",gscP:"GSC_Pages",gscQ:"GSC_Queries",gscPP:"GSC_Pages_Previous",gscQP:"GSC_Queries_Previous",obj:"Objectifs"};
+const CKEY = "holiae-v15", TTL = 36e5;
 const PRODUCT_COGS = 82;
 const app = document.getElementById("app");
 const NF = new Intl.NumberFormat("fr-FR");
@@ -240,6 +240,7 @@ function model(raw){
     "90d":rng(raw,iso(add(pd(ld),-89)),ld),p90d:rng(raw,iso(add(pd(ld),-179)),iso(add(pd(ld),-90))),
     mtd:rng(raw,ld.slice(0,7)+"-01",ld),pmtd:rng(raw,pmtd.s,pmtd.e),ytd:rng(raw,ld.slice(0,4)+"-01-01",ld)
   };
+  p.seoDrops=seoPageDrops(raw.gscPP||[],raw.gscP||[]);
   const ob=gobj(raw.obj||[],ld);
   const al=alerts(p,ob);
   const dq=dqual(p.d1);
@@ -275,6 +276,25 @@ function klavItems(rows){
     out[key].orders+=num(gv(r,"Orders"));
   });
   return Object.values(out).sort((a,b)=>b.revenue-a.revenue);
+}
+function seoPageDrops(previousRows,currentRows){
+  const rows=(previousRows||[]).filter(r=>gv(r,"Date range")&&gv(r,"Page"));
+  if(!rows.length||!(currentRows||[]).length)return[];
+  const prev={};
+  rows.forEach(r=>prev[String(gv(r,"Page"))]=r);
+  return currentRows.map(r=>{
+    const page=String(gv(r,"Page")),old=prev[page];
+    if(!old)return null;
+    const pos=num(gv(r,"Position")),prevPos=num(gv(old,"Position")),ctr=ctrv(r),prevCtr=ctrv(old),clicks=num(gv(r,"Clicks")),prevClicks=num(gv(old,"Clicks")),impr=num(gv(r,"Impressions"));
+    const posDelta=pos&&prevPos?pos-prevPos:0;
+    const ctrDrop=prevCtr?(prevCtr-ctr)/prevCtr*100:0;
+    const clickDrop=prevClicks?(prevClicks-clicks)/prevClicks*100:0;
+    if(posDelta<3&&ctrDrop<35&&clickDrop<30)return null;
+    const level=posDelta>=3||clickDrop>=40?"bad":"warn";
+    const label=posDelta>=3?"POSITION -"+rt(posDelta):ctrDrop>=35?"CTR EN BAISSE":"CLICS EN BAISSE";
+    const action=posDelta>=3?"Auditer la SERP et les concurrents : contenu, fraîcheur, title, maillage interne. Réagir avant sortie du top 10.":ctrDrop>=35?"La page est encore visible mais attire moins le clic. Tester title/meta orientés bénéfice et preuve.":"Vérifier si la demande baisse ou si la page perd sur des requêtes business.";
+    return{page,pos,prevPos,ctr,prevCtr,clicks,prevClicks,impr,posDelta,ctrDrop,clickDrop,level,label,action};
+  }).filter(Boolean).sort((a,b)=>(b.posDelta-a.posDelta)||(b.ctrDrop-a.ctrDrop)||(b.clickDrop-a.clickDrop)).slice(0,8);
 }
 
 // ── VIEWS ─────────────────────────────────────────────────────────────────────
@@ -420,6 +440,7 @@ function rc(r){return(r||0)>=3?"var(--g)":(r||0)>=2?"var(--o)":"var(--r)";}
 
 function vSeo(m){
   const pg=m.p["28d"].sp,qr=m.p["28d"].sq;
+  const drops=m.p.seoDrops||[];
   const sr=seoGlobalRec(pg,qr);
   const tc=pg.reduce((a,r)=>a+num(gv(r,"Clicks")),0);
   const ti=pg.reduce((a,r)=>a+num(gv(r,"Impressions")),0);
@@ -432,6 +453,8 @@ function vSeo(m){
   </div>
   <div class="sg">🎯 Pages · Recommandations</div>
   ${pg.length?pg.map(r=>{const rec=srec(r);if(!rec)return"";const pos=num(gv(r,"Position")),ctr=ctrv(r),cl=num(gv(r,"Clicks")),im=num(gv(r,"Impressions"));return`<div class="seoc"><div class="seoc-h"><span class="seoc-u">${esc(surl(gv(r,"Page")))}</span><span class="ab ${rec.ac}">${rec.label}</span></div><div class="seoc-m"><span class="seoc-ms">Position <strong style="color:${pos<=3?"var(--g)":pos<=10?"var(--o)":"var(--r)"}">${pos?Math.round(pos*10)/10:"—"}</strong></span><span class="seoc-ms">Clics <strong style="color:var(--accent)">${fm(cl)}</strong></span><span class="seoc-ms">Impr. ${fm(im)}</span><span class="seoc-ms">CTR <strong style="color:${ctr>=3?"var(--g)":ctr>=1?"var(--o)":"var(--r)"}">${pt(ctr)}</strong></span></div><div class="seoc-a">→ ${esc(rec.action)}</div></div>`;}).join(""):`<div class="empty">Pas de données GSC Pages. Vérifier Google Search Console.</div>`}
+  <div class="sg">📉 Pages en baisse · vs snapshot précédent</div>
+  ${drops.length?drops.map(d=>`<div class="seoc"><div class="seoc-h"><span class="seoc-u">${esc(surl(d.page))}</span><span class="ab ${d.level==="bad"?"bc":"bw"}">${esc(d.label)}</span></div><div class="seoc-m"><span class="seoc-ms">Position ${rt(d.prevPos)} → <strong style="color:${d.posDelta>=3?"var(--r)":"var(--o)"}">${rt(d.pos)}</strong></span><span class="seoc-ms">CTR ${pt(d.prevCtr)} → <strong style="color:${d.ctrDrop>=40?"var(--r)":"var(--o)"}">${pt(d.ctr)}</strong></span><span class="seoc-ms">Clics ${fm(d.prevClicks)} → ${fm(d.clicks)}</span><span class="seoc-ms">Impr. ${fm(d.impr)}</span></div><div class="seoc-a">→ ${esc(d.action)}</div></div>`).join(""):`<div class="empty">Aucune baisse significative détectée vs période précédente, ou l'onglet GSC_Pages_Previous n'est pas encore rempli.</div>`}
   <div class="sg">🔍 Top requêtes · 28 jours</div>
   ${qr.map(r=>{const pos=num(gv(r,"Position")),ctr=ctrv(r);return`<div class="row"><span class="rn">${esc(gv(r,"Query")||"—")}<br><span class="rs">${esc(qrec(r))}</span></span><div class="rm"><span class="rs">Pos. <span style="color:${pos<=3?"var(--g)":pos<=10?"var(--o)":"var(--r)"}">${pos?Math.round(pos*10)/10:"—"}</span></span><span class="rs">Clics <span style="color:var(--accent)">${fm(num(gv(r,"Clicks")))}</span></span><span class="rs">CTR <span style="color:${ctr>=3?"var(--g)":"var(--sec)"}">${pt(ctr)}</span></span></div></div>`;}).join("")||`<div class="empty">Pas de données requêtes.</div>`}
   </div>`;
@@ -772,6 +795,7 @@ function alerts(p,o){
   if(adRev&&adCamps[0]&&adCamps[0].rev/adRev>.6)a.push({lv:"w",label:"Dépendance",title:"CA Ads concentré sur une seule campagne",body:`${adCamps[0].name} porte ${pt(adCamps[0].rev/adRev*100)} du CA Ads 7J.`,action:"Risque de dépendance. Créer un second levier/test campagne avant de scaler plus fort."});
   const seoWins=(p["28d"].sq||[]).filter(r=>num(gv(r,"Position"))>=4&&num(gv(r,"Position"))<=10&&num(gv(r,"Impressions"))>100&&ctrv(r)<3);
   if(seoWins.length)a.push({lv:"i",label:"SEO",title:"Opportunités SEO quick win",body:`${seoWins.length} requête(s) en position 4-10 avec impressions et CTR faible.`,action:"Prendre les 3 meilleures requêtes : title/meta, H2/FAQ, lien interne depuis une page forte."});
+  if(p.seoDrops&&p.seoDrops.length)a.push({lv:"w",label:"SEO",title:"Pages SEO en baisse",body:`${p.seoDrops.length} page(s) perdent position, CTR ou clics vs snapshot précédent.`,action:"Auditer les pages en baisse dans l'onglet SEO : SERP, title/meta, fraîcheur contenu et maillage interne."});
   return a.slice(0,12);
 }
 function dqual(d1){const m=[];if(!d1.sess)m.push("sessions");if(!d1.ord)m.push("commandes");if(!d1.cost)m.push("Ads");if(!d1.klav)m.push("Klaviyo");if(!m.length)return{level:"ok",label:"Data OK"};if(m.length<=2)return{level:"warn",label:"Data partielle : "+m.join(", ")};return{level:"bad",label:"Data à vérifier"};}
