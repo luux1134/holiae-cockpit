@@ -158,7 +158,10 @@ let HOLIAE_MODEL = null;
 
 document.addEventListener("DOMContentLoaded",init);
 async function init(){
-  if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+  if("serviceWorker"in navigator){
+    navigator.serviceWorker.register("sw.js").then(reg=>reg.update()).catch(()=>{});
+    navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("swReloaded")){sessionStorage.setItem("swReloaded","1");location.reload();}});
+  }
   try{render(await load());}
   catch(e){const c=rcache();if(c)render(c.d,true);else app.innerHTML=`<div class="wrap"><div class="empty">Erreur chargement.<br>${esc(e.message)}</div></div>`;}
 }
