@@ -131,7 +131,7 @@
 const API_KEY  = "AIzaSyADK3alDzNTsEkbKGVDbrdHYBj0esGF0KU";
 const SHEET_ID = "17j732Xnp48sOWR_ignS3pgc5eKL4OPCJwUJWKH5Euv4";
 const SHEETS   = {shopify:"Shopify_Daily",ga4:"GA4_Channel",ads:"GoogleAds_Campaigns",st:"GoogleAds_SearchTerms",klav:"Klaviyo",klavD:"Klaviyo_Daily",klavA:"Klaviyo_Attribution_Daily",gscP:"GSC_Pages",gscQ:"GSC_Queries",obj:"Objectifs"};
-const CKEY = "holiae-v12", TTL = 36e5;
+const CKEY = "holiae-v13", TTL = 36e5;
 const PRODUCT_COGS = 82;
 const app = document.getElementById("app");
 const NF = new Intl.NumberFormat("fr-FR");
@@ -389,7 +389,7 @@ function bigMove(m,list){
 
 function vAds(m){
   const p=m.p["7d"],cl=Object.values(p.camps||{}).sort((a,b)=>b.cost-a.cost);
-  const gr=grec(p);
+  const gr=grec(p,m);
   return`<div class="hv" id="v-ads"><div class="sec">— Publicité · Décisions · 7 jours glissants</div>
   <div class="dblk"><div><div class="dtit">Recommandation globale</div><div class="dmain">${esc(gr.text)}</div><div class="ks" style="margin-top:5px">${esc(gr.detail)}</div></div><span class="badge ${gr.cls}">${esc(gr.label)}</span></div>
   <div class="sg">📊 Vue globale · 7 jours</div><div class="kg">
@@ -404,16 +404,18 @@ function vAds(m){
 }
 
 function arec(c){
-  const roas=c.roas||0,spend=c.cost||0,pur=c.pur||0,cpa=c.cpa||0,clicks=c.clk||0,cvr=clicks?pur/clicks*100:null;
+  const roas=c.roas||0,spend=c.cost||0,pur=c.pur||0,cpa=c.cpa||0,clicks=c.clk||0,cvr=clicks?pur/clicks*100:null,target=targetCpaFromAov(c.rev&&c.pur?c.rev/c.pur:null);
   if(spend<30)return{label:"OBSERVER",bg:"rgba(144,139,132,.15)",color:"#908b84",ac:"bi",action:"Pas assez de signal. Attendre 50-80 EUR de spend ou 2 ventes avant de toucher au budget."};
+  if(target&&cpa>target*1.25&&pur>=2)return{label:"CPA HAUT",bg:"rgba(224,92,92,.18)",color:"var(--r)",ac:"bc",action:`CPA ${mo(cpa)} au-dessus du CPA cible estimé ${mo(target)}. Réduire avant de scaler, même si le ROAS semble correct.`};
+  if(pur===1&&roas>=3)return{label:"SIGNAL FRAGILE",bg:"rgba(232,166,76,.18)",color:"var(--o)",ac:"bw",action:"Une seule vente rentable. Ne pas scaler encore : attendre 2-3 ventes ou plus de spend pour confirmer."};
   if(roas>=4&&pur>=3)return{label:"SCALER +20%",bg:"rgba(76,175,125,.16)",color:"var(--g)",ac:"bg",action:`ROAS ${rt(roas)} avec ${fm(pur)} ventes. Monter le budget de 15-20%, puis surveiller CPA (${mo(cpa)}) pendant 48h.`};
   if(roas>=3&&pur>=2)return{label:"GARDER",bg:"rgba(76,175,125,.10)",color:"var(--g)",ac:"bg",action:`Rentable mais pas encore à scaler fort. Garder stable, isoler les meilleurs termes/assets, refaire le point dans 3 jours.`};
   if(spend>=80&&!pur)return{label:"COUPER",bg:"rgba(224,92,92,.18)",color:"var(--r)",ac:"bc",action:"Spend significatif sans vente. Pause ou exclusion des requêtes faibles, puis relance avec angle plus intentionniste."};
   if(spend>=50&&roas<2)return{label:"RÉDUIRE",bg:"rgba(224,92,92,.18)",color:"var(--r)",ac:"bc",action:`ROAS ${rt(roas)} trop bas. Baisser 20-40% ou couper ce qui dépense sans convertir.`};
   if(pur>0&&roas<3)return{label:"OPTIMISER",bg:"rgba(232,166,76,.18)",color:"var(--o)",ac:"bw",action:`Des ventes existent, mais marge faible. Améliorer annonce/page, regarder le taux clic->vente (${pt(cvr)}).`};
-  return{label:"TESTER",bg:"rgba(232,166,76,.18)",color:"var(--o)",ac:"bw",action:"Signal encore fragile. Ne pas scaler. Chercher ce qui consomme le budget et couper les segments faibles."};
+  return{label:"ATTENDRE",bg:"rgba(232,166,76,.18)",color:"var(--o)",ac:"bw",action:"Pas assez de signal exploitable. Attendre environ 50 EUR de spend ou 2 ventes, puis décider."};
 }
-function grec(p){const r=p.roas||0,cpa=p.cpa||0;if(!p.cost)return{text:"Aucune donnée Ads",detail:"Sync Google Ads vide. Relancer la source avant de prendre une décision.",label:"Données",cls:"warn"};if(r>=4&&p.ord>=3)return{text:"Scaler prudemment",detail:`ROAS ${rt(r)} sur ${mo(p.cost)}. Augmenter uniquement les campagnes gagnantes de 15-20%, pas le compte entier. CPA actuel ${mo(cpa)}.`,label:"Scaler",cls:"good"};if(r>=3)return{text:"Garder et nettoyer",detail:`ROAS ${rt(r)}. Garder le budget stable, exclure les requêtes faibles et pousser les termes qui convertissent.`,label:"Maintenir",cls:"good"};if(r>=2)return{text:"Optimiser avant de scaler",detail:`ROAS ${rt(r)}. Trop juste pour augmenter. Couper les campagnes/termes sans vente et retravailler l'annonce ou la landing.`,label:"Optimiser",cls:"warn"};return{text:"Protéger le cash",detail:`ROAS ${rt(r)} pour ${mo(p.cost)} dépensés. Réduire ou couper les poches non rentables avant de remettre du budget.`,label:"Critique",cls:"bad"};}
+function grec(p,m){const r=p.roas||0,cpa=p.cpa||0,contrib=contribution(p),pace=budgetPace(m),target=targetCpaFromAov(p.aov);if(!p.cost)return{text:"Aucune donnée Ads",detail:"Sync Google Ads vide. Relancer la source avant de prendre une décision.",label:"Données",cls:"warn"};if(contrib&&contrib.rate<35)return{text:"Ne pas scaler",detail:`Contribution 7J ${pt(contrib.rate)} après coût produit et Ads. Optimiser CPA/AOV avant d'ajouter du budget.`,label:"Profit",cls:"bad"};if(target&&cpa>target*1.25&&p.ord>=2)return{text:"CPA trop haut",detail:`CPA ${mo(cpa)} vs CPA cible estimé ${mo(target)}. Réduire les poches chères même si le ROAS paraît acceptable.`,label:"CPA",cls:"bad"};if(pace&&pace>120&&r>=3)return{text:"Rentable mais budget trop rapide",detail:`ROAS ${rt(r)}, mais budget MTD à ${pt(pace)} du rythme. Ne pas scaler avant retour au pace.`,label:"Pace",cls:"warn"};if(r>=4&&p.ord>=3)return{text:"Scaler prudemment",detail:`ROAS ${rt(r)} sur ${mo(p.cost)}. Augmenter uniquement les campagnes gagnantes de 15-20%, pas le compte entier. CPA actuel ${mo(cpa)}.`,label:"Scaler",cls:"good"};if(r>=3)return{text:"Garder et nettoyer",detail:`ROAS ${rt(r)}. Garder le budget stable, exclure les requêtes faibles et pousser les termes qui convertissent.`,label:"Maintenir",cls:"good"};if(r>=2)return{text:"Optimiser avant de scaler",detail:`ROAS ${rt(r)}. Trop juste pour augmenter. Couper les campagnes/termes sans vente et retravailler l'annonce ou la landing.`,label:"Optimiser",cls:"warn"};return{text:"Protéger le cash",detail:`ROAS ${rt(r)} pour ${mo(p.cost)} dépensés. Réduire ou couper les poches non rentables avant de remettre du budget.`,label:"Critique",cls:"bad"};}
 function rc(r){return(r||0)>=3?"var(--g)":(r||0)>=2?"var(--o)":"var(--r)";}
 
 function vSeo(m){
@@ -716,7 +718,10 @@ function crmGlobalRec(m){
 }
 function crmItemRec(r,tp){
   const rv=num(gv(r,"Revenue")),rec=num(gv(r,"Recipients")),op=num(gv(r,"Open rate")),cl=num(gv(r,"Click rate")),un=num(gv(r,"Unsubscribe rate"));
+  const rpr=rec?rv/rec:null,ctor=op?cl/op*100:null;
   if(un>0.5)return"Action : pression trop forte. Réduire fréquence ou resserrer l'audience avant le prochain envoi.";
+  if(rec>=100&&rv>0&&rpr<0.2)return`Action : revenue par destinataire faible (${mo(rpr)}). L'audience ouvre peut-être, mais l'offre ou le segment ne vend pas assez.`;
+  if(op>=20&&ctor!=null&&ctor<6)return`Action : CTOR faible (${pt(ctor)}). L'objet fait ouvrir, mais le contenu/CTA ne transforme pas l'attention en clic.`;
   if(rv>0&&cl>=2)return tp==="flow"?"Action : flow vendeur. Ne pas modifier brutalement, tester seulement 1 amélioration d'objet/CTA.":"Action : angle vendeur. Le réutiliser dans une nouvelle campagne ou une relance segmentée.";
   if(rec>=100&&op<18)return"Action : problème d'ouverture. Tester objet + preview text, pas le contenu interne en premier.";
   if(op>=20&&cl<1.5)return"Action : l'objet fait ouvrir mais le contenu ne pousse pas assez au clic. Revoir offre, CTA et premier écran.";
@@ -792,14 +797,20 @@ function topSearchTerms(rows,l){
   return Object.values(out).map(x=>({...x,ctr:x.impr?x.clicks/x.impr*100:null,roas:dv(x.value,x.cost),cpa:dv(x.cost,x.pur)})).sort((a,b)=>b.clicks-a.clicks||b.cost-a.cost).slice(0,l);
 }
 function termRec(r){
-  if(r.pur>0&&r.roas>=3)return"Rentable : isoler en exact ou groupe dédié, et monter doucement si le volume suit.";
+  const intent=termIntent(r.term);
+  if(r.pur===1&&r.roas>=3)return`${intent} · 1 vente rentable : garder, mais attendre confirmation avant d'isoler ou scaler.`;
+  if(r.pur>0&&r.roas>=3)return`${intent} · Rentable : isoler en exact ou groupe dédié, et monter doucement si le volume suit.`;
   if(r.pur>0)return"Convertit mais marge faible : garder, puis améliorer annonce/page avant de scaler.";
-  if(r.cost>=20&&r.clicks>=10)return"Dépense sans vente : exclure si intention faible, sinon tester une annonce plus directe.";
+  if(intent==="Informationnel"&&r.clicks>=8&&!r.pur)return"Informationnel : ne pas couper automatiquement. Envoyer vers guide/LP éducative ou exclure si l'objectif est vente directe.";
+  if(r.cost>=20&&r.clicks>=10)return`${intent} · Dépense sans vente : exclure si intention faible, sinon tester une annonce plus directe.`;
   if(r.clicks>=8&&r.ctr!=null&&r.ctr<2)return"Beaucoup d'affichages mais peu de clics : titre/annonce à rendre plus précis.";
   if(r.clicks>=5)return"Signal utile : attendre encore ou surveiller le coût avant exclusion.";
   return"Peu de données : aucune décision forte.";
 }
+function termIntent(t){const s=String(t||"").toLowerCase();if(/holia|holiae|holiaē/.test(s))return"Marque";if(/vs|versus|compar|meilleur|avis|review|alternative/.test(s))return"Comparatif";if(/acheter|prix|promo|code|boutique|masque led|anti age|rides/.test(s))return"Transactionnel";return"Informationnel";}
 function contribution(p){if(!p||!p.rev||!p.ord)return null;const cogs=p.ord*PRODUCT_COGS,ads=p.cost||0,value=p.rev-cogs-ads;return{value,rate:p.rev?value/p.rev*100:null,cogs,ads};}
+function targetCpaFromAov(aov){return aov?aov*.65-PRODUCT_COGS:null;}
+function budgetPace(m){if(!m||!m.ob.bAds)return null;const dE=Math.max(1,pd(m.ld).getDate()),dM=new Date(+m.ld.slice(0,4),+m.ld.slice(5,7),0).getDate(),expected=m.ob.bAds*dE/dM;return expected?m.p.mtd.cost/expected*100:null;}
 function gv(row,n){return row?.[n]??"";}
 function sm(rows,f){return rows.reduce((a,r)=>a+num(gv(r,f)),0);}
 function num(x){if(x==null||x==="")return 0;const v=Number(String(x).replace(/\s/g,"").replace(",","."));return Number.isFinite(v)?v:0;}
