@@ -193,30 +193,35 @@ function tbh(id,l,health){const dot=health==="g"?"🟢":health==="o"?"🟠":"�
 function tabHealth(m){
   const p=m.p,o=m.ob;
   const h=(ok,warn)=>ok?"g":warn?"o":"r";
-  // Hier: commandes J1 vs moy 7J
-  const a7=p["7d"].ord?p["7d"].ord/7:null;
-  const hier=!a7?"o":h(p.d1.ord>=a7*.85,p.d1.ord>=a7*.7);
-  // 7J: conv rate vs prev
-  const j7=!p["7d"].cr||!p.p7d.cr?"o":h(p["7d"].cr>=p.p7d.cr*.95,p["7d"].cr>=p.p7d.cr*.85);
-  // MTD: projection vs objectif
-  const dE=Math.max(1,new Date().getDate()-1),dM=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate();
-  const proj=p.mtd.rev?p.mtd.rev/dE*dM:null;
-  const mtd=!proj||!o.ca?"o":h(proj>=o.ca*.95,proj>=o.ca*.85);
-  // 28J: revenue vs prev
-  const j28=!p["28d"].rev||!p.p28d.rev?"o":h(p["28d"].rev>=p.p28d.rev*.95,p["28d"].rev>=p.p28d.rev*.85);
-  // 3M: revenue vs prev
-  const m3=!p["90d"].rev||!p.p90d.rev?"o":h(p["90d"].rev>=p.p90d.rev*.95,p["90d"].rev>=p.p90d.rev*.85);
-  // YTD: projection vs objectif annuel
+  const dE=Math.max(1,pd(m.ld).getDate()),dM=new Date(+m.ld.slice(0,4),+m.ld.slice(5,7),0).getDate();
+  const orderHealth=(key,days)=>{
+    if(!o.ord)return"o";
+    const target=o.ord*(days/dM);
+    return h(p[key].ord>=target*.95,p[key].ord>=target*.85);
+  };
+  // Business tabs: commandes vs objectif commandes proratisé
+  const hier=orderHealth("d1",1);
+  const j7=orderHealth("7d",7);
+  const mtd=!o.ord||!p.mtd.ord?"o":h((p.mtd.ord/dE*dM)>=o.ord*.95,(p.mtd.ord/dE*dM)>=o.ord*.85);
+  const j28=orderHealth("28d",28);
+  const m3=orderHealth("90d",90);
+  // YTD: projection commandes annuelle vs objectif annuel estimé depuis l'objectif mensuel
   const start=new Date(+m.ld.slice(0,4),0,1),el=Math.max(1,Math.ceil((pd(m.ld)-start)/864e5)+1),dY=leap(+m.ld.slice(0,4))?366:365;
-  const projY=p.ytd.rev?p.ytd.rev/el*dY:null;
-  const ytd=!projY||!o.caY?"o":h(projY>=o.caY*.95,projY>=o.caY*.85);
+  const ordY=o.ord?o.ord*12:null,projOrdY=p.ytd.ord?p.ytd.ord/el*dY:null;
+  const ytd=!projOrdY||!ordY?"o":h(projOrdY>=ordY*.95,projOrdY>=ordY*.85);
   // Ads: ROAS global 7J
   const ads=!p["7d"].roas?"o":h(p["7d"].roas>=3,p["7d"].roas>=2);
-  // SEO: position moyenne
+  // SEO: position + CTR + quick wins
   const sp=p["28d"].sp,avgPos=sp.length?sp.reduce((a,r)=>a+num(gv(r,"Position")),0)/sp.length:null;
-  const seo=!avgPos?"o":h(avgPos<=5,avgPos<=10);
-  // CRM: klaviyo 28J vs prev
-  const klv=!p["28d"].klav||!p.p28d.klav?"o":h(p["28d"].klav>=p.p28d.klav*.95,p["28d"].klav>=p.p28d.klav*.85);
+  const sc=sp.reduce((a,r)=>a+num(gv(r,"Clicks")),0),si=sp.reduce((a,r)=>a+num(gv(r,"Impressions")),0),sctr=si?sc/si*100:null;
+  const wins=sp.filter(r=>num(gv(r,"Position"))>=4&&num(gv(r,"Position"))<=10&&num(gv(r,"Impressions"))>100).length;
+  const seo=!avgPos?"o":h(avgPos<=5&&sctr>=2.5,avgPos<=10||wins>0||sctr>=1.5);
+  // CRM: vend sans abîmer la liste
+  const kr=m.raw.klav||[],kre=sm(kr,"Recipients"),krev=sm(kr,"Revenue");
+  const kop=kre?kr.reduce((a,r)=>a+num(gv(r,"Recipients"))*num(gv(r,"Open rate")),0)/kre:null;
+  const kcl=kre?kr.reduce((a,r)=>a+num(gv(r,"Recipients"))*num(gv(r,"Click rate")),0)/kre:null;
+  const kun=kre?kr.reduce((a,r)=>a+num(gv(r,"Recipients"))*num(gv(r,"Unsubscribe rate")),0)/kre:null;
+  const klv=!kre?"o":(kun>0.5||(!krev&&kre>=100)?"r":(krev>0&&kop>=20&&kcl>=1.5&&kun<=0.35?"g":"o"));
   return{hier,j7,mtd,j28,m3,ytd,ads,seo,klv};
 }
 function sw(id,btn){document.querySelectorAll(".hv").forEach(x=>x.classList.remove("on"));document.querySelectorAll(".ht").forEach(x=>x.classList.remove("on"));document.getElementById("v-"+id).classList.add("on");btn.classList.add("on");}
