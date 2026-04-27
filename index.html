@@ -290,16 +290,16 @@ function vMtd(m){
   const need=o.ca&&proj?Math.max(0,o.ca-p.rev)/Math.max(1,dM-dE):null;
   return`<div class="hv" id="v-mtd"><div class="sec">— Mois en cours · ${m.ld.slice(0,7)} · J${dE}/${dM}</div>
   <div class="sg">💰 Business</div><div class="kg">
-    ${pc("CA MTD",mo(p.rev),o.ca?`Obj. ${mo(o.ca)}`:"Objectif non renseigné",o.ca?p.rev/o.ca*100:null,`${proj?`Proj. ${mo(proj)}`:""}${pm.rev?` · M-1 ${mo(pm.rev)} ${dl(p.rev,pm.rev,true)}`:""}`)}
-    ${pc("Commandes",fm(p.ord),o.ord?`Obj. ${fm(o.ord)}`:"Objectif non renseigné",o.ord?p.ord/o.ord*100:null,pm.ord?`M-1 ${fm(pm.ord)} ${dl(p.ord,pm.ord,true)}`:"")}
+    ${pcmp("CA MTD",mo(p.rev),pm.rev?`Réf. ${mo(pm.rev)}`:"",dl(p.rev,pm.rev,true),o.ca?p.rev/o.ca*100:null,o.ca?`Obj. ${mo(o.ca)}`:"Objectif non renseigné",proj?`Proj. ${mo(proj)}`:"")}
+    ${pcmp("Commandes",fm(p.ord),pm.ord?`Réf. ${fm(pm.ord)}`:"",dl(p.ord,pm.ord,true),o.ord?p.ord/o.ord*100:null,o.ord?`Obj. ${fm(o.ord)}`:"Objectif non renseigné","")}
     ${kcard("Panier moyen (AOV)",mo(p.aov),pm.aov?`M-1 ${mo(pm.aov)}`:"",dl(p.aov,pm.aov,true))}
     ${kcard("Sessions",fm(p.sess),pm.sess?`M-1 ${fm(pm.sess)}`:"",dl(p.sess,pm.sess,true))}
     ${kcard("Conv. Rate",pt(p.cr),pm.cr?`M-1 ${pt(pm.cr)}`:"",dl(p.cr,pm.cr,true,"pt"))}
     ${kcard("Add to Cart",fm(p.atc),pm.atc?`M-1 ${fm(pm.atc)}`:"",dl(p.atc,pm.atc,true))}
   </div>
   <div class="sg">📈 Publicité</div><div class="kg">
-    ${pc("Budget Ads",mo(p.cost),o.bAds?`Budget ${mo(o.bAds)}`:"Budget non renseigné",o.bAds?p.cost/o.bAds*100:null,pm.cost?`M-1 ${mo(pm.cost)} ${dl(p.cost,pm.cost,false)}`:"")}
-    ${kcard("ROAS MTD",rt(p.roas),pm.roas?`M-1 ${rt(pm.roas)}`:"",dl(p.roas,pm.roas,true))}
+    ${pcmp("Budget Ads",mo(p.cost),pm.cost?`Réf. ${mo(pm.cost)}`:"",dl(p.cost,pm.cost,false),o.bAds?p.cost/o.bAds*100:null,o.bAds?`Budget ${mo(o.bAds)}`:"Budget non renseigné","")}
+    ${kcard("ROAS MTD",rt(p.roas),pm.cost?`M-1 ${rt(pm.roas)}`:"",dl(p.roas,pm.roas,true))}
     ${kcard("CPA",mo(p.cpa),pm.cpa?`M-1 ${mo(pm.cpa)}`:"",dl(p.cpa,pm.cpa,false))}
   </div>
   ${klavSummary(p,"Mois en cours")}
@@ -549,6 +549,7 @@ function goalKcard(l,val,ref,dh,obj,cur){
   return`<div class="kc"><div class="kl">${l}</div><div class="kv">${val}</div><div class="kv2">${ref||""}</div><div class="kd">${dh||""}</div><div class="pb"><div class="pf ${cls}" style="width:${w}%"></div></div><div class="ks">Obj. ${l==="Commandes"?fm(obj):mo(obj)} · ${pt(pct)}</div></div>`;
 }
 function pc(l,val,ref,prog,sub){const w=prog==null?0:Math.max(0,Math.min(100,prog));const cls=prog==null?"gold":prog<70?"bad":prog<90?"warn":"gold";return`<div class="kc"><div class="kl">${l}</div><div class="kv">${val}</div><div class="kd N">${ref}</div>${prog==null?"":`<div class="pb"><div class="pf ${cls}" style="width:${w}%"></div></div><div class="ks">${pt(prog)} · ${sub}</div>`}</div>`;}
+function pcmp(l,val,ref,delta,prog,obj,extra){const w=prog==null?0:Math.max(0,Math.min(100,prog));const cls=prog==null?"gold":prog<70?"bad":prog<90?"warn":"gold";return`<div class="kc"><div class="kl">${l}</div><div class="kv">${val}</div><div class="kv2">${ref||""}</div><div class="kd">${delta||""}</div>${prog==null?"":`<div class="ks">${obj} · ${pt(prog)}${extra?` · ${extra}`:""}</div><div class="pb"><div class="pf ${cls}" style="width:${w}%"></div></div>`}</div>`;}
 
 function funnel(p){
   const st=[["Sessions",p.sess,52,""],["Vues PDP",p.pdp,38,p.sess&&p.pdp?pt(p.pdp/p.sess*100)+" ses.":""],["ATC",p.atc,24,p.pdp&&p.atc?pt(p.atc/p.pdp*100)+" PDP":""],["Checkout",p.chk,14,p.atc&&p.chk?pt(p.chk/p.atc*100)+" ATC":""],["Commandes",p.ord,8,p.chk&&p.ord?pt(p.ord/p.chk*100)+" chk":""]];
