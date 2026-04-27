@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="fr">
 <head>
   <meta charset="utf-8">
@@ -43,7 +43,7 @@
     .pb{background:var(--card2);border-radius:3px;height:5px;margin-top:8px;overflow:hidden}
     .pf{height:100%;border-radius:3px}.pf.gold{background:var(--accent)}.pf.warn{background:var(--o)}.pf.bad{background:var(--r)}
     .row{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:7px}
-    .rn{font-size:11px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+    .rn{font-size:11px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
     .rm{display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
     .rs{font-size:10px;color:var(--sec);white-space:nowrap}
     .al{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:13px 15px;margin-bottom:9px;display:flex;align-items:flex-start;gap:11px}
@@ -121,7 +121,12 @@
       .kc{padding:12px;min-height:100px}.kv{font-size:24px}
       .funnel{gap:3px}.fl{font-size:8px}
       .row,.dblk{flex-direction:column;align-items:flex-start}
-      .rm{width:100%}.vsg{grid-template-columns:1fr}.adc-m{gap:10px}
+      .rn{white-space:normal;overflow:visible;text-overflow:clip;word-break:break-word}
+      .rs{white-space:normal;word-break:break-word}
+      .rm{width:100%;justify-content:flex-start;gap:7px}.vsg{grid-template-columns:1fr}.adc-m{gap:10px}
+      .adc-h,.klrow-h,.seoc-h{align-items:flex-start}
+      .adc-n,.klrow-n{white-space:normal;overflow:visible;text-overflow:clip;word-break:break-word}
+      .ab{margin-left:0}
     }
   </style>
 </head>
@@ -131,7 +136,7 @@
 const API_KEY  = "AIzaSyADK3alDzNTsEkbKGVDbrdHYBj0esGF0KU";
 const SHEET_ID = "17j732Xnp48sOWR_ignS3pgc5eKL4OPCJwUJWKH5Euv4";
 const SHEETS   = {shopify:"Shopify_Daily",ga4:"GA4_Channel",ads:"GoogleAds_Campaigns",st:"GoogleAds_SearchTerms",klav:"Klaviyo",klavD:"Klaviyo_Daily",klavA:"Klaviyo_Attribution_Daily",gscP:"GSC_Pages",gscQ:"GSC_Queries",gscPP:"GSC_Pages_Previous",gscQP:"GSC_Queries_Previous",obj:"Objectifs"};
-const CKEY = "holiae-v16", TTL = 36e5;
+const CKEY = "holiae-v17", TTL = 36e5;
 const PRODUCT_COGS = 82;
 const SHIPPING_COST = 11;
 const VAT_RATE = 0.20;
@@ -321,7 +326,7 @@ function seoPageGains(previousRows,currentRows){
 }
 
 // ── VIEWS ─────────────────────────────────────────────────────────────────────
-function vAlerts(m){const list=m.alerts.filter(a=>a.label!=="Rythme"),detail=list.filter(a=>!isOpp(a));return`<div class="hv on" id="v-alrt"><div class="sec">— Alertes · Ta todo du matin</div>${rhythmHero(m)}${incidentMode(m)}<div class="sg">Calendrier ventes · mois</div><div id="sales-calendar">${salesCalendar(m)}</div>${warRoom(m,list)}${decisionJournal()}<div class="sg">Alertes à traiter</div>${detail.length?detail.map(a=>`<div class="al"><div class="dot ${a.lv}"></div><div style="flex:1"><div class="at">${a.title}</div><div class="as">${a.body}</div>${a.action?`<div class="act">Action suggérée : ${esc(a.action)}</div>`:""}</div><span class="ab ${a.lv==="c"?"bc":a.lv==="w"?"bw":"bi"}">${a.label}</span></div>`).join(""):`<div class="empty" style="text-align:center;padding:24px;font-size:14px">Aucune alerte négative active ✦<br><span style="font-size:11px">Regarde seulement les opportunités ci-dessus.</span></div>`}</div>`;}
+function vAlerts(m){const list=m.alerts.filter(a=>a.label!=="Rythme"),detail=list.filter(a=>!isOpp(a));return`<div class="hv on" id="v-alrt"><div class="sec">— Alertes · Ta todo du matin</div>${rhythmHero(m)}<div class="sg">Calendrier ventes · mois</div><div id="sales-calendar">${salesCalendar(m)}</div>${warRoom(m,list)}<div class="sg">Alertes à traiter</div>${detail.length?detail.map(a=>`<div class="al"><div class="dot ${a.lv}"></div><div style="flex:1;min-width:0"><div class="at">${a.title}</div><div class="as">${a.body}</div>${a.action?`<div class="act">Action suggérée : ${esc(a.action)}</div>`:""}</div><span class="ab ${a.lv==="c"?"bc":a.lv==="w"?"bw":"bi"}">${a.label}</span></div>`).join(""):`<div class="empty" style="text-align:center;padding:24px;font-size:14px">Aucune alerte négative active ✦<br><span style="font-size:11px">Regarde seulement les opportunités ci-dessus.</span></div>`}</div>`;}
 function vHier(m){return`<div class="hv" id="v-hier"><div class="sec">— Hier · ${fd(m.ld)} vs ${fd(m.d2)}</div>${secs(m.p.d1,m.p.d2,m,"d1","Hier")}</div>`;}
 function vPer(m,id,title,key,rk,extra=false){const p=m.p[key],ref=m.p[rk];return`<div class="hv" id="v-${id}"><div class="sec">— ${title}</div>${secs(p,ref,m,key,title)}</div>`;}
 
@@ -408,30 +413,6 @@ function warRoom(m,list){
   <div class="sg">Opportunités à exploiter${opps.length?` · ${opps.length}/3`:""}</div>${opps.length?opps.map(item).join(""):`<div class="empty">Aucune opportunité forte détectée aujourd'hui.</div>`}`;
 }
 
-function incidentMode(m){
-  const d=m.p.d1,s=m.p["7d"];
-  const active=(d.ord===0&&(s.ord>=1||d.sess>=100||d.cost>=20))||(d.rev===0&&d.cost>=30);
-  if(!active)return"";
-  const checks=[
-    ["Paiement","Faire un achat test mobile jusqu'au paiement, sans attendre les rapports."],
-    ["Checkout","Verifier frais, livraison, code promo, moyens de paiement et message d'erreur."],
-    ["Shopify","Verifier stock, produit actif, prix, variantes et absence d'app bloquante."],
-    ["Ads","Verifier que les campagnes depensent sur les bons termes et pas seulement trafic froid."],
-    ["Tracking","Comparer Shopify vs GA4/Ads : si Shopify voit les ventes mais pas Ads, probleme tracking."]
-  ];
-  return`<div class="sg">Mode incident</div><div class="adc" style="border-color:rgba(224,92,92,.35);background:rgba(224,92,92,.08)"><div class="adc-h"><span class="adc-b" style="background:rgba(224,92,92,.18);color:var(--r)">CHECKLIST</span><span class="adc-n">0 vente ou 0 CA avec du signal trafic / Ads</span></div>${checks.map(x=>`<div class="row" style="background:transparent"><span class="rn">${x[0]}<br><span class="rs">${x[1]}</span></span></div>`).join("")}</div>`;
-}
-
-function decisionJournal(){
-  const items=readDecisions().slice(0,5);
-  return`<div class="sg">Journal des dÃ©cisions</div><div class="adc"><div class="adc-h"><span class="adc-n">Une dÃ©cision, une raison, une revue Ã  J+7</span><span class="adc-t">local</span></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><input id="dec-input" class="lex-s" style="margin:0;flex:1;min-width:220px" placeholder="Ex: baisser Search de 20% car CPA trop haut"><button class="cal-b" style="width:auto;padding:0 12px" onclick="addDecision()">Ajouter</button></div><div id="dec-list">${items.length?items.map(decisionRow).join(""):`<div class="empty" style="margin:0">Aucune dÃ©cision notÃ©e. Quand tu changes budget, offre, SEO ou CRM, note-le ici pour relire le rÃ©sultat dans 7 jours.</div>`}</div></div>`;
-}
-function decisionRow(x){return`<div class="row"><span class="rn">${esc(x.text)}<br><span class="rs">${esc(x.date)} Â· revue ${esc(x.review)}</span></span><button class="cal-b" onclick="delDecision('${x.id}')">Ã—</button></div>`;}
-function readDecisions(){try{return JSON.parse(localStorage.getItem("holiae-decisions")||"[]");}catch{return[];}}
-function writeDecisions(x){localStorage.setItem("holiae-decisions",JSON.stringify(x));}
-function addDecision(){const el=document.getElementById("dec-input");if(!el||!el.value.trim())return;const now=new Date(),rev=add(now,7);const x={id:String(Date.now()),date:iso(now),review:iso(rev),text:el.value.trim()};writeDecisions([x,...readDecisions()].slice(0,20));const list=document.getElementById("dec-list");if(list)list.innerHTML=readDecisions().slice(0,5).map(decisionRow).join("");el.value="";}
-function delDecision(id){writeDecisions(readDecisions().filter(x=>x.id!==id));const list=document.getElementById("dec-list");if(list)list.innerHTML=readDecisions().slice(0,5).map(decisionRow).join("")||`<div class="empty" style="margin:0">Aucune dÃ©cision notÃ©e.</div>`;}
-
 function isOpp(a){return /bonne nouvelle|seo/i.test(a.label||"");}
 
 function bigMove(m,list){
@@ -463,7 +444,7 @@ function vAds(m){
   <div class="sg">📊 Vue globale · 7 jours</div><div class="kg">
     ${kcard("Dépense totale",mo(p.cost),"","")}${kcard("ROAS global",rt(p.roas),"","")}
     ${kcard("Ventes Ads",fm(p.ord),"","")}${kcard("CPA moyen",mo(p.cpa),target?`CAC cible ${mo(target)}`:"","")}
-    ${kcard("Contribution Ads",mo(contrib&&contrib.value),contrib?`Marge nette ${pt(contrib.rate)}`:"TVA + produit + livraison + paiement + Ads","")}${kcard("Frais estimÃ©s",mo(contrib?contrib.vat+contrib.cogs+contrib.shipping+contrib.payment:0),"TVA, produit, livraison, paiement","")}
+    ${kcard("Contribution Ads",mo(contrib&&contrib.value),contrib?`Marge nette ${pt(contrib.rate)}`:"TVA + produit + livraison + paiement + Ads","")}${kcard("Frais estimés",mo(contrib?contrib.vat+contrib.cogs+contrib.shipping+contrib.payment:0),"TVA, produit, livraison, paiement","")}
   </div>
   <div class="sg">🎯 Décisions par campagne</div>
   ${cl.length?cl.map(c=>{const r=arec(c,p.aov);return`<div class="adc"><div class="adc-h"><span class="adc-b" style="background:${r.bg};color:${r.color}">${r.label}</span><span class="adc-n">${esc(c.name)}</span><span class="adc-t">${esc(c.type)}</span></div><div class="adc-m"><div><div class="adc-ml">Dépense</div><div class="adc-mv">${mo(c.cost)}</div></div><div><div class="adc-ml">Ventes</div><div class="adc-mv">${fm(c.pur)}</div></div><div><div class="adc-ml">ROAS</div><div class="adc-mv" style="color:${rc(c.roas)}">${rt(c.roas)}</div></div><div><div class="adc-ml">CPA</div><div class="adc-mv">${mo(c.cpa)}</div></div></div><div class="adc-a">→ ${esc(r.action)}</div></div>`;}).join(""):`<div class="empty">Aucune donnée campagne sur 7 jours.</div>`}
@@ -530,8 +511,8 @@ function vKlav(m){
     ${kcard("Campagnes",mo(cr2),"Manuelles","")}${kcard("Open rate moy.",pt(tre?wo/tre:null),"Obj. >20%","")}
     ${kcard("Click rate moy.",pt(tre?wc/tre:null),"Obj. >2%","")}${kcard("Destinataires",fm(tre),"Total envois","")}
   </div>
-  <div class="sg">Revenue CRM attribuÃ© Â· actions</div>
-  ${crmRevenueActions(p).map(x=>`<div class="row"><span class="rn">${esc(x.name)}<br><span class="rs">${esc(x.action)}</span></span><div class="rm"><span class="rs">${esc(x.type)}</span><span class="rs">CA <span style="color:var(--accent)">${mo(x.revenue)}</span></span><span class="rs">Cmd ${fm(x.orders)}</span></div></div>`).join("")||`<div class="empty">Pas encore assez de donnÃ©es d'attribution CRM daily.</div>`}
+  <div class="sg">Revenue CRM attribué · actions</div>
+  ${crmRevenueActions(p).map(x=>`<div class="row"><span class="rn">${esc(x.name)}<br><span class="rs">${esc(x.action)}</span></span><div class="rm"><span class="rs">${esc(x.type)}</span><span class="rs">CA <span style="color:var(--accent)">${mo(x.revenue)}</span></span><span class="rs">Cmd ${fm(x.orders)}</span></div></div>`).join("")||`<div class="empty">Pas encore assez de données d'attribution CRM daily.</div>`}
   <div class="sg">⚙️ Flows actifs (${fl.length})</div>
   ${fl.length?fl.map(r=>klRow(r,"flow")).join(""):`<div class="empty">Aucun flow dans les données. Vérifier l'onglet Klaviyo de la Sheet.</div>`}
   <div class="sg">📣 Campagnes (${ca.length})</div>
@@ -964,3 +945,5 @@ function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&l
 </script>
 </body>
 </html>
+
+
