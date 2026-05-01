@@ -1,4 +1,4 @@
-const CACHE_NAME = "holiae-cockpit-v30";
+const CACHE_NAME = "holiae-cockpit-v35";
 const ASSETS = ["./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", event => {
