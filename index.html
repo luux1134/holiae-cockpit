@@ -150,8 +150,8 @@
 <script>
 const API_KEY  = "AIzaSyADK3alDzNTsEkbKGVDbrdHYBj0esGF0KU";
 const SHEET_ID = "17j732Xnp48sOWR_ignS3pgc5eKL4OPCJwUJWKH5Euv4";
-const SHEETS   = {shopify:"Shopify_Daily",ga4:"GA4_Channel",ads:"GoogleAds_Campaigns",st:"GoogleAds_SearchTerms",klav:"Klaviyo",klavD:"Klaviyo_Daily",klavA:"Klaviyo_Attribution_Daily",gscP:"GSC_Pages",gscQ:"GSC_Queries",gscPP:"GSC_Pages_Previous",gscQP:"GSC_Queries_Previous",obj:"Objectifs",advice:"ARIS_Advice"};
-const CKEY = "holiae-v25", TTL = 36e5;
+const SHEETS   = {shopify:"Shopify_Daily",ga4:"GA4_Channel",ads:"GoogleAds_Campaigns",st:"GoogleAds_SearchTerms",klav:"Klaviyo",klavD:"Klaviyo_Daily",klavA:"Klaviyo_Attribution_Daily",gscP:"GSC_Pages",gscQ:"GSC_Queries",gscPP:"GSC_Pages_Previous",gscQP:"GSC_Queries_Previous",obj:"Objectifs",advice:"ARIS_Advice",adamAdvice:"ADAM_Advice"};
+const CKEY = "holiae-v27", TTL = 36e5;
 const PRODUCT_COGS = 82;
 const SHIPPING_COST = 11;
 const VAT_RATE = 0.20;
@@ -273,7 +273,8 @@ function model(raw){
   const ob=gobj(raw.obj||[],ld);
   const al=alerts(p,ob);
   const dq=dqual(p.d1);
-  return{raw,dates,ld,d2,p,ob,alerts:al,dq,dec:gdec(p,ob,dq)};
+  const adam=latestAdvice(raw.adamAdvice||[]);
+  return{raw,dates,ld,d2,p,ob,alerts:al,dq,dec:gdec(p,ob,dq),adam};
 }
 function cdates(raw){const a=[];["shopify","ga4","ads"].forEach(k=>(raw[k]||[]).forEach(r=>{const d=gv(r,"Date");if(isIso(d))a.push(d);}));return[...new Set(a)].sort();}
 function rng(raw,s,e){
@@ -282,13 +283,23 @@ function rng(raw,s,e){
   const shopOrd=sm(sh,"Orders"),adPur=sm(a,"Purchases");
   const ord=shopOrd||adPur;
   const rev=sm(sh,"Revenue")||sm(a,"Purchase value");
-  const cost=sm(a,"Cost"),reva=sm(a,"Purchase value"),klav=sm(kd,"Revenue_Total");
+  const cost=sm(a,"Cost"),reva=sm(a,"Purchase value");
+  const klavDaily=sm(kd,"Revenue_Total"),klavAttr=sm(ka,"Revenue"),klav=klavDaily||klavAttr;
+  const klavFlows=sm(kd,"Revenue_Flows")||sumKlavByType(ka,"flow");
+  const klavCamps=sm(kd,"Revenue_Campaigns")||sumKlavByType(ka,"campaign");
   const pdp=sm(sh,"Product page sessions"),atc=sm(sh,"Add to cart"),chk=sm(sh,"Checkout started");
   return{sess,ord,shopOrd,adPur,rev,aov:dv(rev,ord),cr:sess?ord/sess*100:null,cost,reva,roas:dv(reva,cost),cpa:dv(cost,adPur),klav,pdp,atc,chk,hasKlavDaily:kd.length>0,hasKlavAttribution:ka.length>0,
     p2a:pdp?atc/pdp*100:null,a2c:atc?chk/atc*100:null,c2o:chk?ord/chk*100:null,
     byType:atype(a),camps:acamps(a),chs:chs(g4),
-    klavFlows:sm(kd,"Revenue_Flows"),klavCamps:sm(kd,"Revenue_Campaigns"),klavItems:klavItems(ka),
+    klavFlows,klavCamps,klavItems:klavItems(ka),
     sp:topR(raw.gscP||[],"Clicks",10),sq:topR(raw.gscQ||[],"Clicks",10)};
+}
+function latestAdvice(rows){
+  return (rows||[]).filter(r=>gv(r,"Advice")||gv(r,"Verdict")||gv(r,"Priority")).sort((a,b)=>String(gv(b,"Date")).localeCompare(String(gv(a,"Date"))))[0]||null;
+}
+function sumKlavByType(rows,type){
+  const target=String(type||"").toLowerCase();
+  return (rows||[]).filter(r=>String(gv(r,"Type")||"").toLowerCase()===target).reduce((a,r)=>a+num(gv(r,"Revenue")),0);
 }
 function atype(rows){const o={};rows.forEach(r=>{const t=nt(gv(r,"Campaign type")||gv(r,"Type"));if(!o[t])o[t]={cost:0,rev:0,pur:0,clk:0};o[t].cost+=num(gv(r,"Cost")||gv(r,"Cout"));o[t].rev+=num(gv(r,"Purchase value")||gv(r,"Revenue_Ads"));o[t].pur+=num(gv(r,"Purchases")||gv(r,"Conversions"));o[t].clk+=num(gv(r,"Clicks")||gv(r,"Clics"));});Object.values(o).forEach(x=>x.roas=dv(x.rev,x.cost));return o;}
 function acamps(rows){const o={};rows.forEach(r=>{const nm=gv(r,"Campaign")||gv(r,"Campagne")||"Campagne";const t=nt(gv(r,"Campaign type")||gv(r,"Type"));if(!o[nm])o[nm]={name:nm,type:t,cost:0,rev:0,pur:0,clk:0};o[nm].cost+=num(gv(r,"Cost")||gv(r,"Cout"));o[nm].rev+=num(gv(r,"Purchase value")||gv(r,"Revenue_Ads"));o[nm].pur+=num(gv(r,"Purchases")||gv(r,"Conversions"));o[nm].clk+=num(gv(r,"Clicks")||gv(r,"Clics"));});Object.values(o).forEach(x=>{x.roas=dv(x.rev,x.cost);x.cpa=dv(x.cost,x.pur);});return o;}
@@ -623,23 +634,29 @@ function vLex(){
 function secs(p,ref,m,key,label){
   const g=key&&m?goalSet(m,key):{};
   const checkoutNote=p&&p.ord>0&&!p.chk?`<div class="empty">Checkout started non remonté alors qu'une commande existe : vérifier le tracking checkout. Ne pas conclure trop fort sur ATC → Checkout.</div>`:"";
+  const periodNote=key==="7d"?shortTermTransformationNote(p,ref):"";
+  const growthNote=key==="28d"?periodGrowthNote(p,ref):"";
+  const adamNote=key==="7d"?adamScaleNote(m):"";
   return`
   <div class="sg">💰 Business</div><div class="kg">
     ${goalKcard("CA",mo(p.rev),ref?`Réf. ${mo(ref.rev)}`:"",dl(p.rev,ref?.rev,true),g.ca,p.rev)}
     ${goalKcard("Commandes",fm(p.ord),ref?`Réf. ${fm(ref.ord)}`:"",dl(p.ord,ref?.ord,true),g.ord,p.ord)}
     ${kcard("Panier moyen (AOV)",mo(p.aov),ref?`Réf. ${mo(ref.aov)}`:"",dl(p.aov,ref?.aov,true))}
     ${kcard("Sessions",fm(p.sess),ref?`Réf. ${fm(ref.sess)}`:"",dl(p.sess,ref?.sess,true))}
-    ${kcard("Conv. Rate",pt(p.cr),ref?`Réf. ${pt(ref.cr)}`:"",dl(p.cr,ref?.cr,true,"pt"))}
+    ${kcard("Conv. Rate",pt2(p.cr),ref?`Réf. ${pt2(ref.cr)}`:"",dlPct(p.cr,ref?.cr))}
     ${kcard("Add to Cart",fm(p.atc),ref?`Réf. ${fm(ref.atc)}`:"",dl(p.atc,ref?.atc,true))}
   </div>
+  ${periodNote}
+  ${growthNote}
   <div class="sg">📈 Publicité</div><div class="kg">
     ${goalKcard("Dépense Ads",mo(p.cost),ref?`Réf. ${mo(ref.cost)}`:"",dl(p.cost,ref?.cost,false),g.bAds,p.cost)}
     ${kcard("ROAS",rt(p.roas),ref?`Réf. ${rt(ref.roas)}`:"",dl(p.roas,ref?.roas,true))}
     ${kcard("CPA Ads",cpaAds(p),ref?`Réf. ${cpaAds(ref)}`:"",dl(p.cpa,ref?.cpa,false))}
     ${p.cost&&p.ord&&!p.adPur?kcard("Ads spend / commande Shopify",mo(p.cost/p.ord),"Commande non attribuée Ads",""):""}
   </div>
+  ${adamNote}
   ${klavSummary(p,label||"Période")}
-  <div class="sg">🛒 Funnel · Taux de passage</div>${funnel(p)}${checkoutNote}
+  <div class="sg">🛒 Funnel · Taux de passage</div>${funnel(p)}${funnelBusinessNote(p,m)}${checkoutNote}
   <div class="sg">🎯 Campagnes Ads</div>${camps(p)}
   ${chR(p)}
   ${klavDetail(p,label||"Période")}`;
@@ -667,17 +684,62 @@ function funnelBusinessNote(p,m){
   if(p.a2c!=null&&p.a2c<35)issues.push({step:"ATC → Checkout",value:p.a2c,text:`Blocage global : ATC → Checkout faible (${pt(p.a2c)}). Vérifier panier, frais, livraison, codes promo et réassurance.`});
   if(p.c2o!=null&&p.c2o<30)issues.push({step:"Checkout → Achat",value:p.c2o,text:`Blocage global : Checkout → Achat faible (${pt(p.c2o)}). Vérifier paiement mobile, frais surprise et confiance checkout.`});
   if(!issues.length)return"";
+  const isShort=m&&m.p&&p===m.p["7d"];
+  const is28=m&&m.p&&p===m.p["28d"];
+  const hasPdp=issues.some(i=>i.step==="PDP → ATC");
+  const hasCart=issues.some(i=>i.step==="ATC → Checkout");
+  if(isShort&&hasPdp&&hasCart)return`<div class="empty">Double blocage court terme : PDP → ATC faible (${pt(p.p2a)}) et ATC → Checkout faible (${pt(p.a2c)}). Priorité CRO/panier avant acquisition : preuve et offre sur PDP, puis frais, livraison, code promo et réassurance panier.</div>`;
+  if(is28&&hasPdp){
+    const recent=m&&m.adam?`<br>Nuance : global 28J = PDP → ATC faible. Ads récent : lire ADAM pour le blocage Search et ne pas scaler si ADAM reste en FIX/HOLD.`:"";
+    return`<div class="empty">Blocage structurel 28J : PDP → ATC faible (${pt(p.p2a)}). Le trafic arrive, mais l'envie d'ajout panier reste trop basse.${recent}</div>`;
+  }
   const main=issues[0].text;
-  const recent=m&&m.p&&m.p["7d"]&&m.p["7d"].a2c!=null&&m.p["7d"].a2c<50&&issues[0].step!=="ATC → Checkout"
+  const recent=!isShort&&m&&m.p&&m.p["7d"]&&m.p["7d"].a2c!=null&&m.p["7d"].a2c<50&&issues[0].step!=="ATC → Checkout"
     ?`<br>Nuance : global MTD = ${esc(issues[0].step)} faible, mais le récent 7J montre aussi ATC → Checkout à surveiller (${pt(m.p["7d"].a2c)}).`
     :"";
   return`<div class="empty">${main}${recent}</div>`;
 }
 
+function shortTermTransformationNote(p,ref){
+  if(!p||!ref||!p.sess||!ref.sess)return"";
+  const sess=(p.sess-ref.sess)/Math.abs(ref.sess)*100;
+  const ord=ref.ord?(p.ord-ref.ord)/Math.abs(ref.ord)*100:null;
+  const rev=ref.rev?(p.rev-ref.rev)/Math.abs(ref.rev)*100:null;
+  if(sess>0&&((ord!=null&&ord<0)||(rev!=null&&rev<0))){
+    return`<div class="empty">Le problème court terme n'est pas le volume de trafic, c'est la transformation : sessions ${signedPct(sess)}, commandes ${ord==null?"—":signedPct(ord)}, CA ${rev==null?"—":signedPct(rev)}. Ne pas acheter plus de trafic tant que le tunnel ne transforme pas.</div>`;
+  }
+  return"";
+}
+
+function periodGrowthNote(p,ref){
+  if(!p||!ref||!p.sess||!ref.sess||!p.rev||!ref.rev)return"";
+  const sessGrowth=(p.sess-ref.sess)/Math.abs(ref.sess)*100;
+  const revGrowth=(p.rev-ref.rev)/Math.abs(ref.rev)*100;
+  if(sessGrowth>50&&revGrowth>30&&p.cr!=null&&p.cr<0.5){
+    return`<div class="empty">Le volume progresse fortement, mais la conversion reste basse (${pt2(p.cr)}). Priorité : mieux transformer le trafic existant avant ajout budget.</div>`;
+  }
+  return"";
+}
+
+function adamScaleNote(m){
+  const verdict=String(gv(m&&m.adam,"Verdict")||"").toUpperCase();
+  if(["FIX","HOLD","INVESTIGATE"].includes(verdict)){
+    return`<div class="empty">ADAM ne valide pas le scale Ads (${esc(verdict)}) : traiter le funnel / requêtes avant ajout budget.</div>`;
+  }
+  return"";
+}
+
 function camps(p){
   const cl=Object.values(p.camps||{}).sort((a,b)=>b.cost-a.cost);
   if(!cl.length)return`<div class="empty">Aucune donnée campagne sur cette période.</div>`;
-  return cl.map(c=>`<div class="row"><span class="rn">${esc(c.name)}</span><div class="rm"><span class="rs">${esc(c.type)}</span><span class="rs">Ventes Ads <span style="color:var(--accent)">${fm(c.pur)}</span></span><span class="rs">ROAS <span style="color:${rc(c.roas)}">${rt(c.roas)}</span></span><span class="rs">Dépense ${mo(c.cost)}</span></div></div>`).join("");
+  return cl.map(c=>`<div class="row"><span class="rn">${esc(c.name)}<br><span class="rs">${esc(campRead(c))}</span></span><div class="rm"><span class="rs">${esc(c.type)}</span><span class="rs">Ventes Ads <span style="color:var(--accent)">${fm(c.pur)}</span></span><span class="rs">ROAS <span style="color:${rc(c.roas)}">${rt(c.roas)}</span></span><span class="rs">Dépense ${mo(c.cost)}</span></div></div>`).join("");
+}
+
+function campRead(c){
+  if(c.pur>=2&&c.roas>=3)return"À protéger : récupérer les termes/angles gagnants, sans scale global si ADAM reste en FIX/HOLD.";
+  if(c.pur>0&&c.roas<3)return"Surveiller contribution : vente attribuée, mais rentabilité encore fragile.";
+  if(c.cost>=25&&!c.pur)return"À contrôler : spend significatif sans vente Ads attribuée.";
+  return"Lecture faible volume : ne pas conclure lourdement.";
 }
 
 function seoR(p){return`<div class="sg">🔍 Top pages SEO</div>${p.sp.map(r=>`<div class="row"><span class="rn">${esc(surl(gv(r,"Page")))}</span><div class="rm"><span class="rs">Pos. <span style="color:var(--accent)">${rt(num(gv(r,"Position")))}</span></span><span class="rs">Clics ${fm(num(gv(r,"Clicks")))}</span><span class="rs">CTR ${pt(ctrv(r))}</span></div></div>`).join("")||`<div class="empty">Pas de données SEO.</div>`}`;}
@@ -751,7 +813,7 @@ function klavSummary(p,label){
     ${kcard("Flows",mo(p.klavFlows),"Automatiques","")}
     ${kcard("Campagnes",mo(p.klavCamps),"Manuelles","")}
     ${share!=null?kcard("Part CRM du CA",pt(share),share>30?"Levier fort":"Contribution CRM",""):""}
-  </div>${share>30?`<div class="empty">CRM = ${pt(share)} du CA de la période. Renforcer les flows et relances chaudes avant d'ajouter du budget Ads.</div>`:""}`;
+  </div>${share>30?`<div class="empty">CRM attribué = ${pt(share)} du CA Shopify de la période. Renforcer les flows et relances chaudes avant d'ajouter du budget Ads.</div>`:""}`;
 }
 
 function klavDetail(p,label){
@@ -801,16 +863,27 @@ function klavTop(m,p){
 function rhythmHero(m){
   const o=m.ob,p=m.p.mtd;
   if(!o.ca&&!o.ord)return"";
+  const today=iso(new Date());
+  if(today.slice(0,7)>m.ld.slice(0,7)){
+    const currentObj=gobj(m.raw.obj||[],today);
+    const caText=currentObj.ca?`Objectif ${mo(currentObj.ca)}`:"objectif CA non renseigné";
+    const ordText=currentObj.ord?` · Commandes ${fm(currentObj.ord)}`:"";
+    return`<div class="dblk" style="border-color:rgba(244,216,168,.45);background:rgba(244,216,168,.10)">
+      <div><div class="dtit">Indicateur principal · objectif mensuel</div><div class="dmain">Nouveau mois démarré · données en attente</div><div class="ks" style="margin-top:6px">Dernière donnée disponible : ${fd(m.ld)}. ARIS attend la première synchro du mois en cours pour calculer le rythme. ${caText}${ordText}</div></div>
+      <span class="badge warn">DATA</span>
+    </div>`;
+  }
   const dE=Math.max(1,pd(m.ld).getDate());
   const dM=new Date(+m.ld.slice(0,4),+m.ld.slice(5,7),0).getDate();
-  const daysLeft=Math.max(1,dM-dE);
+  const daysLeft=Math.max(0,dM-dE);
+  const calcDaysLeft=Math.max(1,daysLeft);
   const current=p.rev/Math.max(1,dE);
-  const need=o.ca?Math.max(0,o.ca-p.rev)/daysLeft:null;
-  const orderNeed=o.ord?Math.max(0,o.ord-p.ord)/daysLeft:null;
+  const need=o.ca?Math.max(0,o.ca-p.rev)/calcDaysLeft:null;
+  const orderNeed=o.ord?Math.max(0,o.ord-p.ord)/calcDaysLeft:null;
   const ok=o.ca?need===0:o.ord&&orderNeed===0;
   const progress=o.ca?p.rev/o.ca*100:o.ord?p.ord/o.ord*100:null;
   return`<div class="dblk" style="border-color:${ok?"rgba(76,175,125,.35)":"rgba(244,216,168,.45)"};background:${ok?"rgba(76,175,125,.10)":"rgba(244,216,168,.10)"}">
-    <div><div class="dtit">Indicateur principal · objectif mensuel</div><div class="dmain">${ok?"Objectif mensuel atteint":o.ca?`Il faut ${mo(need)}/jour pour atteindre l'objectif`:`Il faut ${fm1(orderNeed)} commande(s)/jour`}</div><div class="ks" style="margin-top:6px">${o.ca?`CA MTD ${mo(p.rev)} · Objectif ${mo(o.ca)} · Rythme actuel ${mo(current)}/j`:""}${o.ca&&o.ord?"<br>":""}${o.ord?`Commandes MTD ${fm(p.ord)} / ${fm(o.ord)} · Besoin ${fm1(orderNeed)} commande(s)/jour`:""} · ${daysLeft} jours restants</div></div>
+    <div><div class="dtit">Indicateur principal · objectif mensuel</div><div class="dmain">${ok?"Objectif mensuel atteint":o.ca?`Il faut ${mo(need)}/jour pour atteindre l'objectif`:`Il faut ${fm1(orderNeed)} commande(s)/jour`}</div><div class="ks" style="margin-top:6px">${o.ca?`CA MTD ${mo(p.rev)} · Objectif ${mo(o.ca)} · Rythme actuel ${mo(current)}/j`:""}${o.ca&&o.ord?"<br>":""}${o.ord?`Commandes MTD ${fm(p.ord)} / ${fm(o.ord)} · Besoin ${fm1(orderNeed)} commande(s)/jour`:""} · ${daysLeft} jour(s) restants</div></div>
     <span class="badge ${ok?"good":"warn"}">${pt(progress)}</span>
   </div>`;
 }
@@ -999,7 +1072,7 @@ function pt(x){return x==null||!Number.isFinite(x)?"—":`${NF.format(Math.round
 function pt2(x){return x==null||!Number.isFinite(x)?"—":`${NF.format(Math.round(x*100)/100)}%`;}
 function fpt(x){return x==null||!Number.isFinite(x)?"—":NF.format(Math.round(x*100)/100);}
 function signedPct(x){return `${x>=0?"+":"-"}${pt(Math.abs(x))}`;}
-function dlPct(cur,old){if(cur==null||old==null||isMissing(cur)||isMissing(old))return`<span class="N">—</span>`;const ptDelta=Number(cur)-Number(old),rel=Number(old)?ptDelta/Math.abs(Number(old))*100:null,g=ptDelta>=0;return`<span class="${g?"G":"R"}">${g?"▲":"▼"} ${fpt(ptDelta)} pt${rel==null?"":` · ${signedPct(rel)}`}</span>`;}
+function dlPct(cur,old){if(cur==null||old==null||isMissing(cur)||isMissing(old))return`<span class="N">—</span>`;const ptDelta=Number(cur)-Number(old),rel=Number(old)?ptDelta/Math.abs(Number(old))*100:null;if(Math.abs(Math.round(ptDelta*100)/100)===0)return`<span class="N">Stable${rel==null?"":` · ${signedPct(rel)}`}</span>`;const g=ptDelta>=0;return`<span class="${g?"G":"R"}">${g?"▲":"▼"} ${fpt(ptDelta)} pt${rel==null?"":` · ${signedPct(rel)}`}</span>`;}
 function dl(cur,old,pu=true,u=""){if(cur==null||old==null||isMissing(cur)||isMissing(old))return`<span class="N">—</span>`;if(Number(old)===0){if(Number(cur)===0)return`<span class="N">= 0</span>`;return`<span class="${pu?"G":"R"}">▲ depuis 0</span>`;}const raw=u==="pt"?Number(cur)-Number(old):(Number(cur)-Number(old))/Math.abs(Number(old))*100;const g=pu?raw>=0:raw<=0;return`<span class="${g?"G":"R"}">${raw>=0?"▲":"▼"} ${u==="pt"?`${Math.round(raw*10)/10}pt`:pt(Math.abs(raw))}</span>`;}
 function nt(t){const s=String(t||"").toUpperCase();if(s.includes("PERFORMANCE_MAX")||s.includes("PMAX"))return"PMAX";if(s.includes("SEARCH"))return"SEARCH";if(s.includes("BRAND"))return"BRAND";return s||"OTHER";}
 function isDateHeader(k){return["Date","date"].includes(String(k||"").trim());}
