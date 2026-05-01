@@ -151,7 +151,7 @@
 const API_KEY  = "AIzaSyADK3alDzNTsEkbKGVDbrdHYBj0esGF0KU";
 const SHEET_ID = "17j732Xnp48sOWR_ignS3pgc5eKL4OPCJwUJWKH5Euv4";
 const SHEETS   = {shopify:"Shopify_Daily",ga4:"GA4_Channel",ads:"GoogleAds_Campaigns",adsFull:"GAds_Campaigns",st:"GoogleAds_SearchTerms",klav:"Klaviyo",klavD:"Klaviyo_Daily",klavA:"Klaviyo_Attribution_Daily",gscP:"GSC_Pages",gscQ:"GSC_Queries",gscPP:"GSC_Pages_Previous",gscQP:"GSC_Queries_Previous",obj:"Objectifs",advice:"ARIS_Advice",adamAdvice:"ADAM_Advice"};
-const CKEY = "holiae-v32", TTL = 36e5;
+const CKEY = "holiae-v33", TTL = 36e5;
 const PRODUCT_COGS = 82;
 const SHIPPING_COST = 11;
 const VAT_RATE = 0.20;
@@ -397,8 +397,9 @@ function seoPriorityScore(r){
   const volume=Math.log10(Math.max(10,im))*20;
   const position=pos>=4&&pos<=10?40-(pos-4)*3:0;
   const ctrGap=Math.max(0,expectedCtrForPosition(pos)-ctr)*5;
-  const intent=/meilleur|avis|dermatologue|danger|masque-led-visage|masque led visage|que choisir|anti-age|rides|luminotherapie|couleur|combien/.test(page)?25:0;
-  return volume+position+ctrGap+intent;
+  const intent=/meilleur|danger|masque-led-visage|masque led visage|que choisir|anti-age|rides|luminotherapie|couleur|combien/.test(page)?25:0;
+  const proofIntent=/avis|dermatologue/.test(page)?35:0;
+  return volume+position+ctrGap+intent+proofIntent;
 }
 function seoQuickWins(rows){
   return (rows||[]).filter(r=>!isSeoAssetUrl(gv(r,"Page"))).filter(r=>{
@@ -452,6 +453,7 @@ function vMtd(m){
   const need=o.ca&&proj?Math.max(0,o.ca-p.rev)/Math.max(1,dM-dE):null;
   const trafficNote=mtdTrafficQualityNote(p,pm);
   const title=isNewMonthWaiting(m)?`Mois précédent · ${m.ld.slice(0,7)} · clôturé`:`Mois en cours · ${m.ld.slice(0,7)} · J${dE}/${dM}`;
+  const periodLabel=isNewMonthWaiting(m)?"Mois précédent":"Mois en cours";
   const waitingNote=isNewMonthWaiting(m)?`<div class="empty">Nouveau mois démarré : les données ${todayIso().slice(0,7)} ne sont pas encore disponibles. Cette vue montre le mois précédent clôturé.</div>`:"";
   return`<div class="hv" id="v-mtd"><div class="sec">— ${title}</div>
   ${waitingNote}
@@ -470,11 +472,11 @@ function vMtd(m){
     ${kcard("CPA Ads attribué",cpaAds(p),pm.cost?`M-1 ${cpaAds(pm)}`:"",dl(p.cpa,pm.cpa,false))}
     ${p.cost&&p.ord?kcard("Ads spend / commande Shopify",mo(p.cost/p.ord),"Toutes commandes Shopify",""):""}
   </div>
-  ${klavSummary(p,"Mois en cours")}
+  ${klavSummary(p,periodLabel)}
   <div class="sg">🛒 Funnel</div>${funnel(p)}${funnelBusinessNote(p,m)}
   <div class="sg">🎯 Campagnes Ads</div>${camps(p)}
   ${chR(p)}
-  ${klavDetail(p,"Mois en cours")}</div>`;
+  ${klavDetail(p,periodLabel)}</div>`;
 }
 
 function vYtd(m){
@@ -1140,10 +1142,10 @@ function crmGlobalRec(m){
 function crmItemRec(r,tp){
   const rv=num(gv(r,"Revenue")),rec=num(gv(r,"Recipients")),op=crmRate(r,"Open rate"),cl=crmRate(r,"Click rate"),un=crmRate(r,"Unsubscribe rate");
   const rpr=rec?rv/rec:null,ctor=op?cl/op*100:null;
-  if(un>0.5)return"Action : pression trop forte. Réduire fréquence ou resserrer l'audience avant le prochain envoi.";
+  if(tp==="flow"&&/avantage[_\s-]*decouverte/i.test(String(gv(r,"Name")||""))&&rv>0)return un>0.5?"Action : Flow moteur, mais unsub à surveiller. Identifier quel email génère les désabonnements avant de réduire la fréquence.":"Action : Flow moteur. Protéger la séquence, tester une seule amélioration à la fois et décliner son angle dans campagnes/retargeting.";
+  if(un>0.5)return"Action : désabonnement à surveiller. Identifier l'email, le segment ou le timing qui provoque les unsub avant de réduire la fréquence.";
   if(rec>=100&&rv>0&&rpr<0.2)return`Action : revenue par destinataire faible (${mo(rpr)}). L'audience ouvre peut-être, mais l'offre ou le segment ne vend pas assez.`;
   if(op>=20&&ctor!=null&&ctor<6)return`Action : CTOR faible (${pt1(ctor)}). L'objet fait ouvrir, mais le contenu/CTA ne transforme pas l'attention en clic.`;
-  if(tp==="flow"&&/avantage[_\s-]*decouverte/i.test(String(gv(r,"Name")||""))&&rv>0)return"Action : Flow moteur. Protéger la séquence, tester une seule amélioration à la fois et décliner son angle dans campagnes/retargeting.";
   if(rv>0&&cl>=2)return tp==="flow"?"Action : flow vendeur. Ne pas modifier brutalement, tester seulement 1 amélioration objet/CTA/offre.":"Action : angle à recycler. Le réutiliser sur un segment proche ou en relance chaude.";
   if(rec>=100&&op<18)return"Action : problème d'ouverture. Tester objet + preview text, pas le contenu interne en premier.";
   if(op>=20&&cl<1.5)return"Action : l'objet fait ouvrir mais le contenu ne pousse pas assez au clic. Revoir offre, CTA et premier écran.";
@@ -1230,7 +1232,7 @@ function alerts(p,o,latestDate){
   if(s7.c2o!=null&&s7.c2o<30)a.push({lv:"w",label:"Checkout",title:"Checkout → Commandes faible",body:`${pt(s7.c2o)} des checkouts aboutissent à une commande.`,action:"Tester le checkout mobile, moyens de paiement, frais surprises et réassurance livraison/retours."});
   if(!staleMonth&&o.bAds){const dE=Math.max(1,pd(latestDate).getDate()),dM=new Date(+latestDate.slice(0,4),+latestDate.slice(5,7),0).getDate(),norm=o.bAds*(dE/dM);if(mtd.cost>norm*1.2)a.push({lv:"w",label:"Budget",title:"Budget Ads trop rapide",body:`Dépense MTD ${mo(mtd.cost)} vs rythme attendu ${mo(norm)}.`});if(mtd.cost&&mtd.cost<norm*.7)a.push({lv:"i",label:"Budget",title:"Budget Ads sous-consommé",body:`Dépense MTD ${mo(mtd.cost)} vs rythme attendu ${mo(norm)}.`});}
   const sr=s7.byType["SEARCH"]||{};
-  if(sr.cost&&(!sr.roas||sr.roas<2))a.push({lv:"w",label:"Search",title:"ROAS Search faible",body:`Search 7J : dépense ${mo(sr.cost)} · ROAS ${rt(sr.roas)}.`,action:"Regarder les search terms : exclure les requêtes informationnelles et isoler les termes qui convertissent."});
+  if(sr.cost&&(!sr.roas||sr.roas<2))a.push({lv:"w",label:"Search",title:"ROAS Search faible",body:`Search 7J : dépense ${mo(sr.cost)} · ROAS ${rt(sr.roas)}.`,action:"Voir ADAM pour l'exécution Search. Côté ARIS : aucun ajout budget tant que Search reste ROAS 0."});
   const adCamps=Object.values(s7.camps||{}).filter(c=>c.rev>0).sort((a,b)=>b.rev-a.rev),adRev=adCamps.reduce((x,c)=>x+c.rev,0);
   if(adRev&&adCamps[0]&&adCamps[0].rev/adRev>.6)a.push({lv:"w",label:"Dépendance",title:"CA Ads concentré sur une seule campagne",body:`${adCamps[0].name} porte ${pt(adCamps[0].rev/adRev*100)} du CA Ads 7J.`,action:"Risque de dépendance. Créer un second levier/test campagne avant de scaler plus fort."});
   const seoWins=(p["28d"].sq||[]).filter(r=>num(gv(r,"Position"))>=4&&num(gv(r,"Position"))<=10&&num(gv(r,"Impressions"))>100&&ctrv(r)<3);
