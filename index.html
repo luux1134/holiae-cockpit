@@ -151,7 +151,7 @@
 const API_KEY  = "AIzaSyADK3alDzNTsEkbKGVDbrdHYBj0esGF0KU";
 const SHEET_ID = "17j732Xnp48sOWR_ignS3pgc5eKL4OPCJwUJWKH5Euv4";
 const SHEETS   = {shopify:"Shopify_Daily",ga4:"GA4_Channel",ads:"GoogleAds_Campaigns",adsFull:"GAds_Campaigns",st:"GoogleAds_SearchTerms",klav:"Klaviyo",klavD:"Klaviyo_Daily",klavA:"Klaviyo_Attribution_Daily",gscP:"GSC_Pages",gscQ:"GSC_Queries",gscPP:"GSC_Pages_Previous",gscQP:"GSC_Queries_Previous",obj:"Objectifs",advice:"ARIS_Advice",adamAdvice:"ADAM_Advice"};
-const CKEY = "holiae-v33", TTL = 36e5;
+const CKEY = "holiae-v34", TTL = 36e5;
 const PRODUCT_COGS = 82;
 const SHIPPING_COST = 11;
 const VAT_RATE = 0.20;
@@ -282,8 +282,8 @@ function rng(raw,s,e){
   const sh=bt(raw.shopify||[],s,e),g4=bt(raw.ga4||[],s,e),a=bt(raw.ads||[],s,e),af=bt(raw.adsFull||[],s,e),kd=bt(raw.klavD||[],s,e),ka=bt(raw.klavA||[],s,e);
   const sess=sm(g4,"Sessions")||sm(sh,"Sessions");
   const shopOrd=sm(sh,"Orders"),adPur=sm(a,"Purchases");
-  const ord=shopOrd||adPur;
-  const rev=sm(sh,"Revenue")||sm(a,"Purchase value");
+  const ord=shopOrd;
+  const rev=sm(sh,"Revenue");
   const cost=sm(a,"Cost"),reva=sm(a,"Purchase value");
   const klavDaily=sm(kd,"Revenue_Total"),klavAttr=sm(ka,"Revenue"),klav=klavDaily||klavAttr;
   const klavFlows=sm(kd,"Revenue_Flows")||sumKlavByType(ka,"flow");
