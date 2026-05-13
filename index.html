@@ -648,7 +648,8 @@ async function setArisActionStatus(status){
   const payload={action:"update_action_log",date:box.dataset.date,agent:"ARIS",priority:box.dataset.priority,recommendedAction:box.dataset.action,canal:box.dataset.canal,status,note:(document.getElementById("aris-action-note")||{}).value||""};
   state.textContent="Mise à jour en cours...";
   try{
-    await fetch(ACTION_LOG_WEBAPP_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(payload)});
+    const url=ACTION_LOG_WEBAPP_URL+"?"+new URLSearchParams(payload).toString();
+    await fetch(url,{method:"GET",mode:"no-cors",cache:"no-store"});
     state.textContent=`Action marquée "${status}". Recharge dans quelques secondes pour voir la Sheet à jour.`;
     sessionStorage.removeItem(CKEY);
   }catch(e){
