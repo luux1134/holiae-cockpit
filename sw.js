@@ -1,4 +1,4 @@
-const CACHE_NAME = "holiae-cockpit-v36";
+const CACHE_NAME = "holiae-cockpit-v37";
 const ASSETS = ["./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", event => {
@@ -31,7 +31,7 @@ self.addEventListener("fetch", event => {
 
   if (url.hostname.includes("sheets.googleapis.com")) {
     event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
+      fetch(new Request(event.request, { cache: "no-store" })).catch(() => caches.match(event.request))
     );
     return;
   }

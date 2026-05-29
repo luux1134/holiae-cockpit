@@ -152,8 +152,8 @@
 <script>
 const API_KEY  = "AIzaSyADK3alDzNTsEkbKGVDbrdHYBj0esGF0KU";
 const SHEET_ID = "17j732Xnp48sOWR_ignS3pgc5eKL4OPCJwUJWKH5Euv4";
-const SHEETS   = {shopify:"Shopify_Daily",ga4:"GA4_Channel",ads:"GAds_Campaigns",adsFull:"GAds_Campaigns",st:"GAds_SearchTerms",klav:"Klaviyo",klavD:"Klaviyo_Daily",klavA:"Klaviyo_Attribution_Daily",gscP:"GSC_Pages",gscQ:"GSC_Queries",gscPP:"GSC_Pages_Previous",gscQP:"GSC_Queries_Previous",obj:"Objectifs",advice:"ARIS_Advice",adamAdvice:"ADAM_Advice",actionLog:"Action_Log"};
-const CKEY = "holiae-v37", TTL = 36e5;
+const SHEETS   = {shopify:"Shopify_Daily",ga4:"GA4_Channel",ads:"GAds_Campaigns",adsFull:"GAds_Campaigns",st:"GAds_SearchTerms",klav:"Klaviyo",klavD:"Klaviyo_Daily",klavA:"Klaviyo_Attribution_Daily",gscP:"GSC_Pages",gscQ:"GSC_Queries",gscPP:"GSC_Pages_Previous",gscQP:"GSC_Queries_Previous",obj:"Objectifs",advice:"ARIS_Advice",adamAdvice:"ADAM_Advice",actionLog:"Action_Log",decisionLog:"Decision_Log"};
+const CKEY = "holiae-v39", TTL = 3e5;
 const ACTION_LOG_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyIer4cNwRLRzk_Hj5w-lGLJiHWQs9TamFOl173O8Bcucj3NSPqd95haMkYXTy2iJadfQ/exec";
 const PRODUCT_COGS = 82;
 const SHIPPING_COST = 11;
@@ -186,8 +186,8 @@ async function load(){
   return d;
 }
 async function fsheet(nm){
-  const u=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(nm)}!A:Z?valueRenderOption=UNFORMATTED_VALUE&key=${API_KEY}`;
-  const r=await fetch(u);
+  const u=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(nm)}!A:Z?valueRenderOption=UNFORMATTED_VALUE&key=${API_KEY}&_=${Date.now()}`;
+  const r=await fetch(u,{cache:"no-store"});
   if(!r.ok){if(r.status===400||r.status===404)return[];throw new Error(`${nm}:${r.status}`);}
   return r2o((await r.json()).values||[]);
 }
@@ -280,8 +280,10 @@ function model(raw){
   const al=alerts(p,ob,ld);
   const dq=dqual(p.d1);
   const adam=latestAdvice(raw.adamAdvice||[]);
-  const actionLog=latestArisAction(raw.actionLog||[],ld);
-  return{raw,dates,ld,d2,p,ob,alerts:al,dq,dec:gdec(p,ob,dq),adam,actionLog};
+  const todayAris=todayAdvice(raw.advice||[]);
+  const latestAris=latestAdvice(raw.advice||[]);
+  const actionLog=latestArisAction(raw.actionLog||[],todayAris?gv(todayAris,"Date"):todayIso());
+  return{raw,dates,ld,d2,p,ob,alerts:al,dq,dec:gdec(p,ob,dq),adam,todayAris,latestAris,actionLog};
 }
 function cdates(raw){const a=[];["shopify","ga4","ads"].forEach(k=>(raw[k]||[]).forEach(r=>{const d=gv(r,"Date");if(isIso(d))a.push(d);}));return[...new Set(a)].sort();}
 function rng(raw,s,e){
@@ -304,8 +306,18 @@ function rng(raw,s,e){
 function latestAdvice(rows){
   return (rows||[]).filter(r=>gv(r,"Advice")||gv(r,"Verdict")||gv(r,"Priority")).sort((a,b)=>String(gv(b,"Date")).localeCompare(String(gv(a,"Date"))))[0]||null;
 }
+function todayAdvice(rows){
+  const today=todayIso();
+  return (rows||[])
+    .filter(r=>String(gv(r,"Date")||"").slice(0,10)===today)
+    .filter(r=>gv(r,"Advice")||gv(r,"Verdict")||gv(r,"Priority"))
+    .sort((a,b)=>String(gv(b,"Date")).localeCompare(String(gv(a,"Date"))))[0]||null;
+}
 function latestArisAction(rows,date){
-  return (rows||[]).filter(r=>String(gv(r,"Agent")||"").toUpperCase()==="ARIS"&&(gv(r,"Status")||gv(r,"Priority")||gv(r,"Action"))).sort((a,b)=>String(gv(b,"Date")).localeCompare(String(gv(a,"Date"))))[0]||null;
+  const target=String(date||todayIso()).slice(0,10);
+  return (rows||[])
+    .filter(r=>String(gv(r,"Agent")||"").toUpperCase()==="ARIS"&&String(gv(r,"Date")||"").slice(0,10)===target&&(gv(r,"Status")||gv(r,"Priority")||gv(r,"Action")))
+    .sort((a,b)=>String(gv(b,"Date")).localeCompare(String(gv(a,"Date"))))[0]||null;
 }
 function sumKlavByType(rows,type){
   const target=String(type||"").toLowerCase();
@@ -432,9 +444,13 @@ function seoDropAction(d){
 
 // ── VIEWS ─────────────────────────────────────────────────────────────────────
 function arisAdvice(m){
-  const rows=(m.raw.advice||[]).filter(r=>gv(r,"Advice")||gv(r,"Verdict")||gv(r,"Priority"));
-  if(!rows.length)return"";
-  const latest=rows.sort((a,b)=>String(gv(b,"Date")).localeCompare(String(gv(a,"Date"))))[0];
+  const latest=m.todayAris;
+  if(!latest){
+    const previous=m.latestAris;
+    if(!previous)return"";
+    const previousDate=String(gv(previous,"Date")||"").slice(0,10);
+    return`<div class="empty">Aucune décision ARIS aujourd'hui.<br>Dernière décision disponible : ${esc(fd(previousDate)||previousDate||"date inconnue")}. Elle n'est pas utilisée comme priorité du jour.</div>`;
+  }
   const date=gv(latest,"Date")||m.ld;
   const verdict=String(gv(latest,"Verdict")||"").trim().toUpperCase();
   const confidence=String(gv(latest,"Confidence")||"").trim();
@@ -581,7 +597,7 @@ function morningAlerts(alerts,m){
 function bigMove(m,list){
   const has=t=>list.find(a=>String(a.title||"").toLowerCase().includes(t));
   const byLabel=l=>list.find(a=>String(a.label||"").toLowerCase().includes(l));
-  const aris=latestAdvice((m.raw&&m.raw.advice)||[]);
+  const aris=m.todayAris;
   if(aris&&(gv(aris,"Priority")||gv(aris,"Advice")||gv(aris,"Verdict"))){
     const verdict=String(gv(aris,"Verdict")||"ARIS").toUpperCase();
     const cls=verdict==="SCALE"?"good":verdict==="FIX"?"bad":verdict==="INVESTIGATE"?"bad":"warn";
@@ -610,7 +626,7 @@ function firstAdviceLine(text){
 }
 
 function actionLogPanel(m,move){
-  const aris=latestAdvice((m.raw&&m.raw.advice)||[]);
+  const aris=m.todayAris;
   if(!aris)return"";
   const row=m.actionLog||{};
   const status=String(gv(row,"Status")||"A faire");
